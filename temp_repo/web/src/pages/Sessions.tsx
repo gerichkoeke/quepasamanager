@@ -667,6 +667,7 @@ export const Sessions: React.FC = () => {
       chatwootInboxName: '',
       closingMessage: '',
       returnWebhookUrl: '',
+      active: true,
       enableGroups: false,
       reopenClosedTickets: false,
       showAgentName: false,
