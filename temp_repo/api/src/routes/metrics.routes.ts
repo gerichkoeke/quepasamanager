@@ -32,6 +32,22 @@ router.get('/metrics', authMiddleware, async (req, res, next) => {
 
     const totalActiveMappings = activeWahaMappings + activeQuepasaMappings;
 
+    // specific integrations
+    const quepasaWithChatwoot = await prisma.quepasaMapping.count({
+       where: { active: true, chatwootApiToken: { not: '' } }
+    });
+    
+    const quepasaWithTypebot = await prisma.quepasaMapping.count({
+       where: { active: true, useTypebot: true }
+    });
+
+    const wahaWithChatwoot = await prisma.sessionMapping.count({
+       where: { active: true, chatwootApiToken: { not: null } }
+    });
+
+    // Waha requires Typebot currently, so all of them count
+    const wahaWithTypebot = activeWahaMappings;
+
     // Count unique sessions
     const uniqueSessions = await prisma.eventLog.findMany({
       where: { sessionId: { not: null } },
@@ -78,6 +94,12 @@ router.get('/metrics', authMiddleware, async (req, res, next) => {
       messages_processed: totalEvents,
       rabbitmq_connected: rabbitMQService.isConnected(),
       recent_events_count: recentEvents,
+      instances: {
+        quepasa_active: activeQuepasaMappings,
+        waha_active: activeWahaMappings,
+        chatwoot_connections: quepasaWithChatwoot + wahaWithChatwoot,
+        typebot_connections: quepasaWithTypebot + wahaWithTypebot
+      },
       recent_activity: recentActivity.map((event) => ({
         id: event.id,
         session_name: event.sessionId,

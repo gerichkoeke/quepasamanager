@@ -44,6 +44,12 @@ export interface Metrics {
   messages_processed: number;
   rabbitmq_connected?: boolean;
   recent_events_count: number;
+  instances?: {
+    quepasa_active: number;
+    waha_active: number;
+    chatwoot_connections: number;
+    typebot_connections: number;
+  };
   recent_activity: RecentActivity[];
   stats: {
     totalEvents: number;

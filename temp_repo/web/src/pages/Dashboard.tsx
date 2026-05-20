@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Activity, MessageSquare, Link2, TrendingUp, ArrowUp, ArrowDown, Share2 } from 'lucide-react';
+import { Activity, MessageSquare, Link2, TrendingUp, ArrowUp, ArrowDown, Share2, Server, Bot, MessageCircle, Smartphone } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { Card } from '../components/Card';
 import { api } from '../services/api';
@@ -41,21 +41,42 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: 'RabbitMQ',
-      value: metrics?.rabbitmq_connected ? 'Conectado' : 'Desconectado',
+      value: metrics?.rabbitmq_connected ? 'Conectado' : 'Falha',
       icon: Share2,
       color: metrics?.rabbitmq_connected ? 'bg-green-500' : 'bg-red-500',
     },
     {
-      name: 'Mensagens Processadas',
+      name: 'Mensagens',
       value: metrics?.messages_processed || 0,
       icon: TrendingUp,
       color: 'bg-purple-500',
     },
+  ];
+
+  const instanceStats = [
     {
-      name: 'Eventos Recentes',
-      value: metrics?.recent_activity?.length || 0,
-      icon: Activity,
-      color: 'bg-orange-500',
+      name: 'Quepasa (Ativas)',
+      value: metrics?.instances?.quepasa_active || 0,
+      icon: Smartphone,
+      color: 'bg-emerald-500',
+    },
+    {
+      name: 'Waha (Ativas)',
+      value: metrics?.instances?.waha_active || 0,
+      icon: Server,
+      color: 'bg-teal-500',
+    },
+    {
+      name: 'Chatwoot',
+      value: metrics?.instances?.chatwoot_connections || 0,
+      icon: MessageCircle,
+      color: 'bg-blue-500',
+    },
+    {
+      name: 'Typebot',
+      value: metrics?.instances?.typebot_connections || 0,
+      icon: Bot,
+      color: 'bg-indigo-500',
     },
   ];
 
@@ -82,9 +103,29 @@ export const Dashboard: React.FC = () => {
           <p className="text-gray-600 mt-1">Visão geral das suas integrações Waha-Typebot</p>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        {/* System Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={stat.name}>
+                <div className="flex items-center">
+                  <div className={`${stat.color} p-3 rounded-lg`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">{stat.name}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Instances & Integrations Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {instanceStats.map((stat) => {
             const Icon = stat.icon;
             return (
               <Card key={stat.name}>
