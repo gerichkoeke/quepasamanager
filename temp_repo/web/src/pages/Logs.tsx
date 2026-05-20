@@ -39,8 +39,8 @@ export const Logs: React.FC = () => {
 
   const loadSessions = async () => {
     try {
-      const data = await api.getSessions();
-      setSessions(data);
+      const data = await api.getQuepasaMappings();
+      setSessions(data as any);
     } catch (error: any) {
       toast.error('Falha ao carregar sessões');
     }
@@ -54,7 +54,7 @@ export const Logs: React.FC = () => {
         offset: filters.offset,
       };
 
-      if (filters.session_name) params.session_name = filters.session_name;
+      if (filters.session_name) params.sessionId = filters.session_name;
       if (filters.direction) params.direction = filters.direction;
       if (filters.provider) params.provider = filters.provider;
 
@@ -241,9 +241,9 @@ export const Logs: React.FC = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
                 >
                   <option value="">Todas as Sessões</option>
-                  {sessions.map((session) => (
-                    <option key={session.name} value={session.name}>
-                      {session.name}
+                  {sessions.map((session: any) => (
+                    <option key={session.quepasaToken} value={session.phoneNumber || session.quepasaToken}>
+                      {session.name} {session.phoneNumber ? `(${session.phoneNumber})` : ''}
                     </option>
                   ))}
                 </select>
