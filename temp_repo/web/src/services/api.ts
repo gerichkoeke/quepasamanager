@@ -281,6 +281,11 @@ class ApiClient {
     return response.data;
   }
 
+  async toggleRabbitMQ(): Promise<{ success: boolean; message: string; connected: boolean }> {
+    const response = await this.client.post('/settings/rabbitmq/toggle');
+    return response.data;
+  }
+
   async syncQuepasaConnections(): Promise<QuepasaSyncResult> {
     const response = await this.client.post('/quepasa/sync');
     return response.data;

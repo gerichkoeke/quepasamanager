@@ -45,8 +45,15 @@ router.get('/metrics', authMiddleware, async (req, res, next) => {
        where: { active: true, chatwootApiToken: { not: null } }
     });
 
-    // Waha requires Typebot currently, so all of them count
-    const wahaWithTypebot = activeWahaMappings;
+    // Waha uses typebotFlowId optionally, it is 'connection-only' if not configured
+    const wahaWithTypebot = await prisma.sessionMapping.count({
+      where: { 
+        active: true, 
+        typebotFlowId: { 
+          notIn: ['connection-only', ''] 
+        } 
+      }
+    });
 
     // Count unique sessions
     const uniqueSessions = await prisma.eventLog.findMany({

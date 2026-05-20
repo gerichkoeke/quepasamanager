@@ -400,7 +400,14 @@ class ChatwootClient {
     try {
       // First, check if webhook already exists
       const existingWebhooks = await client.get(`/api/v1/accounts/${config.accountId}/webhooks`);
-      const webhooks = existingWebhooks.data.payload || [];
+      
+      let webhooks = [];
+      if (Array.isArray(existingWebhooks.data)) {
+        webhooks = existingWebhooks.data;
+      } else if (existingWebhooks.data && Array.isArray(existingWebhooks.data.payload)) {
+        webhooks = existingWebhooks.data.payload;
+      }
+      
       const existing = webhooks.find((w: any) => w.url === webhookUrl);
 
       if (existing) {

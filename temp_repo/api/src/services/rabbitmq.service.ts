@@ -31,6 +31,18 @@ export class RabbitMQService {
     }
   }
 
+  async disconnect() {
+    try {
+      if (this.channel) await this.channel.close();
+      if (this.connection) await this.connection.close();
+      this.channel = null;
+      this.connection = null;
+      logger.info('Disconnected from RabbitMQ manually');
+    } catch (error: any) {
+      logger.error({ error: error.message }, 'Failed to disconnect from RabbitMQ');
+    }
+  }
+
   async setupQueue(queueName: string, messageHandler: (msg: any | null) => void) {
     if (!this.channel) {
       logger.warn('Cannot setup queue: RabbitMQ channel not available');

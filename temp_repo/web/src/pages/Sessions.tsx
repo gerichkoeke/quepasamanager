@@ -817,6 +817,17 @@ export const Sessions: React.FC = () => {
           const session = row.data as Session;
           return (
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const url = `${window.location.origin}/api/webhooks/typebot/${session.name}`;
+                  navigator.clipboard.writeText(url);
+                  toast.success('URL do Webhook copiada!');
+                }}
+                className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                title="Copiar URL do Webhook da Sessão"
+              >
+                <Link2 className="w-4 h-4" />
+              </button>
               {(session.status === 'SCAN_QR_CODE' || session.status === 'STARTING') && (
                 <button
                   onClick={() => handleShowQR(session.name)}
@@ -876,6 +887,17 @@ export const Sessions: React.FC = () => {
 
           return (
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const url = `${window.location.origin}/api/webhooks/chatwoot/${mapping.quepasaToken}`;
+                  navigator.clipboard.writeText(url);
+                  toast.success('URL do Webhook copiada!');
+                }}
+                className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                title="Copiar URL do Webhook"
+              >
+                <Link2 className="w-4 h-4" />
+              </button>
               {/* Show QR button if not connected, disconnect button if connected */}
               {isConnected ? (
                 <button

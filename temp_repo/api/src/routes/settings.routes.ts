@@ -5,7 +5,26 @@ import { authMiddleware } from '../middlewares/auth.middleware';
 import { logger } from '../utils/logger';
 import { quepasaClient } from '../clients/quepasa.client';
 
+import { rabbitMQService } from '../services/rabbitmq.service';
+
 const router = Router();
+
+// Toggle RabbitMQ Connection
+router.post('/settings/rabbitmq/toggle', authMiddleware, async (req, res, next) => {
+  try {
+    const isConnected = rabbitMQService.isConnected();
+    if (isConnected) {
+      await rabbitMQService.disconnect();
+      res.json({ success: true, message: 'RabbitMQ desconectado', connected: false });
+    } else {
+      const url = process.env.RABBITMQ_URL || 'amqp://localhost';
+      await rabbitMQService.connect(url);
+      res.json({ success: true, message: 'RabbitMQ conectado', connected: rabbitMQService.isConnected() });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
 
 const settingsSchema = z.object({
   quepasa_url: z.string().url().optional(),
