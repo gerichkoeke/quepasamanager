@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { prisma } from '../db/client';
 import { authMiddleware } from '../middlewares/auth.middleware';
 
+import { rabbitMQService } from '../services/rabbitmq.service';
+
 const router = Router();
 
 // Get metrics
@@ -74,6 +76,7 @@ router.get('/metrics', authMiddleware, async (req, res, next) => {
       total_sessions: uniqueSessions.length,
       active_integrations: totalActiveMappings,
       messages_processed: totalEvents,
+      rabbitmq_connected: rabbitMQService.isConnected(),
       recent_events_count: recentEvents,
       recent_activity: recentActivity.map((event) => ({
         id: event.id,

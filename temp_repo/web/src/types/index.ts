@@ -42,6 +42,7 @@ export interface Metrics {
   total_sessions: number;
   active_integrations: number;
   messages_processed: number;
+  rabbitmq_connected?: boolean;
   recent_events_count: number;
   recent_activity: RecentActivity[];
   stats: {

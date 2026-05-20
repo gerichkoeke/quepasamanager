@@ -1,9 +1,13 @@
-import amqp from 'amqplib';
+import * as amqp from 'amqplib';
 import { logger } from '../utils/logger';
 
 export class RabbitMQService {
-  private connection: amqp.Connection | null = null;
-  private channel: amqp.Channel | null = null;
+  private connection: any | null = null;
+  private channel: any | null = null;
+
+  isConnected(): boolean {
+    return !!this.connection && !!this.channel;
+  }
 
   async connect(url: string) {
     try {
@@ -27,7 +31,7 @@ export class RabbitMQService {
     }
   }
 
-  async setupQueue(queueName: string, messageHandler: (msg: amqp.ConsumeMessage | null) => void) {
+  async setupQueue(queueName: string, messageHandler: (msg: any | null) => void) {
     if (!this.channel) {
       logger.warn('Cannot setup queue: RabbitMQ channel not available');
       return;

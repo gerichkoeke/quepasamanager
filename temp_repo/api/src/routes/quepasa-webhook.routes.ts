@@ -3,6 +3,7 @@ import { prisma } from '../db/client';
 import { quepasaClient } from '../clients/quepasa.client';
 import { chatwootClient } from '../clients/chatwoot.client';
 import { logger } from '../utils/logger';
+import { rabbitMQService } from '../services/rabbitmq.service';
 
 const router = Router();
 
@@ -103,6 +104,24 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
         payload: payload,
       },
     });
+
+    if (rabbitMQService.isConnected()) {
+      rabbitMQService.publishMessage('quepasa_events', {
+        provider: 'quepasa',
+        direction: 'in',
+        token,
+        fromNumber,
+        messageText,
+        isGroup,
+        messageType,
+        hasAttachment,
+        messageId,
+        messageTimestamp,
+        payload
+      }).catch(err => {
+         logger.error({ error: err.message }, 'Failed to publish to RabbitMQ quepasa_events');
+      });
+    }
 
     // Validate required fields (accept messages with attachment but no text)
     if (!fromNumber) {

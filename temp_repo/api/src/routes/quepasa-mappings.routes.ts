@@ -463,10 +463,8 @@ router.post('/quepasa-mappings/:id/setup-integration', authMiddleware, async (re
       return res.status(404).json({ error: 'Quepasa mapping not found' });
     }
 
-    // Check if phone number is set
-    if (!mapping.phoneNumber) {
-      return res.status(400).json({ error: 'Phone number not set. Please scan QR code first.' });
-    }
+    // We removed the phone number check - we can create Chatwoot inbox before WhatsApp is connected.
+    // The phone number will be populated later and Webhook will be configured upon connection.
 
     // Get system base URL from environment
     const systemBaseUrl = process.env.SYSTEM_BASE_URL || 'https://quepasahub.armazem.cloud';
@@ -476,49 +474,52 @@ router.post('/quepasa-mappings/:id/setup-integration', authMiddleware, async (re
       baseUrl: mapping.chatwootBaseUrl,
       apiAccessToken: mapping.chatwootApiToken,
       accountId: mapping.chatwootAccountId,
-      inboxId: mapping.chatwootInboxId, // May be 'pending', will be updated
+      inboxId: mapping.chatwootInboxId,
     };
 
     // Create API inbox in Chatwoot if not already created
     let inboxId = mapping.chatwootInboxId;
     if (inboxId === 'pending' || !inboxId) {
       try {
-        // Use custom inbox name if provided, otherwise use mapping name with phone number
-        const inboxName = mapping.chatwootInboxName || `Quepasa - ${mapping.name} (${mapping.phoneNumber})`;
+        const inboxName = mapping.chatwootInboxName || `Quepasa - ${mapping.name} ${mapping.phoneNumber ? `(${mapping.phoneNumber})` : ''}`;
         const webhookUrl = `${systemBaseUrl}/api/webhooks/chatwoot/${mapping.quepasaToken}`;
 
         const inbox = await chatwootClient.createInbox(chatwootConfig, inboxName, webhookUrl);
         inboxId = inbox.id.toString();
 
-        logger.info({ mappingId: id, inboxId, inboxName, customName: !!mapping.chatwootInboxName }, 'Created Chatwoot API inbox');
+        logger.info({ mappingId: id, inboxId, inboxName }, 'Created Chatwoot API inbox');
       } catch (error: any) {
         logger.error({ error: error.message, mappingId: id }, 'Failed to create Chatwoot inbox');
         return res.status(500).json({ error: `Failed to create Chatwoot inbox: ${error.message}` });
       }
     }
 
-    // Configure webhook in Quepasa
-    try {
-      await quepasaClient.initialize();
+    // Configure webhook in Quepasa (only if phone number is available, else handled later)
+    if (mapping.phoneNumber) {
+      try {
+        await quepasaClient.initialize();
 
-      const webhookUrl = `${systemBaseUrl}/api/webhooks/quepasa/${mapping.quepasaToken}`;
-      const webhookConfig = {
-        url: webhookUrl,
-        forwardinternal: true,
-        trackid: mapping.phoneNumber, // Use phone number for tracking
-        extra: {
-          mappingId: id,
-          phoneNumber: mapping.phoneNumber,
-          name: mapping.name,
-        },
-      };
+        const webhookUrl = `${systemBaseUrl}/api/webhooks/quepasa/${mapping.quepasaToken}`;
+        const webhookConfig = {
+          url: webhookUrl,
+          forwardinternal: true,
+          trackid: mapping.phoneNumber,
+          extra: {
+            mappingId: id,
+            phoneNumber: mapping.phoneNumber,
+            name: mapping.name,
+          },
+        };
 
-      await quepasaClient.configureWebhook(mapping.quepasaToken, webhookConfig);
+        await quepasaClient.configureWebhook(mapping.quepasaToken, webhookConfig);
 
-      logger.info({ mappingId: id, webhookUrl, trackid: mapping.phoneNumber }, 'Configured Quepasa webhook');
-    } catch (error: any) {
-      logger.error({ error: error.message, mappingId: id }, 'Failed to configure Quepasa webhook');
-      return res.status(500).json({ error: `Failed to configure Quepasa webhook: ${error.message}` });
+        logger.info({ mappingId: id, webhookUrl, trackid: mapping.phoneNumber }, 'Configured Quepasa webhook');
+      } catch (error: any) {
+        logger.error({ error: error.message, mappingId: id }, 'Failed to configure Quepasa webhook');
+        // Let it continue so it saves the inbox ID
+      }
+    } else {
+      logger.info({ mappingId: id }, 'Skipped configuring Quepasa webhook; phone number not yet available');
     }
 
     // Update mapping with inbox ID and activate

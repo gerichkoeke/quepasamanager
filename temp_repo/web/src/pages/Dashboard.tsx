@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Activity, MessageSquare, Link2, TrendingUp, ArrowUp, ArrowDown } from 'lucide-react';
+import { Activity, MessageSquare, Link2, TrendingUp, ArrowUp, ArrowDown, Share2 } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { Card } from '../components/Card';
 import { api } from '../services/api';
@@ -40,6 +40,12 @@ export const Dashboard: React.FC = () => {
       color: 'bg-green-500',
     },
     {
+      name: 'RabbitMQ',
+      value: metrics?.rabbitmq_connected ? 'Conectado' : 'Desconectado',
+      icon: Share2,
+      color: metrics?.rabbitmq_connected ? 'bg-green-500' : 'bg-red-500',
+    },
+    {
       name: 'Mensagens Processadas',
       value: metrics?.messages_processed || 0,
       icon: TrendingUp,
@@ -77,7 +83,7 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
