@@ -97,7 +97,7 @@ router.get('/quepasa/status/:mappingId', authMiddleware, async (req, res, next) 
               select: { name: true },
             });
 
-            const systemBaseUrl = process.env.SYSTEM_BASE_URL || 'https://astrahub.seudominio.com.br';
+            const systemBaseUrl = process.env.SYSTEM_BASE_URL || 'https://quepasahub.armazem.cloud';
             const webhookUrl = `${systemBaseUrl}/api/webhooks/quepasa/${mapping.quepasaToken}`;
 
             const webhookConfig = {
@@ -240,7 +240,7 @@ router.post('/quepasa/sync', authMiddleware, async (req, res, next) => {
           if (isBotReady && !existing.active) {
             // Configure webhook before marking as active
             try {
-              const systemBaseUrl = process.env.SYSTEM_BASE_URL || 'https://astrahub.seudominio.com.br';
+              const systemBaseUrl = process.env.SYSTEM_BASE_URL || 'https://quepasahub.armazem.cloud';
               const webhookUrl = `${systemBaseUrl}/api/webhooks/quepasa/${botToken}`;
 
               const webhookConfig = {
@@ -291,7 +291,7 @@ router.post('/quepasa/sync', authMiddleware, async (req, res, next) => {
           
           if (isReady) {
             try {
-              const systemBaseUrl = process.env.SYSTEM_BASE_URL || 'https://astrahub.seudominio.com.br';
+              const systemBaseUrl = process.env.SYSTEM_BASE_URL || 'https://quepasahub.armazem.cloud';
               const webhookUrl = `${systemBaseUrl}/api/webhooks/quepasa/${botToken}`;
 
               const webhookConfig = {

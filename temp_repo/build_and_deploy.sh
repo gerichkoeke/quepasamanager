@@ -8,4 +8,8 @@ echo "==> Construindo a imagem do WEB..."
 docker build -t integrador-web:latest ./web
 
 echo "==> Imagens construídas com sucesso!"
-echo "Para aplicar as alterações, vá até o Portainer e reinicie os containers (ou atualize o serviço para forçar ele a pegar a nova imagem)."
+echo "==> Atualizando serviços no Docker Swarm..."
+docker service update --force quepasahub_quepasahub_api || echo "Aviso: Nao foi possivel atualizar quepasahub_quepasahub_api"
+docker service update --force quepasahub_quepasahub_web || echo "Aviso: Nao foi possivel atualizar quepasahub_quepasahub_web"
+
+echo "Deploy concluído com sucesso!"

@@ -41,11 +41,11 @@ services:
       ADMIN_TOKEN: astrahub-admin-token-2024-secure-key
 
       # CORS
-      CORS_ORIGIN: https://astrahub.seudominio.com.br
+      CORS_ORIGIN: https://quepasahub.armazem.cloud
 
       # System Configuration
-      SYSTEM_BASE_URL: https://astrahub.seudominio.com.br
-      PUBLIC_URL: https://astrahub.seudominio.com.br
+      SYSTEM_BASE_URL: https://quepasahub.armazem.cloud
+      PUBLIC_URL: https://quepasahub.armazem.cloud
 
       # Logging
       LOG_LEVEL: ${LOG_LEVEL:-info}
@@ -77,7 +77,7 @@ services:
         - "traefik.enable=true"
 
         # HTTP Router
-        - "traefik.http.routers.astrahub-api.rule=Host(`astrahub.seudominio.com.br`) && PathPrefix(`/api`)"
+        - "traefik.http.routers.astrahub-api.rule=Host(`quepasahub.armazem.cloud`) && PathPrefix(`/api`)"
         - "traefik.http.routers.astrahub-api.entrypoints=websecure"
         - "traefik.http.routers.astrahub-api.tls=true"
         - "traefik.http.routers.astrahub-api.tls.certresolver=letsencryptresolver"
@@ -115,7 +115,7 @@ services:
         - "traefik.enable=true"
 
         # HTTP Router
-        - "traefik.http.routers.astrahub-web.rule=Host(`astrahub.seudominio.com.br`)"
+        - "traefik.http.routers.astrahub-web.rule=Host(`quepasahub.armazem.cloud`)"
         - "traefik.http.routers.astrahub-web.entrypoints=websecure"
         - "traefik.http.routers.astrahub-web.tls=true"
         - "traefik.http.routers.astrahub-web.tls.certresolver=letsencryptresolver"
