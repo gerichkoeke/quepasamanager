@@ -647,6 +647,17 @@ router.post('/quepasa-mappings/with-chatwoot', authMiddleware, async (req, res, 
 
       logger.info({ mappingId: mapping.id, inboxId, inboxName }, 'Created Chatwoot inbox');
 
+      // Add all agents to the inbox so they can see it in UI
+      await chatwootClient.addAllAgentsToInbox(chatwootConfig, inbox.id);
+
+      // Automatically create an account-level webhook
+      await chatwootClient.createWebhook(chatwootConfig, webhookUrl, [
+        'conversation_status_changed', 
+        'message_created', 
+        'conversation_updated', 
+        'contact_created'
+      ]);
+
       // Update config with real inbox ID
       chatwootConfig.inboxId = inboxId;
 
