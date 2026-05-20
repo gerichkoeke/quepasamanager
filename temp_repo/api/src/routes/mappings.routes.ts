@@ -273,7 +273,7 @@ router.post('/mappings', authMiddleware, async (req, res, next) => {
       },
     });
 
-    const webhookUrl = `${process.env.PUBLIC_URL || 'https://astrahub.seudominio.com.br'}/api/webhooks/quepasa/${sessionId}/${webhookToken}`;
+    const webhookUrl = `${process.env.PUBLIC_URL || 'https://quepasamanager.seudominio.com.br'}/api/webhooks/quepasa/${sessionId}/${webhookToken}`;
 
     logger.info({ sessionId, mappingId: mapping.id }, 'Session mapping created');
 

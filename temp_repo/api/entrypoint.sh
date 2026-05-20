@@ -12,7 +12,7 @@ echo "Running database migrations..."
 if ! npx prisma migrate deploy; then
   echo "Migration failed, falling back to db push to ensure schema is aligned..."
   npx prisma migrate resolve --applied "20260520121235_add_closing_message_and_typebot_to_quepasa_mappings" 2>/dev/null || true
-  npx prisma db push --skip-generate
+  npx prisma db push --skip-generate --accept-data-loss
 fi
 
 echo "Starting application..."

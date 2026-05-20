@@ -24,7 +24,7 @@ export const Login: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
         <div className="flex justify-center mb-8">
-          <img src="/logoastra.png" alt="AstraHub" className="h-12" />
+          <img src="/logoastra.png" alt="QuepasaManager" className="h-12" />
         </div>
 
         <p className="text-center text-gray-600 mb-8">
