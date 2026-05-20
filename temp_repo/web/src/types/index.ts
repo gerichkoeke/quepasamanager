@@ -103,6 +103,7 @@ export interface QuepasaMapping {
   phoneNumber?: string; // Optional in response (might not be set yet)
   name: string;
   chatwootBaseUrl: string;
+  chatwootApiToken?: string;
   chatwootAccountId: string;
   chatwootInboxId: string;
   chatwootInboxName?: string; // Custom name for Chatwoot inbox

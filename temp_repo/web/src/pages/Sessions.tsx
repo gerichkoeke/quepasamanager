@@ -528,8 +528,8 @@ export const Sessions: React.FC = () => {
     if (!chatwootForm.chatwootAccountId) {
       return toast.error('O ID da conta (Account ID) do Chatwoot é obrigatório.');
     }
-    const needsToken = editingQuepasa.chatwootApiToken === 'pending' || !editingQuepasa.chatwootApiToken;
-    if (needsToken && !chatwootForm.chatwootApiToken) {
+    const hasChatwootConfigured = editingQuepasa.chatwootBaseUrl !== 'pending' && Boolean(editingQuepasa.chatwootBaseUrl);
+    if (!hasChatwootConfigured && !chatwootForm.chatwootApiToken) {
       return toast.error('O Token de API do Chatwoot é obrigatório na primeira configuração.');
     }
 
