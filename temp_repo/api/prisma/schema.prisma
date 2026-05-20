@@ -1,4 +1,5 @@
 // Prisma schema for Integrador Waha-Typebot
+// Cache-bust: 2026-05-20 13:40
 
 generator client {
   provider = "prisma-client-js"

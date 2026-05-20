@@ -20,9 +20,15 @@ router.get('/metrics', authMiddleware, async (req, res, next) => {
     });
 
     // Count active mappings
-    const activeMappings = await prisma.sessionMapping.count({
+    const activeWahaMappings = await prisma.sessionMapping.count({
       where: { active: true },
     });
+
+    const activeQuepasaMappings = await prisma.quepasaMapping.count({
+      where: { active: true },
+    });
+
+    const totalActiveMappings = activeWahaMappings + activeQuepasaMappings;
 
     // Count unique sessions
     const uniqueSessions = await prisma.eventLog.findMany({
@@ -66,7 +72,7 @@ router.get('/metrics', authMiddleware, async (req, res, next) => {
 
     res.json({
       total_sessions: uniqueSessions.length,
-      active_integrations: activeMappings,
+      active_integrations: totalActiveMappings,
       messages_processed: totalEvents,
       recent_events_count: recentEvents,
       recent_activity: recentActivity.map((event) => ({

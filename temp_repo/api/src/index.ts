@@ -6,6 +6,7 @@ import { config } from './config';
 import { logger } from './utils/logger';
 import { connectDatabase, disconnectDatabase } from './db/client';
 import { errorMiddleware } from './middlewares/error.middleware';
+import { rabbitMQService } from './services/rabbitmq.service';
 
 // Import routes
 import healthRoutes from './routes/health.routes';
@@ -77,6 +78,11 @@ process.on('SIGINT', shutdown);
 async function start() {
   try {
     await connectDatabase();
+
+    if (process.env.RABBITMQ_ENABLED === 'true' && process.env.RABBITMQ_URL) {
+      await rabbitMQService.connect(process.env.RABBITMQ_URL);
+      logger.info('RabbitMQ integration initialized');
+    }
 
     app.listen(config.port, () => {
       logger.info(

@@ -17,6 +17,7 @@ import {
   X,
   MessageCircle,
   Power,
+  Bot,
 } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { Card } from '../components/Card';
@@ -78,6 +79,14 @@ export const Sessions: React.FC = () => {
     sendQRToChatwoot: false,
   });
 
+  const [showTypebotConfigModal, setShowTypebotConfigModal] = useState(false);
+  const [typebotForm, setTypebotForm] = useState({
+    useTypebot: false,
+    typebotFlowId: '',
+    typebotHost: '',
+    typebotApiKey: '',
+  });
+
   const [chatwootForm, setChatwootForm] = useState({
     name: '',
     chatwootBaseUrl: '',
@@ -86,10 +95,6 @@ export const Sessions: React.FC = () => {
     chatwootInboxName: '',
     closingMessage: '',
     returnWebhookUrl: '',
-    useTypebot: false,
-    typebotFlowId: '',
-    typebotHost: '',
-    typebotApiKey: '',
     enableGroups: false,
     reopenClosedTickets: false,
     showAgentName: false,
@@ -531,10 +536,6 @@ export const Sessions: React.FC = () => {
         chatwootInboxName: chatwootForm.chatwootInboxName || undefined,
         closingMessage: chatwootForm.closingMessage || undefined,
         returnWebhookUrl: chatwootForm.returnWebhookUrl || undefined,
-        useTypebot: chatwootForm.useTypebot,
-        typebotFlowId: chatwootForm.typebotFlowId || undefined,
-        typebotHost: chatwootForm.typebotHost || undefined,
-        typebotApiKey: chatwootForm.typebotApiKey || undefined,
         enableGroups: chatwootForm.enableGroups,
         reopenClosedTickets: chatwootForm.reopenClosedTickets,
         showAgentName: chatwootForm.showAgentName,
@@ -583,6 +584,53 @@ export const Sessions: React.FC = () => {
     }
   };
 
+  const resetTypebotForm = () => {
+    setEditingQuepasa(null);
+    setTypebotForm({
+      useTypebot: false,
+      typebotFlowId: '',
+      typebotHost: '',
+      typebotApiKey: '',
+    });
+  };
+
+  const handleOpenTypebotConfig = (mapping: QuepasaMapping) => {
+    setEditingQuepasa(mapping);
+    setTypebotForm({
+      useTypebot: mapping.useTypebot || false,
+      typebotFlowId: mapping.typebotFlowId || '',
+      typebotHost: mapping.typebotHost || '',
+      typebotApiKey: mapping.typebotApiKey || '',
+    });
+    setShowTypebotConfigModal(true);
+  };
+
+  const handleConfigureTypebot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingQuepasa) return;
+
+    try {
+      setIsSubmitting(true);
+      const updateData: Partial<CreateQuepasaMappingRequest> = {
+        useTypebot: typebotForm.useTypebot,
+        typebotFlowId: typebotForm.typebotFlowId || undefined,
+        typebotHost: typebotForm.typebotHost || undefined,
+        typebotApiKey: typebotForm.typebotApiKey || undefined,
+      };
+      
+      await api.updateQuepasaMapping(editingQuepasa.id, updateData);
+      
+      toast.success('Configuração Typebot salva com sucesso!');
+      setShowTypebotConfigModal(false);
+      resetTypebotForm();
+      loadData();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Falha ao salvar configuração do Typebot');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleOpenChatwootConfig = (mapping: QuepasaMapping) => {
     setEditingQuepasa(mapping);
     // If chatwoot is configured (baseUrl is not 'pending'), assume token exists
@@ -595,10 +643,6 @@ export const Sessions: React.FC = () => {
       chatwootInboxName: mapping.chatwootInboxName || '',
       closingMessage: mapping.closingMessage || '',
       returnWebhookUrl: mapping.returnWebhookUrl || '',
-      useTypebot: mapping.useTypebot || false,
-      typebotFlowId: mapping.typebotFlowId || '',
-      typebotHost: mapping.typebotHost || '',
-      typebotApiKey: mapping.typebotApiKey || '',
       enableGroups: mapping.enableGroups || false,
       reopenClosedTickets: mapping.reopenClosedTickets || false,
       showAgentName: mapping.showAgentName || false,
@@ -847,6 +891,17 @@ export const Sessions: React.FC = () => {
                 </button>
               )}
 
+              <button
+                onClick={() => handleOpenTypebotConfig(mapping)}
+                className={`p-1 rounded transition-colors ${
+                  mapping.useTypebot
+                    ? 'text-blue-600 hover:bg-blue-50'
+                    : 'text-gray-400 hover:bg-gray-50'
+                }`}
+                title="Configurar Typebot"
+              >
+                <Bot className="w-4 h-4" />
+              </button>
               <button
                 onClick={() => handleOpenChatwootConfig(mapping)}
                 className={`p-1 rounded transition-colors ${
@@ -1353,67 +1408,7 @@ export const Sessions: React.FC = () => {
               <p className="mt-1 text-xs text-gray-500">URL chamada ao finalizar ticket (Envia dados do contato e conversa)</p>
             </div>
 
-            <div className="mt-4 border-t pt-4">
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="font-medium text-gray-800">Integração Typebot</h4>
-                <button
-                  type="button"
-                  onClick={() => setChatwootForm({ ...chatwootForm, useTypebot: !chatwootForm.useTypebot })}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                    chatwootForm.useTypebot ? 'bg-primary' : 'bg-gray-300'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      chatwootForm.useTypebot ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
-              </div>
 
-              {chatwootForm.useTypebot && (
-                <div className="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <p className="text-sm text-gray-600 mb-2">
-                    Quando ativo, novos contatos passarão pelo Typebot antes de serem transferidos para o Chatwoot.
-                  </p>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      URL do Typebot
-                    </label>
-                    <input
-                      type="url"
-                      value={chatwootForm.typebotHost}
-                      onChange={(e) => setChatwootForm({ ...chatwootForm, typebotHost: e.target.value })}
-                      placeholder="https://typebot.exemplo.com"
-                      className="w-full px-3 py-2 border rounded-lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nome do Fluxo (Flow ID)
-                    </label>
-                    <input
-                      type="text"
-                      value={chatwootForm.typebotFlowId}
-                      onChange={(e) => setChatwootForm({ ...chatwootForm, typebotFlowId: e.target.value })}
-                      placeholder="meu-fluxo-v1"
-                      className="w-full px-3 py-2 border rounded-lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      API Key (Opcional)
-                    </label>
-                    <input
-                      type="password"
-                      value={chatwootForm.typebotApiKey}
-                      onChange={(e) => setChatwootForm({ ...chatwootForm, typebotApiKey: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
 
             <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
               <div className="flex-1">
@@ -1491,6 +1486,89 @@ export const Sessions: React.FC = () => {
               <Button type="button" variant="secondary" onClick={() => {
                 setShowChatwootConfigModal(false);
                 resetChatwootForm();
+              }}>
+                Cancelar
+              </Button>
+              <Button type="submit" variant="primary" isLoading={isSubmitting}>
+                Salvar Configuração
+              </Button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Typebot Config Modal */}
+        <Modal
+          isOpen={showTypebotConfigModal}
+          onClose={() => {
+            setShowTypebotConfigModal(false);
+            resetTypebotForm();
+          }}
+          title="Configurar Integração Typebot"
+        >
+           <form onSubmit={handleConfigureTypebot} className="space-y-4">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-medium text-gray-800">Ativar Integração Typebot</h4>
+                <button
+                  type="button"
+                  onClick={() => setTypebotForm({ ...typebotForm, useTypebot: !typebotForm.useTypebot })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                    typebotForm.useTypebot ? 'bg-primary' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      typebotForm.useTypebot ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {typebotForm.useTypebot && (
+                <div className="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200 mt-4">
+                  <p className="text-sm text-gray-600 mb-4">
+                    Quando ativo, os recebimentos dessa conexão vão passar pelo Typebot antes de serem enviados ao Chatwoot.
+                  </p>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      URL do Typebot
+                    </label>
+                    <input
+                      type="url"
+                      value={typebotForm.typebotHost}
+                      onChange={(e) => setTypebotForm({ ...typebotForm, typebotHost: e.target.value })}
+                      placeholder="https://typebot.exemplo.com"
+                      className="w-full px-3 py-2 border rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Nome do Fluxo (Flow ID)
+                    </label>
+                    <input
+                      type="text"
+                      value={typebotForm.typebotFlowId}
+                      onChange={(e) => setTypebotForm({ ...typebotForm, typebotFlowId: e.target.value })}
+                      placeholder="meu-fluxo-v1"
+                      className="w-full px-3 py-2 border rounded-lg"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      API Key (Opcional)
+                    </label>
+                    <input
+                      type="password"
+                      value={typebotForm.typebotApiKey}
+                      onChange={(e) => setTypebotForm({ ...typebotForm, typebotApiKey: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-lg"
+                    />
+                  </div>
+                </div>
+              )}
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="secondary" onClick={() => {
+                setShowTypebotConfigModal(false);
+                resetTypebotForm();
               }}>
                 Cancelar
               </Button>
