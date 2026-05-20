@@ -814,6 +814,12 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
       });
       
       if (quepasaMapping) {
+        const payloadInboxId = payload.inbox?.id || payload.conversation?.inbox_id;
+        if (payloadInboxId && payloadInboxId.toString() !== quepasaMapping.chatwootInboxId) {
+          logger.debug({ payloadInboxId, mappingInboxId: quepasaMapping.chatwootInboxId }, 'Ignoring chatwoot webhook event from different inbox');
+          return res.json({ success: true, message: 'Event ignored - different inbox' });
+        }
+
         let phoneNumber = payload.conversation?.meta?.sender?.phone_number || payload.conversation?.meta?.sender?.identifier;
         if (phoneNumber) {
           let chatId = phoneNumber.includes('@g.us') ? phoneNumber : phoneNumber.replace(/@.*$/, '');
@@ -931,6 +937,13 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
     if (!quepasaMapping) {
       logger.warn({ token }, 'No active Quepasa mapping found for token');
       return res.status(404).json({ error: 'Quepasa mapping not found for this token' });
+    }
+
+    // Since Account Webhooks can send events for ALL inboxes, ensure we only process messages for THIS mapping's inbox
+    const payloadInboxId = payload.inbox?.id || payload.conversation?.inbox_id;
+    if (payloadInboxId && payloadInboxId.toString() !== quepasaMapping.chatwootInboxId) {
+      logger.debug({ payloadInboxId, mappingInboxId: quepasaMapping.chatwootInboxId }, 'Ignoring message_created event from different inbox');
+      return res.json({ success: true, message: 'Event ignored - different inbox' });
     }
 
     // If showAgentName is enabled, prepend agent name to message content

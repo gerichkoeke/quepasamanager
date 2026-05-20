@@ -390,6 +390,67 @@ class ChatwootClient {
   }
 
   /**
+   * Create an account webhook in Chatwoot
+   */
+  async createWebhook(config: ChatwootConfig, webhookUrl: string, subscriptions: string[]): Promise<any> {
+    const client = this.createClient(config);
+
+    try {
+      // First, check if webhook already exists
+      const existingWebhooks = await client.get(`/api/v1/accounts/${config.accountId}/webhooks`);
+      const webhooks = existingWebhooks.data.payload || [];
+      const existing = webhooks.find((w: any) => w.url === webhookUrl);
+
+      if (existing) {
+        logger.info({ webhookId: existing.id, webhookUrl }, 'Chatwoot webhook already exists');
+        return existing;
+      }
+
+      // Create new webhook
+      const response = await client.post(`/api/v1/accounts/${config.accountId}/webhooks`, {
+        webhook: {
+          url: webhookUrl,
+          subscriptions: subscriptions
+        }
+      });
+
+      logger.info({ webhookId: response.data.payload?.id, webhookUrl }, 'Created new Chatwoot webhook');
+      return response.data;
+    } catch (error: any) {
+      logger.error({ error: error.message, webhookUrl }, 'Failed to create Chatwoot webhook');
+      throw new Error(`Failed to create webhook: ${error.message}`);
+    }
+  }
+
+  /**
+   * Add all available agents to an inbox
+   */
+  async addAllAgentsToInbox(config: ChatwootConfig, inboxId: number | string): Promise<void> {
+    const client = this.createClient(config);
+
+    try {
+      // Fetch all agents
+      const agentsResponse = await client.get(`/api/v1/accounts/${config.accountId}/agents`);
+      const agents = agentsResponse.data || [];
+      const agentIds = agents.map((agent: any) => agent.id);
+
+      if (agentIds.length > 0) {
+        // Add agents to inbox
+        await client.post(`/api/v1/accounts/${config.accountId}/inbox_members`, {
+          inbox_id: inboxId,
+          user_ids: agentIds
+        });
+        logger.info({ inboxId, agentCount: agentIds.length }, 'Added agents to Chatwoot inbox');
+      } else {
+        logger.warn({ inboxId }, 'No agents found to add to Chatwoot inbox');
+      }
+    } catch (error: any) {
+      logger.error({ error: error.message, inboxId }, 'Failed to add agents to Chatwoot inbox');
+      // Non-fatal, just log it
+    }
+  }
+
+  /**
    * Update contact with custom attributes
    */
   async updateContactAttributes(config: ChatwootConfig, contactId: number, customAttributes: Record<string, any>): Promise<ChatwootContact> {

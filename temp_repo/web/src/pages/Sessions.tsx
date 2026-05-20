@@ -95,6 +95,7 @@ export const Sessions: React.FC = () => {
     chatwootInboxName: '',
     closingMessage: '',
     returnWebhookUrl: '',
+    active: true,
     enableGroups: false,
     reopenClosedTickets: false,
     showAgentName: false,
@@ -532,6 +533,7 @@ export const Sessions: React.FC = () => {
         chatwootInboxName: chatwootForm.chatwootInboxName || undefined,
         closingMessage: chatwootForm.closingMessage || undefined,
         returnWebhookUrl: chatwootForm.returnWebhookUrl || undefined,
+        active: chatwootForm.active,
         enableGroups: chatwootForm.enableGroups,
         reopenClosedTickets: chatwootForm.reopenClosedTickets,
         showAgentName: chatwootForm.showAgentName,
@@ -639,6 +641,7 @@ export const Sessions: React.FC = () => {
       chatwootInboxName: mapping.chatwootInboxName || '',
       closingMessage: mapping.closingMessage || '',
       returnWebhookUrl: mapping.returnWebhookUrl || '',
+      active: mapping.active !== false,
       enableGroups: mapping.enableGroups || false,
       reopenClosedTickets: mapping.reopenClosedTickets || false,
       showAgentName: mapping.showAgentName || false,
@@ -1334,21 +1337,31 @@ export const Sessions: React.FC = () => {
                 className="w-full px-3 py-2 border rounded-lg resize-none h-20"
               />
               <p className="mt-1 text-xs text-gray-500">Mensagem enviada automaticamente ao finalizar o ticket</p>
-
-              <label className="block text-sm font-medium text-gray-700 mb-1 mt-3">
-                Webhook de Retorno (opcional)
-              </label>
-              <input
-                type="url"
-                value={chatwootForm.returnWebhookUrl}
-                onChange={(e) => setChatwootForm({ ...chatwootForm, returnWebhookUrl: e.target.value })}
-                placeholder="https://seu-sistema.com/webhook"
-                className="w-full px-3 py-2 border rounded-lg"
-              />
-              <p className="mt-1 text-xs text-gray-500">URL chamada ao finalizar ticket (Envia dados do contato e conversa)</p>
             </div>
 
-
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-900 mb-1">
+                  Integração Chatwoot Ativa
+                </label>
+                <p className="text-xs text-gray-600">
+                  Habilita ou desabilita o envio e recebimento de mensagens para o Chatwoot
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setChatwootForm({ ...chatwootForm, active: !chatwootForm.active })}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  chatwootForm.active !== false ? 'bg-blue-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    chatwootForm.active !== false ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
 
             <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg">
               <div className="flex-1">
@@ -1430,7 +1443,7 @@ export const Sessions: React.FC = () => {
                 Cancelar
               </Button>
               <Button type="submit" variant="primary" isLoading={isSubmitting}>
-                Salvar Configuração
+                Criar / Sincronizar Caixa
               </Button>
             </div>
           </form>

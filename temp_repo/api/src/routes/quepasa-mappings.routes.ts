@@ -488,6 +488,18 @@ router.post('/quepasa-mappings/:id/setup-integration', authMiddleware, async (re
         inboxId = inbox.id.toString();
 
         logger.info({ mappingId: id, inboxId, inboxName }, 'Created Chatwoot API inbox');
+        
+        // Add all agents to the inbox so they can see it in UI
+        await chatwootClient.addAllAgentsToInbox(chatwootConfig, inbox.id);
+
+        // Also automatically create an account-level webhook if user selected that options
+        await chatwootClient.createWebhook(chatwootConfig, webhookUrl, [
+          'conversation_status_changed', 
+          'message_created', 
+          'conversation_updated', 
+          'contact_created'
+        ]);
+
       } catch (error: any) {
         logger.error({ error: error.message, mappingId: id }, 'Failed to create Chatwoot inbox');
         return res.status(500).json({ error: `Failed to create Chatwoot inbox: ${error.message}` });
