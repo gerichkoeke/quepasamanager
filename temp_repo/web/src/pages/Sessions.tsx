@@ -522,6 +522,17 @@ export const Sessions: React.FC = () => {
     e.preventDefault();
     if (!editingQuepasa) return;
 
+    if (!chatwootForm.chatwootBaseUrl) {
+      return toast.error('A URL do Chatwoot é obrigatória.');
+    }
+    if (!chatwootForm.chatwootAccountId) {
+      return toast.error('O ID da conta (Account ID) do Chatwoot é obrigatório.');
+    }
+    const needsToken = editingQuepasa.chatwootApiToken === 'pending' || !editingQuepasa.chatwootApiToken;
+    if (needsToken && !chatwootForm.chatwootApiToken) {
+      return toast.error('O Token de API do Chatwoot é obrigatório na primeira configuração.');
+    }
+
     try {
       setIsSubmitting(true);
 
@@ -635,9 +646,9 @@ export const Sessions: React.FC = () => {
     const hasChatwootConfigured = mapping.chatwootBaseUrl !== 'pending';
     setChatwootForm({
       name: mapping.name || '',
-      chatwootBaseUrl: mapping.chatwootBaseUrl !== 'pending' ? mapping.chatwootBaseUrl : '',
+      chatwootBaseUrl: mapping.chatwootBaseUrl === 'pending' ? '' : (mapping.chatwootBaseUrl || ''),
       chatwootApiToken: hasChatwootConfigured ? '••••••••••••••' : '', // Show dots if token exists
-      chatwootAccountId: mapping.chatwootAccountId !== 'pending' ? mapping.chatwootAccountId : '',
+      chatwootAccountId: mapping.chatwootAccountId === 'pending' ? '' : (mapping.chatwootAccountId || ''),
       chatwootInboxName: mapping.chatwootInboxName || '',
       closingMessage: mapping.closingMessage || '',
       returnWebhookUrl: mapping.returnWebhookUrl || '',
@@ -1246,7 +1257,6 @@ export const Sessions: React.FC = () => {
                 <label className="text-sm font-medium text-primary">Nome da Conexão Quepasa</label>
                 <input
                   type="text"
-                  required
                   value={chatwootForm.name}
                   onChange={(e) => setChatwootForm({ ...chatwootForm, name: e.target.value })}
                   placeholder="Nome da Conexão"
@@ -1261,7 +1271,6 @@ export const Sessions: React.FC = () => {
               </label>
               <input
                 type="url"
-                required
                 value={chatwootForm.chatwootBaseUrl}
                 onChange={(e) => setChatwootForm({ ...chatwootForm, chatwootBaseUrl: e.target.value })}
                 placeholder="https://app.chatwoot.com"
@@ -1276,7 +1285,6 @@ export const Sessions: React.FC = () => {
               <div className="relative">
                 <input
                   type={showChatwootApiToken ? "text" : "password"}
-                  required={chatwootForm.chatwootBaseUrl === ''}
                   value={chatwootForm.chatwootApiToken}
                   onChange={(e) => setChatwootForm({ ...chatwootForm, chatwootApiToken: e.target.value })}
                   placeholder="Deixe vazio para manter o token atual"
@@ -1299,7 +1307,6 @@ export const Sessions: React.FC = () => {
               </label>
               <input
                 type="text"
-                required
                 value={chatwootForm.chatwootAccountId}
                 onChange={(e) => setChatwootForm({ ...chatwootForm, chatwootAccountId: e.target.value })}
                 placeholder="1"
