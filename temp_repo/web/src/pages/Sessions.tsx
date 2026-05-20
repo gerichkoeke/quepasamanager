@@ -476,10 +476,6 @@ export const Sessions: React.FC = () => {
             chatwootInboxName: chatwootForm.chatwootInboxName || undefined,
             closingMessage: chatwootForm.closingMessage || undefined,
             returnWebhookUrl: chatwootForm.returnWebhookUrl || undefined,
-            useTypebot: chatwootForm.useTypebot,
-            typebotFlowId: chatwootForm.typebotFlowId || undefined,
-            typebotHost: chatwootForm.typebotHost || undefined,
-            typebotApiKey: chatwootForm.typebotApiKey || undefined,
             enableGroups: chatwootForm.enableGroups,
             sendQRToChatwoot: true,
           };
@@ -668,10 +664,6 @@ export const Sessions: React.FC = () => {
       chatwootInboxName: '',
       closingMessage: '',
       returnWebhookUrl: '',
-      useTypebot: false,
-      typebotFlowId: '',
-      typebotHost: '',
-      typebotApiKey: '',
       enableGroups: false,
       reopenClosedTickets: false,
       showAgentName: false,
@@ -1210,59 +1202,7 @@ export const Sessions: React.FC = () => {
                         />
                       </div>
 
-                      <div className="mt-4 border-t pt-4">
-                        <h4 className="font-medium text-gray-800 mb-2">Integração Typebot</h4>
-                        
-                        <label className="flex items-center space-x-2 mt-2">
-                          <input
-                            type="checkbox"
-                            checked={chatwootForm.useTypebot}
-                            onChange={(e) => setChatwootForm({ ...chatwootForm, useTypebot: e.target.checked })}
-                            className="rounded border-gray-300 text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm text-gray-700">Habilitar Typebot (antes de enviar para Chatwoot)</span>
-                        </label>
 
-                        {chatwootForm.useTypebot && (
-                          <div className="pl-4 mt-3 space-y-3 border-l-2 border-gray-200">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                URL do Typebot
-                              </label>
-                              <input
-                                type="url"
-                                value={chatwootForm.typebotHost}
-                                onChange={(e) => setChatwootForm({ ...chatwootForm, typebotHost: e.target.value })}
-                                placeholder="https://typebot.exemplo.com"
-                                className="w-full px-3 py-2 border rounded-lg"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Nome do Fluxo (Flow ID)
-                              </label>
-                              <input
-                                type="text"
-                                value={chatwootForm.typebotFlowId}
-                                onChange={(e) => setChatwootForm({ ...chatwootForm, typebotFlowId: e.target.value })}
-                                placeholder="meu-fluxo-v1"
-                                className="w-full px-3 py-2 border rounded-lg"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                API Key (Opcional)
-                              </label>
-                              <input
-                                type="password"
-                                value={chatwootForm.typebotApiKey}
-                                onChange={(e) => setChatwootForm({ ...chatwootForm, typebotApiKey: e.target.value })}
-                                className="w-full px-3 py-2 border rounded-lg"
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
 
                   </>
                 )}
