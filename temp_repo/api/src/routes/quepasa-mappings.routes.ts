@@ -95,7 +95,7 @@ router.get('/quepasa-mappings', authMiddleware, async (req, res, next) => {
         // This is idempotent and will fix broken connections
         if (mapping.phoneNumber && mapping.chatwootInboxId && mapping.chatwootInboxId !== 'pending') {
           try {
-            const systemBaseUrl = process.env.SYSTEM_BASE_URL || 'https://quepasahub.armazem.cloud';
+            const systemBaseUrl = process.env.SYSTEM_BASE_URL || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.get('host')}`;
             const webhookUrl = `${systemBaseUrl}/api/webhooks/quepasa/${mapping.quepasaToken}`;
 
             const webhookConfig = {
@@ -467,7 +467,7 @@ router.post('/quepasa-mappings/:id/setup-integration', authMiddleware, async (re
     // The phone number will be populated later and Webhook will be configured upon connection.
 
     // Get system base URL from environment
-    const systemBaseUrl = process.env.SYSTEM_BASE_URL || 'https://quepasahub.armazem.cloud';
+    const systemBaseUrl = process.env.SYSTEM_BASE_URL || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.get('host')}`;
 
     // Build Chatwoot config
     const chatwootConfig = {
@@ -631,7 +631,7 @@ router.post('/quepasa-mappings/with-chatwoot', authMiddleware, async (req, res, 
       logger.info({ mappingId: mapping.id }, 'Retrieved QR code from Quepasa');
 
       // Step 4: Create Chatwoot inbox
-      const systemBaseUrl = process.env.SYSTEM_BASE_URL || 'https://quepasahub.armazem.cloud';
+      const systemBaseUrl = process.env.SYSTEM_BASE_URL || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.get('host')}`;
       const inboxName = validated.chatwootInboxName || `Quepasa - ${validated.name}`;
       const webhookUrl = `${systemBaseUrl}/api/webhooks/chatwoot/${quepasaToken}`;
 

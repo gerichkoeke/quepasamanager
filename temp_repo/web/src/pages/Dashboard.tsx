@@ -125,7 +125,7 @@ export const Dashboard: React.FC = () => {
                         try {
                           const res = await api.toggleRabbitMQ();
                           if (res.success) {
-                            loadDashboardData();
+                            loadMetrics();
                           }
                         } catch (err: any) {
                           alert('Falha ao alternar RabbitMQ: ' + err.message);

@@ -97,7 +97,7 @@ router.get('/quepasa/status/:mappingId', authMiddleware, async (req, res, next) 
               select: { name: true },
             });
 
-            const systemBaseUrl = process.env.SYSTEM_BASE_URL || 'https://quepasahub.armazem.cloud';
+            const systemBaseUrl = process.env.SYSTEM_BASE_URL || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.get('host')}`;
             const webhookUrl = `${systemBaseUrl}/api/webhooks/quepasa/${mapping.quepasaToken}`;
 
             const webhookConfig = {
@@ -237,10 +237,10 @@ router.post('/quepasa/sync', authMiddleware, async (req, res, next) => {
 
           // Mark as active if connected AND configure webhook
           const isBotReady = (bot.status?.toLowerCase() === 'ready') || (bot.state?.toLowerCase() === 'ready');
-          if (isBotReady && !existing.active) {
-            // Configure webhook before marking as active
+          if (isBotReady) {
+            // Configure webhook
             try {
-              const systemBaseUrl = process.env.SYSTEM_BASE_URL || 'https://quepasahub.armazem.cloud';
+              const systemBaseUrl = process.env.SYSTEM_BASE_URL || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.get('host')}`;
               const webhookUrl = `${systemBaseUrl}/api/webhooks/quepasa/${botToken}`;
 
               const webhookConfig = {
@@ -291,7 +291,7 @@ router.post('/quepasa/sync', authMiddleware, async (req, res, next) => {
           
           if (isReady) {
             try {
-              const systemBaseUrl = process.env.SYSTEM_BASE_URL || 'https://quepasahub.armazem.cloud';
+              const systemBaseUrl = process.env.SYSTEM_BASE_URL || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.get('host')}`;
               const webhookUrl = `${systemBaseUrl}/api/webhooks/quepasa/${botToken}`;
 
               const webhookConfig = {

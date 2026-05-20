@@ -783,27 +783,39 @@ export const Sessions: React.FC = () => {
       accessor: (row: UnifiedConnection) => {
         if (row.type === 'waha') {
           return (
-            <span className="text-gray-900">
-              {row.activeMappingCount} / {row.mappingCount}
-            </span>
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="inline-flex items-center text-xs text-gray-700 mr-2">
+                {row.activeMappingCount} / {row.mappingCount} Mapeamentos
+              </span>
+            </div>
           );
         }
         if (row.type === 'quepasa') {
           const mapping = row.data as QuepasaMapping;
-          const isConfigured = mapping.chatwootBaseUrl !== 'pending';
+          const isConfiguredChatwoot = mapping.chatwootBaseUrl && mapping.chatwootBaseUrl !== 'pending';
+          const isConfiguredTypebot = mapping.useTypebot && mapping.typebotFlowId && mapping.typebotFlowId !== 'connection-only';
+          
           return (
-            <div className="flex items-center gap-2">
-              {isConfigured ? (
+            <div className="flex flex-wrap items-center gap-1">
+              {isConfiguredChatwoot ? (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   <MessageCircle className="w-3 h-3 mr-1" />
                   Chatwoot
                 </span>
               ) : (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                  <MessageCircle className="w-3 h-3 mr-1" />
-                  Pendente
-                </span>
+                mapping.chatwootBaseUrl === 'pending' || !mapping.chatwootBaseUrl ? (
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    <MessageCircle className="w-3 h-3 mr-1" />
+                    Chatwoot (Pendente)
+                  </span>
+                ) : null
               )}
+              {isConfiguredTypebot ? (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                  <Bot className="w-3 h-3 mr-1" />
+                  Typebot
+                </span>
+              ) : null}
             </div>
           );
         }
