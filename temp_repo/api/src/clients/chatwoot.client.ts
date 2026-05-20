@@ -333,8 +333,9 @@ class ChatwootClient {
       const response = await client.get(`/api/v1/accounts/${config.accountId}/inboxes`);
       return response.data.payload || [];
     } catch (error: any) {
-      logger.error({ error: error.message }, 'Failed to list Chatwoot inboxes');
-      throw new Error(`Failed to list inboxes: ${error.message}`);
+      const errorDetail = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+      logger.error({ error: errorDetail }, 'Failed to list Chatwoot inboxes');
+      throw new Error(`Failed to list inboxes: ${errorDetail}`);
     }
   }
 
@@ -372,20 +373,42 @@ class ChatwootClient {
         return existingInbox;
       }
 
-      // Create new inbox
-      const response = await client.post(`/api/v1/accounts/${config.accountId}/inboxes`, {
-        name,
-        channel: {
-          type: 'api',
+      // Create API channel first, Chatwoot will automatically create an inbox for it
+      // In newer Chatwoot versions, the /inboxes endpoint with channel nested params might not work properly
+      const response = await client.post(`/api/v1/accounts/${config.accountId}/channels/api_channels`, {
+        api_channel: {
+          name,
           webhook_url: webhookUrl,
-        },
+        }
       });
+      
+      // The response payload contains the channel. For API channels in newer Chatwoot, it often returns the inbox directly or channel object
+      // We need to fetch the inbox ID. 
+      // If the response contains an inbox object directly:
+      if (response.data?.inbox?.id) {
+        logger.info({ inboxId: response.data.inbox.id, name }, 'Created new Chatwoot API channel and inbox');
+        return response.data.inbox;
+      }
+      if (response.data?.id && response.data?.channel_type) {
+        // If it returned the inbox directly at root
+        return response.data;
+      }
 
-      logger.info({ inboxId: response.data.id, name }, 'Created new Chatwoot API inbox');
+      // Let's list inboxes to find the one that was just created if it didn't return it directly
+      const currentInboxes = await this.listInboxes(config);
+      const newInbox = currentInboxes.find((i: any) => i.name === name);
+      
+      if (newInbox) {
+         logger.info({ inboxId: newInbox.id, name }, 'Created new Chatwoot API channel and found inbox');
+         return newInbox;
+      }
+      
+      logger.warn({ data: response.data, name }, 'API channel created but inbox not found in response');
       return response.data;
     } catch (error: any) {
-      logger.error({ error: error.message, name }, 'Failed to create Chatwoot inbox');
-      throw new Error(`Failed to create inbox: ${error.message}`);
+      const errorDetail = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+      logger.error({ error: errorDetail, name }, 'Failed to create Chatwoot inbox');
+      throw new Error(`Failed to create inbox: ${errorDetail}`);
     }
   }
 
@@ -417,8 +440,9 @@ class ChatwootClient {
       logger.info({ webhookId: response.data.payload?.id, webhookUrl }, 'Created new Chatwoot webhook');
       return response.data;
     } catch (error: any) {
-      logger.error({ error: error.message, webhookUrl }, 'Failed to create Chatwoot webhook');
-      throw new Error(`Failed to create webhook: ${error.message}`);
+      const errorDetail = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+      logger.error({ error: errorDetail, webhookUrl }, 'Failed to create Chatwoot webhook');
+      throw new Error(`Failed to create webhook: ${errorDetail}`);
     }
   }
 
