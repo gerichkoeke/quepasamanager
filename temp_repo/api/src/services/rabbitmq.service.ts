@@ -16,7 +16,7 @@ export class RabbitMQService {
       
       logger.info('Connected to RabbitMQ');
 
-      this.connection.on('error', (err) => {
+      this.connection.on('error', (err: any) => {
         logger.error({ error: err }, 'RabbitMQ connection error');
       });
 
@@ -41,7 +41,7 @@ export class RabbitMQService {
       await this.channel.assertQueue(queueName, { durable: true });
       logger.info(`RabbitMQ waiting for messages in queue: ${queueName}`);
 
-      await this.channel.consume(queueName, (msg) => {
+      await this.channel.consume(queueName, (msg: any) => {
         if (msg) {
           try {
             messageHandler(msg);
