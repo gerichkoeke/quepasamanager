@@ -372,17 +372,26 @@ class ChatwootClient {
         return existingInbox;
       }
 
-      // Create new inbox
-      const response = await client.post(`/api/v1/accounts/${config.accountId}/inboxes`, {
-        name,
-        channel: {
-          type: 'api',
+      // API channels in Chatwoot must be created via the api_channels endpoint
+      const response = await client.post(`/api/v1/accounts/${config.accountId}/channels/api_channels`, {
+        api_channel: {
+          name,
           webhook_url: webhookUrl,
-        },
+        }
       });
+      
+      // Creating the API channel automatically creates the inbox.
+      // But the response might be just the channel, so we need to get the inbox id.
+      // Wait, let's fetch the inbox by name to get the true inbox object with its ID.
+      const newInboxes = await this.listInboxes(config);
+      const createdInbox = newInboxes.find((inbox: any) => inbox.name === name);
+      
+      if (!createdInbox) {
+        throw new Error('Channel was created but inbox could not be retrieved');
+      }
 
-      logger.info({ inboxId: response.data.id, name }, 'Created new Chatwoot API inbox');
-      return response.data;
+      logger.info({ inboxId: createdInbox.id, name }, 'Created new Chatwoot API inbox');
+      return createdInbox;
     } catch (error: any) {
       logger.error({ error: error.message, name }, 'Failed to create Chatwoot inbox');
       throw new Error(`Failed to create inbox: ${error.message}`);
@@ -408,10 +417,8 @@ class ChatwootClient {
 
       // Create new webhook
       const response = await client.post(`/api/v1/accounts/${config.accountId}/webhooks`, {
-        webhook: {
-          url: webhookUrl,
-          subscriptions: subscriptions
-        }
+        url: webhookUrl,
+        subscriptions: subscriptions
       });
 
       logger.info({ webhookId: response.data.payload?.id, webhookUrl }, 'Created new Chatwoot webhook');
