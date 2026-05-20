@@ -76,6 +76,7 @@ model QuepasaMapping {
   typebotApiKey             String?  @map("typebot_api_key") // (Opcional) Chave da API do typebot
   successNotificationSent   Boolean  @default(false) @map("success_notification_sent") // Track if success notification was sent
   enableGroups              Boolean  @default(false) @map("enable_groups") // Enable receiving messages from WhatsApp groups
+  rejectCalls               Boolean  @default(false) @map("reject_calls") // Reject incoming WhatsApp calls
   reopenClosedTickets       Boolean  @default(false) @map("reopen_closed_tickets") // Reopen closed tickets for returning customers
   showAgentName             Boolean  @default(false) @map("show_agent_name") // Show agent name in messages sent to WhatsApp
   maxMessageAgeMinutes      Int      @default(5) @map("max_message_age_minutes") // Ignore messages older than this

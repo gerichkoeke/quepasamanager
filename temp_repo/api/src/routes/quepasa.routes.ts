@@ -94,7 +94,7 @@ router.get('/quepasa/status/:mappingId', authMiddleware, async (req, res, next) 
           try {
             const fullMapping = await prisma.quepasaMapping.findUnique({
               where: { id: mappingId },
-              select: { name: true },
+              select: { name: true, rejectCalls: true },
             });
 
             const systemBaseUrl = process.env.SYSTEM_BASE_URL || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.get('host')}`;
@@ -103,6 +103,7 @@ router.get('/quepasa/status/:mappingId', authMiddleware, async (req, res, next) 
             const webhookConfig = {
               url: webhookUrl,
               forwardinternal: true,
+              reject_calls: fullMapping?.rejectCalls || false,
               trackid: fullMapping?.name || mapping.quepasaToken,
               extra: {
                 mappingId: mapping.id,
@@ -201,7 +202,7 @@ router.post('/quepasa/sync', authMiddleware, async (req, res, next) => {
 
     // Get all existing mappings from database
     const allMappings = await prisma.quepasaMapping.findMany({
-      select: { id: true, quepasaToken: true, name: true, active: true, phoneNumber: true },
+      select: { id: true, quepasaToken: true, name: true, active: true, phoneNumber: true, rejectCalls: true },
     });
 
     // Create a Set of tokens that exist in Quepasa
@@ -246,6 +247,7 @@ router.post('/quepasa/sync', authMiddleware, async (req, res, next) => {
               const webhookConfig = {
                 url: webhookUrl,
                 forwardinternal: true,
+                reject_calls: existing.rejectCalls,
                 trackid: existing.name,
                 extra: {
                   mappingId: existing.id,
@@ -297,6 +299,7 @@ router.post('/quepasa/sync', authMiddleware, async (req, res, next) => {
               const webhookConfig = {
                 url: webhookUrl,
                 forwardinternal: true,
+                reject_calls: false, // Default for imported
                 trackid: newMapping.name,
                 extra: {
                   mappingId: newMapping.id,

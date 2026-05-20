@@ -35,13 +35,13 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
     // Extract message timestamp (Quepasa sends timestamp in seconds or milliseconds)
     const messageTimestamp = payload.timestamp || payload.time || payload.t;
 
-    // CRITICAL: Reject messages without timestamp (likely sync/status events)
-    if (!messageTimestamp) {
+    // Reject messages without timestamp ONLY if they also lack content (likely sync/status events)
+    if (!messageTimestamp && !messageText && !hasAttachment) {
       logger.warn(
         { fromNumber, messageType, hasMessageId: !!messageId, payloadKeys: Object.keys(payload) },
-        '⚠️ Ignoring message without timestamp - likely sync/status event during connection'
+        '⚠️ Ignoring empty message without timestamp - likely sync/status event during connection'
       );
-      return res.json({ success: true, message: 'Message without timestamp ignored (sync event)' });
+      return res.json({ success: true, message: 'Message without timestamp and content ignored (sync event)' });
     }
 
     // Filter out non-message event types (status updates, read receipts, presence, contact sync, etc.)

@@ -120,6 +120,7 @@ export interface QuepasaMapping {
   typebotHost?: string;
   typebotApiKey?: string;
   enableGroups: boolean; // Enable receiving messages from WhatsApp groups
+  rejectCalls: boolean; // Reject incoming calls
   reopenClosedTickets: boolean; // Reopen closed tickets for returning customers
   showAgentName: boolean; // Show agent name in messages sent to WhatsApp
   maxMessageAgeMinutes: number; // Ignore messages older than this
@@ -143,6 +144,7 @@ export interface CreateQuepasaMappingRequest {
   typebotHost?: string;
   typebotApiKey?: string;
   enableGroups?: boolean; // Enable receiving messages from WhatsApp groups
+  rejectCalls?: boolean; // Reject incoming calls
   reopenClosedTickets?: boolean; // Reopen closed tickets for returning customers
   showAgentName?: boolean; // Show agent name in messages sent to WhatsApp
   maxMessageAgeMinutes?: number; // Ignore messages older than this

@@ -32,6 +32,7 @@ const quepasaMappingSchema = z.object({
   typebotHost: z.string().url().optional(),
   typebotApiKey: z.string().optional(),
   enableGroups: z.boolean().optional(), // Enable receiving messages from WhatsApp groups
+  rejectCalls: z.boolean().optional(), // Reject incoming calls
   reopenClosedTickets: z.boolean().optional(), // Reopen closed tickets for returning customers
   showAgentName: z.boolean().optional(), // Show agent name in messages sent to WhatsApp
   active: z.boolean().optional(),
@@ -63,6 +64,7 @@ router.get('/quepasa-mappings', authMiddleware, async (req, res, next) => {
         returnWebhookUrl: true,
         successNotificationSent: true,
         enableGroups: true,
+        rejectCalls: true,
         reopenClosedTickets: true,
         showAgentName: true,
         useTypebot: true,
@@ -101,6 +103,7 @@ router.get('/quepasa-mappings', authMiddleware, async (req, res, next) => {
             const webhookConfig = {
               url: webhookUrl,
               forwardinternal: true,
+              reject_calls: mapping.rejectCalls,
               trackid: mapping.name,
               extra: {
                 mappingId: mapping.id,
@@ -203,6 +206,7 @@ router.get('/quepasa-mappings/:id', authMiddleware, async (req, res, next) => {
         closingMessage: true,
         returnWebhookUrl: true,
         enableGroups: true,
+        rejectCalls: true,
         reopenClosedTickets: true,
         showAgentName: true,
         useTypebot: true,
@@ -262,6 +266,7 @@ router.post('/quepasa-mappings', authMiddleware, async (req, res, next) => {
         typebotHost: validated.typebotHost || null,
         typebotApiKey: validated.typebotApiKey || null,
         enableGroups: validated.enableGroups ?? false,
+        rejectCalls: validated.rejectCalls ?? false,
         reopenClosedTickets: validated.reopenClosedTickets ?? false,
         showAgentName: validated.showAgentName ?? false,
         active: validated.active ?? false, // Default to inactive until Chatwoot is configured
@@ -515,6 +520,7 @@ router.post('/quepasa-mappings/:id/setup-integration', authMiddleware, async (re
         const webhookConfig = {
           url: webhookUrl,
           forwardinternal: true,
+          reject_calls: mapping.rejectCalls,
           trackid: mapping.phoneNumber,
           extra: {
             mappingId: id,
@@ -586,6 +592,7 @@ router.post('/quepasa-mappings/with-chatwoot', authMiddleware, async (req, res, 
       chatwootAccountId: z.string().min(1),
       chatwootInboxName: z.string().optional(),
       enableGroups: z.boolean().optional(),
+      rejectCalls: z.boolean().optional(),
       sendQRToChatwoot: z.boolean(),
     });
 
@@ -617,6 +624,7 @@ router.post('/quepasa-mappings/with-chatwoot', authMiddleware, async (req, res, 
         typebotHost: null,
         typebotApiKey: null,
         enableGroups: validated.enableGroups ?? false,
+        rejectCalls: validated.rejectCalls ?? false,
         showAgentName: false, // Default to false
         active: false, // Will be activated after everything is set up
       },

@@ -72,6 +72,7 @@ interface QuepasaSendResponse {
 interface QuepasaWebhookConfig {
   url: string;
   forwardinternal?: boolean;
+  reject_calls?: boolean;
   trackid?: string;
   extra?: Record<string, any>;
 }

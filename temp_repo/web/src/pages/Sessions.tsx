@@ -97,6 +97,7 @@ export const Sessions: React.FC = () => {
     returnWebhookUrl: '',
     active: true,
     enableGroups: false,
+    rejectCalls: false,
     reopenClosedTickets: false,
     showAgentName: false,
   });
@@ -478,6 +479,7 @@ export const Sessions: React.FC = () => {
             closingMessage: chatwootForm.closingMessage || undefined,
             returnWebhookUrl: chatwootForm.returnWebhookUrl || undefined,
             enableGroups: chatwootForm.enableGroups,
+            rejectCalls: chatwootForm.rejectCalls,
             sendQRToChatwoot: true,
           };
 
@@ -546,6 +548,7 @@ export const Sessions: React.FC = () => {
         returnWebhookUrl: chatwootForm.returnWebhookUrl || undefined,
         active: chatwootForm.active,
         enableGroups: chatwootForm.enableGroups,
+        rejectCalls: chatwootForm.rejectCalls,
         reopenClosedTickets: chatwootForm.reopenClosedTickets,
         showAgentName: chatwootForm.showAgentName,
       };
@@ -654,6 +657,7 @@ export const Sessions: React.FC = () => {
       returnWebhookUrl: mapping.returnWebhookUrl || '',
       active: mapping.active !== false,
       enableGroups: mapping.enableGroups || false,
+      rejectCalls: mapping.rejectCalls || false,
       reopenClosedTickets: mapping.reopenClosedTickets || false,
       showAgentName: mapping.showAgentName || false,
     });
@@ -680,6 +684,7 @@ export const Sessions: React.FC = () => {
       returnWebhookUrl: '',
       active: true,
       enableGroups: false,
+      rejectCalls: false,
       reopenClosedTickets: false,
       showAgentName: false,
     });
@@ -1424,6 +1429,30 @@ export const Sessions: React.FC = () => {
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     chatwootForm.enableGroups ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-900 mb-1">
+                  Rejeitar Ligações
+                </label>
+                <p className="text-xs text-gray-600">
+                  Ative para rejeitar automaticamente ligações de voz e vídeo no WhatsApp
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setChatwootForm({ ...chatwootForm, rejectCalls: !chatwootForm.rejectCalls })}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+                  chatwootForm.rejectCalls ? 'bg-green-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    chatwootForm.rejectCalls ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
               </button>
