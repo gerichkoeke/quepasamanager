@@ -346,7 +346,9 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
           else if (payload.interactive?.list_reply?.title) choiceId = payload.interactive.list_reply.title;
           else if (payload.listResponse?.id) choiceId = payload.listResponse.id;
 
-          if (choiceId === '0' || choiceId.toLowerCase() === 'encerrar' || choiceId.toLowerCase() === 'cancelar' || choiceId === 'encerrar_bot') {
+          const cleanChoice = choiceId.trim().toLowerCase();
+          
+          if (cleanChoice === '0' || cleanChoice === 'encerrar' || cleanChoice === 'cancelar' || cleanChoice === 'encerrar_bot') {
             await prisma.nativeBotSession.delete({
               where: { id: botSession.id }
             });
@@ -356,9 +358,12 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
           }
 
           const option = options.find((o: any) => 
-            String(o.id) === choiceId || 
-            String(o.text).toLowerCase() === choiceId.toLowerCase()
+            String(o.id).trim().toLowerCase() === cleanChoice || 
+            String(o.text).trim().toLowerCase() === cleanChoice ||
+            cleanChoice.startsWith(String(o.id).trim().toLowerCase() + ' -')
           );
+          
+          logger.info({ phone: fromNumber, choiceId, cleanChoice, matchedOption: option?.id || null, availableOptions: options.map(o => o.id) }, 'Menu choice evaluation');
 
           if (option) {
             // Pause bot
