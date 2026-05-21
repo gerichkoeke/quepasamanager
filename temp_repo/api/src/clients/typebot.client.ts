@@ -66,8 +66,8 @@ export class TypebotClient {
 
     // Add retry logic
     this.client.interceptors.response.use(
-      (response) => response,
-      async (error) => {
+      (response: any) => response,
+      async (error: any) => {
         const config = error.config;
         if (!config) {
           return Promise.reject(error);
@@ -199,7 +199,7 @@ export class TypebotClient {
 
       // Add buttons as text if present
       if (response.data.input?.items && response.data.input.items.length > 0) {
-        const buttonsText = '\n\n' + response.data.input.items.map((item) => item.content).join('\n');
+        const buttonsText = '\n\n' + response.data.input.items.map((item: any) => item.content).join('\n');
 
         // Append buttons to last text message or create new one
         if (messages.length > 0 && messages[messages.length - 1].type === 'text') {
@@ -260,7 +260,7 @@ export class TypebotClient {
 
       // Add buttons as text if present
       if (response.data.input?.items && response.data.input.items.length > 0) {
-        const buttonsText = '\n\n' + response.data.input.items.map((item) => item.content).join('\n');
+        const buttonsText = '\n\n' + response.data.input.items.map((item: any) => item.content).join('\n');
 
         // Append buttons to last text message or create new one
         if (messages.length > 0 && messages[messages.length - 1].type === 'text') {

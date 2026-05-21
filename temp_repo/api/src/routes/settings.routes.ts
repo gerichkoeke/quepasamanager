@@ -78,7 +78,7 @@ router.post('/settings', authMiddleware, async (req, res, next) => {
     res.json({ success: true, message: 'Settings updated successfully' });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid settings data', details: error.errors });
+      return res.status(400).json({ error: 'Invalid settings data', details: (error as any).errors });
     }
     next(error);
   }

@@ -6,6 +6,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Settings } from './pages/Settings';
 import { Sessions } from './pages/Sessions';
 import { Logs } from './pages/Logs';
+import { BotSessions } from './pages/BotSessions';
 import Connect from './pages/Connect';
 
 // Protected Route Component
@@ -85,6 +86,14 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <Logs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bot-sessions"
+        element={
+          <ProtectedRoute>
+            <BotSessions />
           </ProtectedRoute>
         }
       />

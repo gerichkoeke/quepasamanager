@@ -294,7 +294,7 @@ router.post('/mappings', authMiddleware, async (req, res, next) => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid mapping data', details: error.errors });
+      return res.status(400).json({ error: 'Invalid mapping data', details: (error as any).errors });
     }
     next(error);
   }
@@ -339,7 +339,7 @@ router.patch('/mappings/:id', authMiddleware, async (req, res, next) => {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid update data', details: error.errors });
+      return res.status(400).json({ error: 'Invalid update data', details: (error as any).errors });
     }
     next(error);
   }

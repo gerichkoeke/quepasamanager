@@ -1,0 +1,114 @@
+import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { api } from '../services/api';
+import { Play, Pause, Trash2, RefreshCw } from 'lucide-react';
+import { format } from 'date-fns';
+
+export const BotSessions: React.FC = () => {
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadSessions = async (silent = false) => {
+    try {
+      if (!silent) setLoading(true);
+      const data = await api.getBotSessions();
+      setSessions(data);
+    } catch (error: any) {
+      if (!silent) toast.error('Falha ao carregar sessões do bot');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadSessions();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Deseja realmente encerrar esta sessão (deletar do banco)? O bot voltará ao estado inicial na próxima mensagem deste usuário.')) return;
+    try {
+      await api.deleteBotSession(id);
+      toast.success('Sessão deletada com sucesso');
+      loadSessions(true);
+    } catch (error) {
+      toast.error('Falha ao deletar sessão');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Sessões Bot Nativo</h1>
+          <p className="text-gray-600 mt-1">Acompanhe e gerencie o estado dos usuários no bot</p>
+        </div>
+        <button
+          onClick={() => loadSessions()}
+          className="px-4 py-2 bg-white border rounded-lg shadow-sm hover:bg-gray-50 flex items-center justify-center gap-2 font-medium w-full sm:w-auto"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          Atualizar
+        </button>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-medium">
+                <th className="p-4">Número (Usuário)</th>
+                <th className="p-4">Conexão ID</th>
+                <th className="p-4">Estado</th>
+                <th className="p-4">Última Atualização</th>
+                <th className="p-4 text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm divide-y divide-gray-100">
+              {sessions.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-8 text-center text-gray-500">
+                    Nenhuma sessão de bot encontrada.
+                  </td>
+                </tr>
+              ) : (
+                sessions.map((session) => (
+                  <tr key={session.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="p-4 font-medium text-gray-900">{session.phone}</td>
+                    <td className="p-4 text-gray-600 truncate max-w-[150px]" title={session.quepasaMappingId}>
+                      {session.quepasaMappingId}
+                    </td>
+                    <td className="p-4">
+                      {session.state === 'paused' ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                          <Pause className="w-3.5 h-3.5" />
+                          Pausado
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                          <Play className="w-3.5 h-3.5" />
+                          No Menu
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-4 text-gray-500">
+                      {format(new Date(session.updatedAt), 'dd/MM/yyyy HH:mm:ss')}
+                    </td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => handleDelete(session.id)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors inline-block"
+                        title="Encerrar/Deletar sessão"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};

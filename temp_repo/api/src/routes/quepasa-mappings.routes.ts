@@ -338,7 +338,7 @@ router.post('/quepasa-mappings', authMiddleware, async (req, res, next) => {
     res.status(201).json(mapping);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid data', details: error.errors });
+      return res.status(400).json({ error: 'Invalid data', details: (error as any).errors });
     }
     next(error);
   }
@@ -408,7 +408,7 @@ router.put('/quepasa-mappings/:id', authMiddleware, async (req, res, next) => {
     res.json(mapping);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid data', details: error.errors });
+      return res.status(400).json({ error: 'Invalid data', details: (error as any).errors });
     }
     next(error);
   }
@@ -821,9 +821,36 @@ router.post('/quepasa-mappings/with-chatwoot', authMiddleware, async (req, res, 
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid data', details: error.errors });
+      return res.status(400).json({ error: 'Invalid data', details: (error as any).errors });
     }
     next(error);
+  }
+});
+
+// Get all native bot sessions
+router.get('/bot-sessions', async (req, res) => {
+  try {
+    const sessions = await prisma.nativeBotSession.findMany({
+      orderBy: { updatedAt: 'desc' }
+    });
+    return res.json(sessions);
+  } catch (error: any) {
+    logger.error({ error: error.message }, 'Failed to fetch bot sessions');
+    return res.status(500).json({ error: 'Failed to fetch bot sessions' });
+  }
+});
+
+// Delete a native bot session
+router.delete('/bot-sessions/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.nativeBotSession.delete({
+      where: { id }
+    });
+    return res.json({ success: true });
+  } catch (error: any) {
+    logger.error({ error: error.message }, 'Failed to delete bot session');
+    return res.status(500).json({ error: 'Failed to delete bot session' });
   }
 });
 

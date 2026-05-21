@@ -5,6 +5,7 @@ import {
   Settings,
   MessageSquare,
   FileText,
+  Bot,
   LogOut,
   Menu,
   X,
@@ -17,7 +18,8 @@ interface LayoutProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Sessões', href: '/sessions', icon: MessageSquare },
+  { name: 'Conexões', href: '/sessions', icon: MessageSquare },
+  { name: 'Sessões Bot', href: '/bot-sessions', icon: Bot },
   { name: 'Logs', href: '/logs', icon: FileText },
   { name: 'Configurações', href: '/settings', icon: Settings },
 ];

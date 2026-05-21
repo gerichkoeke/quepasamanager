@@ -30,7 +30,7 @@ import { api } from '../services/api';
 import { Session, Mapping, CreateMappingRequest, QuepasaMapping, CreateQuepasaMappingRequest } from '../types';
 import toast from 'react-hot-toast';
 
-type ConnectionType = 'waha' | 'quepasa';
+type ConnectionType = 'waha' | 'quepasa' | 'official';
 
 export const Sessions: React.FC = () => {
   // Waha states
@@ -472,6 +472,17 @@ export const Sessions: React.FC = () => {
             duration: 4000,
           });
         }
+      } else if (connectionType === 'official') {
+        const data: CreateQuepasaMappingRequest = {
+          name: quepasaForm.name,
+          active: false,
+          provider: 'official'
+        };
+        const response = await api.createQuepasaMapping(data);
+        toast.success('Conexão Oficial criada! Configure a API clicando no ícone do bot.', { duration: 5000 });
+        setShowCreateConnectionModal(false);
+        resetQuepasaForm();
+        await loadData();
       } else {
         // Check if user wants QR code sent to Chatwoot
         if (quepasaForm.sendQRToChatwoot) {
@@ -1100,7 +1111,7 @@ export const Sessions: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Tipo de Conexão
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <button
                   type="button"
                   onClick={() => setConnectionType('waha')}
@@ -1139,7 +1150,27 @@ export const Sessions: React.FC = () => {
                       Quepasa
                     </span>
                   </div>
-                  <p className="text-xs text-gray-600 mt-2">Quepasa → Chatwoot</p>
+                  <p className="text-xs text-gray-600 mt-2">Quepasa (QR Code)</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConnectionType('official')}
+                  className={`p-3 border-2 rounded-lg transition-all ${
+                    connectionType === 'official'
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      connectionType === 'official'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      API Oficial
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2">WhatsApp Official</p>
                 </button>
               </div>
             </div>
@@ -1164,8 +1195,8 @@ export const Sessions: React.FC = () => {
               </div>
             )}
 
-            {/* Quepasa Fields */}
-            {connectionType === 'quepasa' && (
+            {/* Quepasa/Official Fields */}
+            {(connectionType === 'quepasa' || connectionType === 'official') && (
               <>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nome da Conexão *</label>
@@ -1177,10 +1208,11 @@ export const Sessions: React.FC = () => {
                     placeholder="Ex: Atendimento Principal"
                     className="w-full px-3 py-2 border rounded-lg"
                   />
-                  <p className="mt-1 text-xs text-gray-500">Nome para identificar esta conexão Quepasa</p>
+                  <p className="mt-1 text-xs text-gray-500">Nome para identificar esta conexão {connectionType === 'official' ? 'Oficial' : 'Quepasa'}</p>
                 </div>
 
-                {/* Toggle: Enviar QR para Chatwoot */}
+                {/* Toggle: Enviar QR para Chatwoot (only for quepasa) */}
+                {connectionType === 'quepasa' && (
                 <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-900 mb-1">
@@ -1320,6 +1352,7 @@ export const Sessions: React.FC = () => {
                     </div>
                   </div>
                 )}
+                {/* End of quepasa specific UI */}
               </>
             )}
           </form>

@@ -257,15 +257,23 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
           where: { quepasaMappingId: quepasaMapping.id, phone: fromNumber }
         });
 
-        if (!botSession) {
-          // Initialize session and send menu
-          botSession = await prisma.nativeBotSession.create({
-            data: {
-              quepasaMappingId: quepasaMapping.id,
-              phone: fromNumber,
-              state: 'menu'
-            }
-          });
+        if (!botSession || (botSession.state === 'paused' && (messageText || '').trim().toLowerCase() === 'menu')) {
+          if (botSession) {
+            // Unpause and reset back to menu
+            botSession = await prisma.nativeBotSession.update({
+              where: { id: botSession.id },
+              data: { state: 'menu' }
+            });
+          } else {
+            // Initialize session and send menu
+            botSession = await prisma.nativeBotSession.create({
+              data: {
+                quepasaMappingId: quepasaMapping.id,
+                phone: fromNumber,
+                state: 'menu'
+              }
+            });
+          }
 
           const welcomeMsg = quepasaMapping.botWelcomeMessage || 'Olá! Selecione uma opção:';
           const options = (quepasaMapping.botOptions as any[]) || [];
@@ -348,11 +356,12 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
             logger.info({ phone: fromNumber, teamId: option.teamId, protocol }, 'Native bot menu choice selected, routing to team');
             
             await quepasaClient.initialize();
-            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, `Opção selecionada! Seu protocolo de atendimento é: *${protocol}*.\n\nAguarde, em breve um de nossos atendentes falará com você.`);
+            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, `Opção selecionada: *${option.text}*\nSeu protocolo de atendimento é: *${protocol}*.\n\nAguarde, em breve um de nossos atendentes falará com você.`);
             
             // Let the message proceed to Chatwoot!
             (req as any).nativeBotTeamId = option.teamId;
-
+            messageText = option.text; // Change the incoming message text so Chatwoot shows the option name
+            
           } else {
             // Invalid choice
             await quepasaClient.initialize();

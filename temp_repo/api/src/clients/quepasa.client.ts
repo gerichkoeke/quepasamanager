@@ -399,7 +399,7 @@ class QuepasaClient {
         responseType: 'arraybuffer',
       });
 
-      const mimeType = response.headers['content-type'] || 'application/octet-stream';
+      const mimeType = (response.headers['content-type'] as string) || 'application/octet-stream';
       const buffer = Buffer.from(response.data);
 
       logger.info({ messageId, mimeType, size: buffer.length }, 'Downloaded media from Quepasa');

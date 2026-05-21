@@ -42,7 +42,7 @@ router.post('/quepasa/qr', authMiddleware, async (req, res, next) => {
     logger.error({ error: error.message }, 'Failed to get Quepasa QR code');
 
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Mapping ID is required', details: error.errors });
+      return res.status(400).json({ error: 'Mapping ID is required', details: (error as any).errors });
     }
 
     // Return friendly error if not configured

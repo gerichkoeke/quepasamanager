@@ -255,6 +255,16 @@ class ApiClient {
     await this.client.delete(`/quepasa-mappings/${id}`);
   }
 
+  // Native Bot Sessions
+  async getBotSessions(): Promise<any[]> {
+    const response = await this.client.get('/quepasa-mappings/bot-sessions');
+    return response.data;
+  }
+
+  async deleteBotSession(id: string): Promise<void> {
+    await this.client.delete(`/quepasa-mappings/bot-sessions/${id}`);
+  }
+
   // Quepasa Connection
   async getQuepasaQRCode(mappingId: string): Promise<string> {
     const response = await this.client.post('/quepasa/qr',
