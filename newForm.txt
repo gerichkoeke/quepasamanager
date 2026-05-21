@@ -1,0 +1,108 @@
+<form onSubmit={handleConfigureTypebot} className="space-y-4">
+              {/* Provider Selection */}
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-900 mb-3">Provedor de Conexão</h4>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <label className={`cursor-pointer border rounded-lg p-3 flex items-center gap-2 transition-colors ${typebotForm.provider === 'quepasa' ? 'bg-white border-blue-500 shadow-sm' : 'bg-transparent border-blue-200 hover:bg-blue-100/50'}`}>
+                    <input type="radio" name="provider" value="quepasa" checked={typebotForm.provider === 'quepasa'} onChange={() => setTypebotForm({...typebotForm, provider: 'quepasa'})} className="hidden" />
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${typebotForm.provider === 'quepasa' ? 'border-blue-500' : 'border-gray-400'}`}>
+                       {typebotForm.provider === 'quepasa' && <div className="w-2 h-2 rounded-full bg-blue-500" />}
+                    </div>
+                    <span className="font-medium text-gray-800">Quepasa (QR Code)</span>
+                  </label>
+                  <label className={`cursor-pointer border rounded-lg p-3 flex items-center gap-2 transition-colors ${typebotForm.provider === 'official' ? 'bg-white border-blue-500 shadow-sm' : 'bg-transparent border-blue-200 hover:bg-blue-100/50'}`}>
+                    <input type="radio" name="provider" value="official" checked={typebotForm.provider === 'official'} onChange={() => setTypebotForm({...typebotForm, provider: 'official'})} className="hidden" />
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${typebotForm.provider === 'official' ? 'border-blue-500' : 'border-gray-400'}`}>
+                       {typebotForm.provider === 'official' && <div className="w-2 h-2 rounded-full bg-blue-500" />}
+                    </div>
+                    <span className="font-medium text-gray-800">WhatsApp API Oficial</span>
+                  </label>
+                </div>
+                
+                {typebotForm.provider === 'official' && (
+                  <div className="space-y-3 bg-white p-4 rounded border border-blue-100">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Phone Number ID (ID do Número de Telefone)</label>
+                      <input type="text" value={typebotForm.officialPhoneId} onChange={(e) => setTypebotForm({...typebotForm, officialPhoneId: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ex: 1234567890" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Access Token (Token de Acesso Temporário ou Permanente)</label>
+                      <input type="password" value={typebotForm.officialApiToken} onChange={(e) => setTypebotForm({...typebotForm, officialApiToken: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="EAA..." />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">WhatsApp Business Account ID (Opcional)</label>
+                      <input type="text" value={typebotForm.officialWabaId} onChange={(e) => setTypebotForm({...typebotForm, officialWabaId: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ex: 1234567890" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Bot Strategy Selection */}
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h4 className="font-medium text-gray-800 mb-3">Estratégia de Atendimento (Bot)</h4>
+                
+                <div className="flex flex-col gap-3 mb-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="botType" checked={!typebotForm.useTypebot && !typebotForm.useNativeBot} onChange={() => setTypebotForm({...typebotForm, useTypebot: false, useNativeBot: false})} />
+                    <span className="text-sm">Nenhum (Direto para Chatwoot)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="botType" checked={typebotForm.useTypebot} onChange={() => setTypebotForm({...typebotForm, useTypebot: true, useNativeBot: false})} />
+                    <span className="text-sm">Typebot Externo</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="botType" checked={typebotForm.useNativeBot} onChange={() => setTypebotForm({...typebotForm, useTypebot: false, useNativeBot: true})} />
+                    <span className="text-sm">Bot Nativo (Menu/Setores)</span>
+                  </label>
+                </div>
+
+                {typebotForm.useTypebot && (
+                  <div className="space-y-3 bg-white p-4 rounded border border-gray-100">
+                    <p className="text-xs text-gray-500 mb-2">Configure os dados do Typebot para atendimento primário.</p>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">URL do Typebot</label>
+                      <input type="url" value={typebotForm.typebotHost} onChange={(e) => setTypebotForm({ ...typebotForm, typebotHost: e.target.value })} placeholder="https://typebot.exemplo.com" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Fluxo (Flow ID)</label>
+                      <input type="text" value={typebotForm.typebotFlowId} onChange={(e) => setTypebotForm({ ...typebotForm, typebotFlowId: e.target.value })} placeholder="meu-fluxo-v1" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">API Key (Opcional)</label>
+                      <input type="password" value={typebotForm.typebotApiKey} onChange={(e) => setTypebotForm({ ...typebotForm, typebotApiKey: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                    </div>
+                  </div>
+                )}
+
+                {typebotForm.useNativeBot && (
+                  <div className="space-y-3 bg-white p-4 rounded border border-gray-100">
+                    <p className="text-xs text-gray-500 mb-2">Crie um menu inicial simples que direciona para as equipes do Chatwoot.</p>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem de Boas Vindas</label>
+                      <textarea value={typebotForm.botWelcomeMessage} onChange={(e) => setTypebotForm({ ...typebotForm, botWelcomeMessage: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm h-20" placeholder="Olá! Seja bem-vindo. Qual setor deseja falar?" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Opções do Menu (Uma por linha: ID|Texto|TeamID_Chatwoot)</label>
+                      <textarea value={typebotForm.botOptionsString} onChange={(e) => setTypebotForm({ ...typebotForm, botOptionsString: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm h-24 font-mono" placeholder="1|Suporte|15&#10;2|Financeiro|16" />
+                      <p className="text-[10px] text-gray-500 mt-1">Exemplo: 1|Suporte Técnico|10 (Onde 10 é o ID interno da equipe no Chatwoot para direcionamento)</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem de Opção Inválida</label>
+                      <input type="text" value={typebotForm.botInvalidMessage} onChange={(e) => setTypebotForm({ ...typebotForm, botInvalidMessage: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Opção inválida, por favor digite um número válido." />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button type="button" variant="secondary" onClick={() => {
+                setShowTypebotConfigModal(false);
+                resetTypebotForm();
+              }}>
+                Cancelar
+              </Button>
+              <Button type="submit" variant="primary" isLoading={isSubmitting}>
+                Salvar Configuração
+              </Button>
+            </div>
+          </form>

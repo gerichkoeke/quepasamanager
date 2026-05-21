@@ -85,6 +85,14 @@ export const Sessions: React.FC = () => {
     typebotFlowId: '',
     typebotHost: '',
     typebotApiKey: '',
+    useNativeBot: false,
+    botWelcomeMessage: '',
+    botOptionsString: '',
+    botInvalidMessage: '',
+    provider: 'quepasa',
+    officialPhoneId: '',
+    officialApiToken: '',
+    officialWabaId: '',
   });
 
   const [chatwootForm, setChatwootForm] = useState({
@@ -520,6 +528,108 @@ export const Sessions: React.FC = () => {
   };
 
   // Chatwoot configuration handler
+  const resetTypebotForm = () => {
+    setEditingQuepasa(null);
+    setTypebotForm({
+      useTypebot: false,
+      typebotFlowId: '',
+      typebotHost: '',
+      typebotApiKey: '',
+      useNativeBot: false,
+      botWelcomeMessage: '',
+      botOptionsString: '',
+      botInvalidMessage: '',
+      provider: 'quepasa',
+      officialPhoneId: '',
+      officialApiToken: '',
+      officialWabaId: '',
+    });
+  };
+
+  const handleOpenTypebotConfig = (mapping: QuepasaMapping) => {
+    setEditingQuepasa(mapping);
+    setTypebotForm({
+      useTypebot: mapping.useTypebot || false,
+      typebotFlowId: mapping.typebotFlowId || '',
+      typebotHost: mapping.typebotHost || '',
+      typebotApiKey: mapping.typebotApiKey || '',
+      useNativeBot: mapping.useNativeBot || false,
+      botWelcomeMessage: mapping.botWelcomeMessage || 'Olá! Para começar, escolha o setor:',
+      botOptionsString: mapping.botOptions ? (mapping.botOptions as any[]).map((o: any) => `${o.id}|${o.text}|${o.teamId||''}`).join('\n') : '1|Opção Exemplo|',
+      botInvalidMessage: mapping.botInvalidMessage || 'Opção Inválida!',
+      provider: mapping.provider || 'quepasa',
+      officialPhoneId: mapping.officialPhoneId || '',
+      officialApiToken: mapping.officialApiToken || '',
+      officialWabaId: mapping.officialWabaId || '',
+    });
+    setShowTypebotConfigModal(true);
+  };
+
+  const handleDisconnectQuepasa = async (id: string, name: string) => {
+    if (!confirm(`Tem certeza que deseja desconectar o WhatsApp ${name}?`)) return;
+    try {
+      await api.disconnectQuepasa(id);
+      toast.success('WhatsApp desconectado', { id: 'disconnect' });
+      loadData();
+    } catch (error: any) {
+      toast.error('Falha ao desconectar', { id: 'disconnect' });
+    }
+  };
+
+  const handleDeleteQuepasa = async (id: string) => {
+    if (!confirm('Tem certeza que deseja remover esta conexão? O histórico no Chatwoot será mantido.')) return;
+    try {
+      await api.deleteQuepasaMapping(id);
+      toast.success('Conexão removida');
+      loadData();
+    } catch (error: any) {
+      toast.error('Falha ao remover conexão');
+    }
+  };
+
+  const handleConfigureTypebot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingQuepasa) return;
+
+    try {
+      setIsSubmitting(true);
+      // Parse bot options
+      const parsedOptions = typebotForm.botOptionsString.split('\n').filter(Boolean).map((line: string) => {
+        const parts = line.split('|');
+        return {
+          id: parts[0] ? parts[0].trim() : '',
+          text: parts[1] ? parts[1].trim() : '',
+          teamId: parts[2] ? parseInt(parts[2].trim()) : undefined
+        };
+      }).filter((o: any) => o.id && o.text);
+
+      const updateData: Partial<CreateQuepasaMappingRequest> = {
+        useTypebot: typebotForm.useTypebot,
+        typebotFlowId: typebotForm.typebotFlowId || undefined,
+        typebotHost: typebotForm.typebotHost || undefined,
+        typebotApiKey: typebotForm.typebotApiKey || undefined,
+        useNativeBot: typebotForm.useNativeBot,
+        botWelcomeMessage: typebotForm.botWelcomeMessage,
+        botOptions: parsedOptions as any,
+        botInvalidMessage: typebotForm.botInvalidMessage,
+        provider: typebotForm.provider,
+        officialPhoneId: typebotForm.officialPhoneId || undefined,
+        officialApiToken: typebotForm.officialApiToken || undefined,
+        officialWabaId: typebotForm.officialWabaId || undefined,
+      };
+
+      await api.updateQuepasaMapping(editingQuepasa.id, updateData);
+      toast.success('Configuração salva com sucesso');
+      setShowTypebotConfigModal(false);
+      resetTypebotForm();
+      loadData();
+    } catch (error: any) {
+      toast.error('Falha ao salvar configuração');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleConfigureChatwoot = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingQuepasa) return;
@@ -539,95 +649,29 @@ export const Sessions: React.FC = () => {
       setIsSubmitting(true);
 
       // First, update the mapping with Chatwoot credentials
-      const updateData: Partial<CreateQuepasaMappingRequest> = {
-        name: chatwootForm.name || editingQuepasa.name,
-        chatwootBaseUrl: chatwootForm.chatwootBaseUrl,
-        chatwootAccountId: chatwootForm.chatwootAccountId,
-        chatwootInboxName: chatwootForm.chatwootInboxName || undefined,
-        closingMessage: chatwootForm.closingMessage || undefined,
-        returnWebhookUrl: chatwootForm.returnWebhookUrl || undefined,
-        active: chatwootForm.active,
-        enableGroups: chatwootForm.enableGroups,
-        rejectCalls: chatwootForm.rejectCalls,
-        reopenClosedTickets: chatwootForm.reopenClosedTickets,
-        showAgentName: chatwootForm.showAgentName,
-      };
-      // Only send token if it was changed (not the placeholder)
-      if (chatwootForm.chatwootApiToken && chatwootForm.chatwootApiToken !== '••••••••••••••') {
-        updateData.chatwootApiToken = chatwootForm.chatwootApiToken;
-      }
-      await api.updateQuepasaMapping(editingQuepasa.id, updateData);
+      // Parse bot options
+      const parsedOptions = typebotForm.botOptionsString.split('\n').filter(Boolean).map((line: string) => {
+        const parts = line.split('|');
+        return {
+          id: parts[0] ? parts[0].trim() : '',
+          text: parts[1] ? parts[1].trim() : '',
+          teamId: parts[2] ? parseInt(parts[2].trim()) : undefined
+        };
+      }).filter((o: any) => o.id && o.text);
 
-      // Then, call the setup integration endpoint to create inbox and configure webhooks
-      toast.loading('Configurando integração com Chatwoot...', { id: 'setup' });
-      await api.setupQuepasaChatwootIntegration(editingQuepasa.id);
-
-      toast.success('Integração Chatwoot configurada com sucesso! Inbox criada e webhooks configurados.', { id: 'setup' });
-      setShowChatwootConfigModal(false);
-      resetChatwootForm();
-      loadData();
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Falha ao configurar integração', { id: 'setup' });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDeleteQuepasa = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta conexão?')) return;
-    try {
-      await api.deleteQuepasaMapping(id);
-      toast.success('Conexão excluída');
-      loadData();
-    } catch (error: any) {
-      toast.error('Falha ao excluir conexão');
-    }
-  };
-
-  const handleDisconnectQuepasa = async (id: string, name: string) => {
-    if (!confirm(`Tem certeza que deseja desconectar "${name}"? Será necessário escanear o QR code novamente.`)) return;
-    try {
-      toast.loading('Desconectando...', { id: 'disconnect' });
-      await api.disconnectQuepasa(id);
-      toast.success('Conexão desconectada com sucesso', { id: 'disconnect' });
-      loadData();
-    } catch (error: any) {
-      toast.error('Falha ao desconectar', { id: 'disconnect' });
-    }
-  };
-
-  const resetTypebotForm = () => {
-    setEditingQuepasa(null);
-    setTypebotForm({
-      useTypebot: false,
-      typebotFlowId: '',
-      typebotHost: '',
-      typebotApiKey: '',
-    });
-  };
-
-  const handleOpenTypebotConfig = (mapping: QuepasaMapping) => {
-    setEditingQuepasa(mapping);
-    setTypebotForm({
-      useTypebot: mapping.useTypebot || false,
-      typebotFlowId: mapping.typebotFlowId || '',
-      typebotHost: mapping.typebotHost || '',
-      typebotApiKey: mapping.typebotApiKey || '',
-    });
-    setShowTypebotConfigModal(true);
-  };
-
-  const handleConfigureTypebot = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingQuepasa) return;
-
-    try {
-      setIsSubmitting(true);
       const updateData: Partial<CreateQuepasaMappingRequest> = {
         useTypebot: typebotForm.useTypebot,
         typebotFlowId: typebotForm.typebotFlowId || undefined,
         typebotHost: typebotForm.typebotHost || undefined,
         typebotApiKey: typebotForm.typebotApiKey || undefined,
+        useNativeBot: typebotForm.useNativeBot,
+        botWelcomeMessage: typebotForm.botWelcomeMessage,
+        botOptions: parsedOptions as any,
+        botInvalidMessage: typebotForm.botInvalidMessage,
+        provider: typebotForm.provider,
+        officialPhoneId: typebotForm.officialPhoneId || undefined,
+        officialApiToken: typebotForm.officialApiToken || undefined,
+        officialWabaId: typebotForm.officialWabaId || undefined,
       };
       
       await api.updateQuepasaMapping(editingQuepasa.id, updateData);
@@ -1527,69 +1571,105 @@ export const Sessions: React.FC = () => {
             setShowTypebotConfigModal(false);
             resetTypebotForm();
           }}
-          title="Configurar Integração Typebot"
+          title="Configurar Bot & API"
         >
            <form onSubmit={handleConfigureTypebot} className="space-y-4">
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="font-medium text-gray-800">Ativar Integração Typebot</h4>
-                <button
-                  type="button"
-                  onClick={() => setTypebotForm({ ...typebotForm, useTypebot: !typebotForm.useTypebot })}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-                    typebotForm.useTypebot ? 'bg-primary' : 'bg-gray-300'
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      typebotForm.useTypebot ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                  />
-                </button>
+              {/* Provider Selection */}
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-900 mb-3">Provedor de Conexão</h4>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  <label className={`cursor-pointer border rounded-lg p-3 flex items-center gap-2 transition-colors ${typebotForm.provider === 'quepasa' ? 'bg-white border-blue-500 shadow-sm' : 'bg-transparent border-blue-200 hover:bg-blue-100/50'}`}>
+                    <input type="radio" name="provider" value="quepasa" checked={typebotForm.provider === 'quepasa'} onChange={() => setTypebotForm({...typebotForm, provider: 'quepasa'})} className="hidden" />
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${typebotForm.provider === 'quepasa' ? 'border-blue-500' : 'border-gray-400'}`}>
+                       {typebotForm.provider === 'quepasa' && <div className="w-2 h-2 rounded-full bg-blue-500" />}
+                    </div>
+                    <span className="font-medium text-gray-800">Quepasa (QR Code)</span>
+                  </label>
+                  <label className={`cursor-pointer border rounded-lg p-3 flex items-center gap-2 transition-colors ${typebotForm.provider === 'official' ? 'bg-white border-blue-500 shadow-sm' : 'bg-transparent border-blue-200 hover:bg-blue-100/50'}`}>
+                    <input type="radio" name="provider" value="official" checked={typebotForm.provider === 'official'} onChange={() => setTypebotForm({...typebotForm, provider: 'official'})} className="hidden" />
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${typebotForm.provider === 'official' ? 'border-blue-500' : 'border-gray-400'}`}>
+                       {typebotForm.provider === 'official' && <div className="w-2 h-2 rounded-full bg-blue-500" />}
+                    </div>
+                    <span className="font-medium text-gray-800">WhatsApp API Oficial</span>
+                  </label>
+                </div>
+                
+                {typebotForm.provider === 'official' && (
+                  <div className="space-y-3 bg-white p-4 rounded border border-blue-100">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Phone Number ID (ID do Número de Telefone)</label>
+                      <input type="text" value={typebotForm.officialPhoneId} onChange={(e) => setTypebotForm({...typebotForm, officialPhoneId: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ex: 1234567890" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Access Token (Token de Acesso Temporário ou Permanente)</label>
+                      <input type="password" value={typebotForm.officialApiToken} onChange={(e) => setTypebotForm({...typebotForm, officialApiToken: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="EAA..." />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">WhatsApp Business Account ID (Opcional)</label>
+                      <input type="text" value={typebotForm.officialWabaId} onChange={(e) => setTypebotForm({...typebotForm, officialWabaId: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Ex: 1234567890" />
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {typebotForm.useTypebot && (
-                <div className="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200 mt-4">
-                  <p className="text-sm text-gray-600 mb-4">
-                    Quando ativo, os recebimentos dessa conexão vão passar pelo Typebot antes de serem enviados ao Chatwoot.
-                  </p>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      URL do Typebot
-                    </label>
-                    <input
-                      type="url"
-                      value={typebotForm.typebotHost}
-                      onChange={(e) => setTypebotForm({ ...typebotForm, typebotHost: e.target.value })}
-                      placeholder="https://typebot.exemplo.com"
-                      className="w-full px-3 py-2 border rounded-lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nome do Fluxo (Flow ID)
-                    </label>
-                    <input
-                      type="text"
-                      value={typebotForm.typebotFlowId}
-                      onChange={(e) => setTypebotForm({ ...typebotForm, typebotFlowId: e.target.value })}
-                      placeholder="meu-fluxo-v1"
-                      className="w-full px-3 py-2 border rounded-lg"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      API Key (Opcional)
-                    </label>
-                    <input
-                      type="password"
-                      value={typebotForm.typebotApiKey}
-                      onChange={(e) => setTypebotForm({ ...typebotForm, typebotApiKey: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
-                    />
-                  </div>
+              {/* Bot Strategy Selection */}
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h4 className="font-medium text-gray-800 mb-3">Estratégia de Atendimento (Bot)</h4>
+                
+                <div className="flex flex-col gap-3 mb-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="botType" checked={!typebotForm.useTypebot && !typebotForm.useNativeBot} onChange={() => setTypebotForm({...typebotForm, useTypebot: false, useNativeBot: false})} />
+                    <span className="text-sm">Nenhum (Direto para Chatwoot)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="botType" checked={typebotForm.useTypebot} onChange={() => setTypebotForm({...typebotForm, useTypebot: true, useNativeBot: false})} />
+                    <span className="text-sm">Typebot Externo</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="botType" checked={typebotForm.useNativeBot} onChange={() => setTypebotForm({...typebotForm, useTypebot: false, useNativeBot: true})} />
+                    <span className="text-sm">Bot Nativo (Menu/Setores)</span>
+                  </label>
                 </div>
-              )}
-            <div className="flex justify-end gap-2 pt-4">
+
+                {typebotForm.useTypebot && (
+                  <div className="space-y-3 bg-white p-4 rounded border border-gray-100">
+                    <p className="text-xs text-gray-500 mb-2">Configure os dados do Typebot para atendimento primário.</p>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">URL do Typebot</label>
+                      <input type="url" value={typebotForm.typebotHost} onChange={(e) => setTypebotForm({ ...typebotForm, typebotHost: e.target.value })} placeholder="https://typebot.exemplo.com" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Fluxo (Flow ID)</label>
+                      <input type="text" value={typebotForm.typebotFlowId} onChange={(e) => setTypebotForm({ ...typebotForm, typebotFlowId: e.target.value })} placeholder="meu-fluxo-v1" className="w-full px-3 py-2 border rounded-lg text-sm" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">API Key (Opcional)</label>
+                      <input type="password" value={typebotForm.typebotApiKey} onChange={(e) => setTypebotForm({ ...typebotForm, typebotApiKey: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" />
+                    </div>
+                  </div>
+                )}
+
+                {typebotForm.useNativeBot && (
+                  <div className="space-y-3 bg-white p-4 rounded border border-gray-100">
+                    <p className="text-xs text-gray-500 mb-2">Crie um menu inicial simples que direciona para as equipes do Chatwoot.</p>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem de Boas Vindas</label>
+                      <textarea value={typebotForm.botWelcomeMessage} onChange={(e) => setTypebotForm({ ...typebotForm, botWelcomeMessage: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm h-20" placeholder="Olá! Seja bem-vindo. Qual setor deseja falar?" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Opções do Menu (Uma por linha: ID|Texto|TeamID_Chatwoot)</label>
+                      <textarea value={typebotForm.botOptionsString} onChange={(e) => setTypebotForm({ ...typebotForm, botOptionsString: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm h-24 font-mono" placeholder="1|Suporte|15&#10;2|Financeiro|16" />
+                      <p className="text-[10px] text-gray-500 mt-1">Exemplo: 1|Suporte Técnico|10 (Onde 10 é o ID interno da equipe no Chatwoot para direcionamento)</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem de Opção Inválida</label>
+                      <input type="text" value={typebotForm.botInvalidMessage} onChange={(e) => setTypebotForm({ ...typebotForm, botInvalidMessage: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Opção inválida, por favor digite um número válido." />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            <div className="flex justify-end gap-2 pt-4 border-t">
               <Button type="button" variant="secondary" onClick={() => {
                 setShowTypebotConfigModal(false);
                 resetTypebotForm();
@@ -1601,6 +1681,7 @@ export const Sessions: React.FC = () => {
               </Button>
             </div>
           </form>
+
         </Modal>
 
         {/* Existing modals from original code... */}

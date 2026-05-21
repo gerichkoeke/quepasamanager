@@ -103,6 +103,12 @@ export interface CreateMappingRequest {
   active?: boolean;
 }
 
+export interface BotOption {
+  id: string;
+  text: string;
+  teamId?: number;
+}
+
 export interface QuepasaMapping {
   id: string;
   quepasaToken: string; // Unique token for X-QUEPASA-TOKEN header
@@ -119,6 +125,14 @@ export interface QuepasaMapping {
   typebotFlowId?: string;
   typebotHost?: string;
   typebotApiKey?: string;
+  useNativeBot?: boolean;
+  botWelcomeMessage?: string;
+  botOptions?: BotOption[];
+  botInvalidMessage?: string;
+  provider?: string;
+  officialPhoneId?: string;
+  officialApiToken?: string;
+  officialWabaId?: string;
   enableGroups: boolean; // Enable receiving messages from WhatsApp groups
   rejectCalls: boolean; // Reject incoming calls
   reopenClosedTickets: boolean; // Reopen closed tickets for returning customers
@@ -143,6 +157,14 @@ export interface CreateQuepasaMappingRequest {
   typebotFlowId?: string;
   typebotHost?: string;
   typebotApiKey?: string;
+  useNativeBot?: boolean;
+  botWelcomeMessage?: string;
+  botOptions?: BotOption[];
+  botInvalidMessage?: string;
+  provider?: string;
+  officialPhoneId?: string;
+  officialApiToken?: string;
+  officialWabaId?: string;
   enableGroups?: boolean; // Enable receiving messages from WhatsApp groups
   rejectCalls?: boolean; // Reject incoming calls
   reopenClosedTickets?: boolean; // Reopen closed tickets for returning customers

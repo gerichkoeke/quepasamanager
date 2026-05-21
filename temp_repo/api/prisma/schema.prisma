@@ -58,6 +58,19 @@ model TypebotSession {
   @@map("typebot_sessions")
 }
 
+model NativeBotSession {
+  id                String   @id @default(uuid())
+  quepasaMappingId  String   @map("quepasa_mapping_id")
+  phone             String
+  state             String   @default("menu") // "menu", "paused"
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([quepasaMappingId, phone])
+  @@index([quepasaMappingId])
+  @@map("native_bot_sessions")
+}
+
 model QuepasaMapping {
   id                        String   @id @default(uuid())
   quepasaToken              String   @unique @map("quepasa_token") // Unique token for X-QUEPASA-TOKEN header
@@ -74,6 +87,14 @@ model QuepasaMapping {
   typebotFlowId             String?  @map("typebot_flow_id") // ID do fluxo do typebot
   typebotHost               String?  @map("typebot_host") // URL do typebot
   typebotApiKey             String?  @map("typebot_api_key") // (Opcional) Chave da API do typebot
+  useNativeBot              Boolean  @default(false) @map("use_native_bot")
+  botWelcomeMessage         String?  @map("bot_welcome_message")
+  botOptions                Json?    @map("bot_options") // JSON array for bot options
+  botInvalidMessage         String?  @map("bot_invalid_message")
+  provider                  String   @default("quepasa") @map("provider") // quepasa or official
+  officialPhoneId           String?  @map("official_phone_id")
+  officialApiToken          String?  @map("official_api_token")
+  officialWabaId            String?  @map("official_waba_id")
   successNotificationSent   Boolean  @default(false) @map("success_notification_sent") // Track if success notification was sent
   enableGroups              Boolean  @default(false) @map("enable_groups") // Enable receiving messages from WhatsApp groups
   rejectCalls               Boolean  @default(false) @map("reject_calls") // Reject incoming WhatsApp calls
