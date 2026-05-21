@@ -1213,6 +1213,7 @@ export const Sessions: React.FC = () => {
 
                 {/* Toggle: Enviar QR para Chatwoot (only for quepasa) */}
                 {connectionType === 'quepasa' && (
+                <>
                 <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-900 mb-1">
@@ -1353,6 +1354,8 @@ export const Sessions: React.FC = () => {
                   </div>
                 )}
                 {/* End of quepasa specific UI */}
+                </>
+                )}
               </>
             )}
           </form>
