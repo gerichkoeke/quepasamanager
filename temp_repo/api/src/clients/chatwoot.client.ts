@@ -86,6 +86,7 @@ class ChatwootClient {
 
       let cleanPhoneNumber = phoneNumber;
       let identifier = phoneNumber;
+      let isLid = phoneNumber.includes('@lid');
 
       if (isGroup) {
         // For groups, use the full group ID as identifier (WITH @g.us so webhooks can detect it)
@@ -96,14 +97,18 @@ class ChatwootClient {
         // For individual contacts, sanitize phone number
         cleanPhoneNumber = phoneNumber
           .replace(/@s\.whatsapp\.net$/i, '')
-          .replace(/@c\.us$/i, '');
+          .replace(/@c\.us$/i, '')
+          .replace(/@lid$/i, '');
+
+        // Ensure it only contains digits
+        cleanPhoneNumber = cleanPhoneNumber.replace(/[^\d+]/g, '');
 
         // Ensure phone number starts with + for international format
         if (!cleanPhoneNumber.startsWith('+')) {
           cleanPhoneNumber = `+${cleanPhoneNumber}`;
         }
-        identifier = cleanPhoneNumber;
-        logger.info({ originalPhone: phoneNumber, cleanPhone: cleanPhoneNumber }, 'Sanitized phone number for Chatwoot');
+        identifier = isLid ? phoneNumber : cleanPhoneNumber; // Keep original @lid as identifier or use phone number
+        logger.info({ originalPhone: phoneNumber, cleanPhone: cleanPhoneNumber, isLid }, 'Sanitized phone number for Chatwoot');
       }
 
       // Try to search for existing contact by identifier
@@ -115,8 +120,15 @@ class ChatwootClient {
 
       // If contact exists, return it
       if (searchResponse.data.payload && searchResponse.data.payload.length > 0) {
+        // Ensure exact match for ID to avoid partial search matches in Chatwoot
+        const exactMatch = searchResponse.data.payload.find((c: any) => c.identifier === identifier || c.phone_number === cleanPhoneNumber);
+        if (exactMatch) {
+          logger.info({ contactId: exactMatch.id, identifier, isGroup }, 'Found existing exact Chatwoot contact match');
+          return exactMatch;
+        }
+        
         const contact = searchResponse.data.payload[0];
-        logger.info({ contactId: contact.id, identifier, isGroup }, 'Found existing Chatwoot contact');
+        logger.info({ contactId: contact.id, identifier, isGroup }, 'Found existing Chatwoot contact (partial match)');
         return contact;
       }
 
@@ -127,9 +139,11 @@ class ChatwootClient {
         identifier: identifier,
       };
 
-      // Only add phone_number for non-groups (phone numbers must be E.164 format)
+      // Only add phone_number for non-groups and if it matches E.164 (max length 15 without plus, 16 with plus)
       if (!isGroup) {
-        contactData.phone_number = cleanPhoneNumber;
+        if (cleanPhoneNumber.length <= 16) {
+          contactData.phone_number = cleanPhoneNumber;
+        }
       }
 
       const createResponse = await client.post(`/api/v1/accounts/${config.accountId}/contacts`, contactData);

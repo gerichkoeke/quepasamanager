@@ -21,10 +21,25 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
 
     // Extract message data from Quepasa webhook
     // Quepasa sends: chat.id, chat.phone, text, fromme (lowercase!)
-    const fromNumber = payload.chat?.id || payload.chat?.phone || payload.from || payload.chatId;
+    
+    // Attempt to extract the correct ID, preferring @s.whatsapp.net or @c.us over @lid
+    const possibleIds = [
+      payload.from,
+      payload.sender?.id,
+      payload.sender?.phone,
+      payload.participant,
+      payload.chat?.phone,
+      payload.chat?.id,
+      payload.chatId
+    ].filter(Boolean);
+
+    // Find the first ID that doesn't contain @lid, fallback to the first available
+    const nonLidId = possibleIds.find(id => typeof id === 'string' && !id.includes('@lid'));
+    const fromNumber = nonLidId || possibleIds[0] || 'unknown';
+
     let messageText = payload.text || payload.body || payload.message?.text || '';
     const fromMe = payload.fromme || payload.fromMe || false; // Note: Quepasa uses lowercase 'fromme'
-    const senderName = payload.chat?.title || payload.senderName || payload.pushname || fromNumber;
+    const senderName = payload.chat?.title || payload.senderName || payload.pushname || payload.sender?.name || fromNumber;
 
     // Check if message has media attachment
     const messageType = payload.type || 'text';
@@ -821,12 +836,24 @@ router.post('/webhooks/quepasa', async (req, res, next) => {
       },
     });
 
-    // Extract message data from Quepasa webhook
-    // Quepasa sends: chat.id, chat.phone, text, fromme (lowercase!)
-    const fromNumber = payload.chat?.id || payload.chat?.phone || payload.from || payload.chatId;
+    // Attempt to extract the correct ID, preferring @s.whatsapp.net or @c.us over @lid
+    const possibleIds = [
+      payload.from,
+      payload.sender?.id,
+      payload.sender?.phone,
+      payload.participant,
+      payload.chat?.phone,
+      payload.chat?.id,
+      payload.chatId
+    ].filter(Boolean);
+
+    // Find the first ID that doesn't contain @lid, fallback to the first available
+    const nonLidId = possibleIds.find(id => typeof id === 'string' && !id.includes('@lid'));
+    const fromNumber = nonLidId || possibleIds[0] || 'unknown';
+
     const messageText = payload.text || payload.body || payload.message?.text || '';
     const fromMe = payload.fromme || payload.fromMe || false; // Note: Quepasa uses lowercase 'fromme'
-    const senderName = payload.chat?.title || payload.senderName || payload.pushname || fromNumber;
+    const senderName = payload.chat?.title || payload.senderName || payload.pushname || payload.sender?.name || fromNumber;
 
     // Validate required fields
     if (!fromNumber || !messageText) {

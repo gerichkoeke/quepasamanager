@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "get-events": "node get_events.js",
     "build": "tsc",
     "start": "node dist/index.js",
     "migrate": "prisma migrate deploy",
