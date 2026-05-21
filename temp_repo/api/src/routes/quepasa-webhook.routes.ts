@@ -267,23 +267,71 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
             }
           });
 
-          let menuText = (quepasaMapping.botWelcomeMessage || 'Olá! Selecione uma opção:') + '\n';
-          if (quepasaMapping.botOptions) {
-            const options = quepasaMapping.botOptions as any[];
-            options.forEach(opt => {
-              menuText += `\n${opt.id} - ${opt.text}`;
+          const welcomeMsg = quepasaMapping.botWelcomeMessage || 'Olá! Selecione uma opção:';
+          const options = (quepasaMapping.botOptions as any[]) || [];
+          
+          let menuText = welcomeMsg + '\n';
+          const rows = [];
+          options.forEach(opt => {
+            menuText += `\n${opt.id} - ${opt.text}`;
+            rows.push({
+              id: String(opt.id),
+              title: String(opt.text).substring(0, 24)
             });
-          }
+          });
+
+          // Add 'Encerrar' option
+          menuText += `\n0 - Encerrar`;
+          rows.push({
+            id: '0',
+            title: 'Encerrar'
+          });
+
+          const sections = [{ title: 'Opções', rows }];
 
           logger.info({ phone: fromNumber, mappingId: quepasaMapping.id }, 'Sending native bot menu');
           await quepasaClient.initialize();
-          await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+          
+          try {
+            await quepasaClient.sendListMessage(
+              quepasaMapping.quepasaToken,
+              fromNumber,
+              welcomeMsg,
+              'Select',
+              'Menu',
+              sections
+            );
+          } catch (listErr) {
+            // Fallback to text if list fails
+            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+          }
+          
           return res.json({ success: true, message: 'Native bot menu sent' });
         } else if (botSession.state === 'menu') {
           // Process menu choice
           const options = (quepasaMapping.botOptions as any[]) || [];
-          const choiceId = (messageText || '').trim();
-          const option = options.find(o => String(o.id) === choiceId);
+          
+          // Quepasa might put interactive response id in text, or text in text
+          let choiceId = (messageText || '').trim();
+          
+          // sometimes interactive responses come in specific fields
+          if (payload.interactive?.list_reply?.id) choiceId = payload.interactive.list_reply.id;
+          else if (payload.interactive?.list_reply?.title) choiceId = payload.interactive.list_reply.title;
+          else if (payload.listResponse?.id) choiceId = payload.listResponse.id;
+
+          if (choiceId === '0' || choiceId.toLowerCase() === 'encerrar' || choiceId === 'encerrar_bot') {
+            await prisma.nativeBotSession.delete({
+              where: { id: botSession.id }
+            });
+            await quepasaClient.initialize();
+            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, 'Atendimento encerrado.');
+            return res.json({ success: true, message: 'Native bot session closed by user' });
+          }
+
+          const option = options.find(o => 
+            String(o.id) === choiceId || 
+            String(o.text).toLowerCase() === choiceId.toLowerCase()
+          );
 
           if (option) {
             // Pause bot
@@ -292,14 +340,17 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
               data: { state: 'paused' }
             });
             
-            logger.info({ phone: fromNumber, teamId: option.teamId }, 'Native bot menu choice selected, routing to team');
+            // Generate Protocol
+            const prefix = String(option.text).substring(0, 3).toUpperCase();
+            const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            const protocol = `${prefix}-${randomCode}`;
+            
+            logger.info({ phone: fromNumber, teamId: option.teamId, protocol }, 'Native bot menu choice selected, routing to team');
+            
+            await quepasaClient.initialize();
+            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, `Opção selecionada! Seu protocolo de atendimento é: *${protocol}*.\n\nAguarde, em breve um de nossos atendentes falará com você.`);
             
             // Let the message proceed to Chatwoot!
-            // But we intercept Chatwoot conversation creation to assign the team.
-            // Since we don't have a direct hook into creation, and we want it to show the user's message as first in Chatwoot...
-            // It will fall through to Chatwoot logic below.
-            // But we need a way to assign the team. The simplest is to assign it immediately after creating it in Chatwoot.
-            // I'll attach a flag to the request so it handles team assignment below.
             (req as any).nativeBotTeamId = option.teamId;
 
           } else {

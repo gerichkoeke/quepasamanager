@@ -230,6 +230,50 @@ class QuepasaClient {
   }
 
   /**
+   * Send a list message (interactive)
+   */
+  async sendListMessage(
+    quepasaToken: string,
+    chatId: string,
+    bodyText: string,
+    buttonText: string,
+    title: string,
+    sections: any[]
+  ): Promise<QuepasaSendResponse> {
+    this.ensureInitialized();
+
+    try {
+      const client = this.createClient(quepasaToken);
+
+      // We send it using WAHA format for Interactive Messages
+      // Quepasa routes `/send` payload to WAHA
+      const payload: any = {
+        text: bodyText,
+        list: {
+          buttonText: buttonText,
+          description: bodyText,
+          sections: sections
+        }
+      };
+
+      const response = await client.post('/send',
+        payload,
+        {
+          headers: {
+            'X-QUEPASA-CHATID': chatId,
+          },
+        }
+      );
+
+      logger.info({ chatId, buttonText }, 'Sent list message via Quepasa');
+      return response.data;
+    } catch (error: any) {
+      logger.error({ error: error.message, chatId }, 'Failed to send list message via Quepasa');
+      throw new Error(`Failed to send list: ${error.message}`);
+    }
+  }
+
+  /**
    * Configure webhook for receiving messages
    * Uses POST to configure webhook with X-QUEPASA-TOKEN header
    */
