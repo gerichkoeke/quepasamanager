@@ -294,8 +294,8 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
           const options = (quepasaMapping.botOptions as any[]) || [];
           
           let menuText = welcomeMsg + '\n';
-          const rows = [];
-          options.forEach(opt => {
+          const rows: { id: string; title: string }[] = [];
+          options.forEach((opt: any) => {
             menuText += `\n${opt.id} - ${opt.text}`;
             rows.push({
               id: String(opt.id),
@@ -303,12 +303,15 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
             });
           });
 
-          // Add 'Encerrar' option
-          menuText += `\n0 - Encerrar`;
-          rows.push({
-            id: '0',
-            title: 'Encerrar'
-          });
+          // Add 'Encerrar' option only if user didn't define '0'
+          const hasZero = options.some((opt: any) => String(opt.id) === '0');
+          if (!hasZero) {
+            menuText += `\n0 - Encerrar`;
+            rows.push({
+              id: '0',
+              title: 'Encerrar'
+            });
+          }
 
           const sections = [{ title: 'Opções', rows }];
 
@@ -320,11 +323,12 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
               quepasaMapping.quepasaToken,
               fromNumber,
               welcomeMsg,
-              'Select',
+              'Selecione uma opção',
               'Menu',
               sections
             );
           } catch (listErr) {
+            logger.warn({ phone: fromNumber, error: (listErr as Error).message }, 'Failed to send list message, falling back to text');
             // Fallback to text if list fails
             await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
           }
@@ -342,16 +346,7 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
           else if (payload.interactive?.list_reply?.title) choiceId = payload.interactive.list_reply.title;
           else if (payload.listResponse?.id) choiceId = payload.listResponse.id;
 
-          if (choiceId === '0' || choiceId.toLowerCase() === 'encerrar' || choiceId === 'encerrar_bot') {
-            await prisma.nativeBotSession.delete({
-              where: { id: botSession.id }
-            });
-            await quepasaClient.initialize();
-            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, 'Atendimento encerrado.');
-            return res.json({ success: true, message: 'Native bot session closed by user' });
-          }
-
-          const option = options.find(o => 
+          const option = options.find((o: any) => 
             String(o.id) === choiceId || 
             String(o.text).toLowerCase() === choiceId.toLowerCase()
           );
@@ -377,6 +372,13 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
             (req as any).nativeBotTeamId = option.teamId;
             messageText = option.text; // Change the incoming message text so Chatwoot shows the option name
             
+          } else if (choiceId === '0' || choiceId.toLowerCase() === 'encerrar' || choiceId === 'encerrar_bot') {
+            await prisma.nativeBotSession.delete({
+              where: { id: botSession.id }
+            });
+            await quepasaClient.initialize();
+            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, 'Atendimento encerrado.');
+            return res.json({ success: true, message: 'Native bot session closed by user' });
           } else {
             // Invalid choice
             await quepasaClient.initialize();
