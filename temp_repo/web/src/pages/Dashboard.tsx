@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Activity, MessageSquare, TrendingUp, Share2, Server, MessageCircle, Smartphone, Power, Bot, Database } from 'lucide-react';
+import { Activity, MessageSquare, TrendingUp, Share2, Server, MessageCircle, Smartphone, Bot, Database } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { api } from '../services/api';
 import { Metrics } from '../types';
