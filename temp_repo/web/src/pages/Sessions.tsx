@@ -478,7 +478,7 @@ export const Sessions: React.FC = () => {
           active: false,
           provider: 'official'
         };
-        const response = await api.createQuepasaMapping(data);
+        await api.createQuepasaMapping(data);
         toast.success('Conexão Oficial criada! Configure a API clicando no ícone do bot.', { duration: 5000 });
         setShowCreateConnectionModal(false);
         resetQuepasaForm();

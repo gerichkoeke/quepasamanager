@@ -16,7 +16,8 @@
     "axios": "^1.6.5",
     "zustand": "^4.4.7",
     "react-hot-toast": "^2.4.1",
-    "lucide-react": "^0.309.0"
+    "lucide-react": "^0.309.0",
+    "date-fns": "^3.6.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.47",
