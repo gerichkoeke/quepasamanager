@@ -8,6 +8,19 @@ import { rabbitMQService } from '../services/rabbitmq.service';
 const router = Router();
 
 /**
+ * Helper to safely extract phone number or identifier from various Chatwoot webhook event payloads
+ */
+const extractChatwootPhoneNumber = (payload: any): string => {
+  return payload.meta?.sender?.phone_number ||
+         payload.meta?.sender?.identifier ||
+         payload.conversation?.meta?.sender?.phone_number ||
+         payload.conversation?.meta?.sender?.identifier ||
+         payload.sender?.phone_number ||
+         payload.sender?.identifier ||
+         'unknown';
+};
+
+/**
  * Webhook endpoint to receive incoming messages from Quepasa (with token in path)
  * Quepasa sends WhatsApp messages here, we forward them to Chatwoot
  * URL format: /webhooks/quepasa/{quepasaToken}
@@ -20,8 +33,17 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
     logger.info({ hasToken: !!token, payloadKeys: Object.keys(payload), payload: JSON.stringify(payload) }, 'Received webhook from Quepasa with token');
 
     // Extract message data from Quepasa webhook
-    // Quepasa sends: chat.id, chat.phone, text, fromme (lowercase!)
-    const fromNumber = payload.chat?.id || payload.chat?.phone || payload.from || payload.chatId;
+    let fromNumber = payload.chat?.id || payload.from || payload.chatId || payload.chat?.phone;
+
+    // CRITICAL FIX: Meta/WhatsApp is migrating to @lid (Linked Device IDs).
+    // If we receive an @lid, we must convert it back to the standard phone number,
+    // otherwise Chatwoot will create a new duplicate conversation in "Não atribuídas".
+    if (fromNumber && typeof fromNumber === 'string' && fromNumber.includes('@lid') && payload.chat?.phone) {
+        const cleanPhone = payload.chat.phone.replace(/[^0-9]/g, '');
+        fromNumber = `${cleanPhone}@s.whatsapp.net`;
+        logger.info({ originalLid: payload.chat?.id, newFromNumber: fromNumber }, '🔄 Converted @lid to standard phone number format');
+    }
+
     let messageText = payload.text || payload.body || payload.message?.text || '';
     const fromMe = payload.fromme || payload.fromMe || false; // Note: Quepasa uses lowercase 'fromme'
     const senderName = payload.chat?.title || payload.senderName || payload.pushname || fromNumber;
@@ -45,7 +67,6 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
     }
 
     // Filter out non-message event types (status updates, read receipts, presence, contact sync, etc.)
-    // 'contact' type is sent during initial sync when connecting Quepasa (all contacts from device)
     const ignoredEventTypes = ['ack', 'read', 'delivered', 'presence', 'status', 'typing', 'recording', 'contact'];
     if (messageType && ignoredEventTypes.includes(messageType.toLowerCase())) {
       logger.info(
@@ -79,8 +100,8 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
       }
     }
 
-    // Check if this is a group message
-    const isGroup = fromNumber.includes('@g.us') || payload.isGroup;
+    // Check if this is a group message (Protected against crash)
+    const isGroup = (fromNumber && fromNumber.includes('@g.us')) || payload.isGroup;
 
     // For group messages, prepend participant info (who sent the message)
     if (isGroup && payload.participant) {
@@ -146,7 +167,7 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
       return res.json({ success: true, message: 'Message from owner ignored' });
     }
 
-    // Find QuepasaMapping by Quepasa token (MUCH faster than phone number lookup!)
+    // Find QuepasaMapping by Quepasa token
     const quepasaMapping = await prisma.quepasaMapping.findFirst({
       where: {
         quepasaToken: token,
@@ -180,16 +201,13 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
       return res.status(404).json({ error: 'Quepasa mapping not found for this token' });
     }
 
-    // Now check message age using the configured max age from QuepasaMapping
+    // Now check message age
     if (messageTimestamp) {
       let messageDate: Date;
 
-      // Convert timestamp to Date (handle both seconds and milliseconds)
       if (messageTimestamp > 10000000000) {
-        // Milliseconds
         messageDate = new Date(messageTimestamp);
       } else {
-        // Seconds
         messageDate = new Date(messageTimestamp * 1000);
       }
 
@@ -203,14 +221,9 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
         );
         return res.json({ success: true, message: 'Old message ignored (from sync)' });
       }
-
-      logger.info(
-        { fromNumber, messageTimestamp, ageMinutes: ageMinutes.toFixed(2), maxAge: quepasaMapping.maxMessageAgeMinutes },
-        '✅ Message is recent, will process'
-      );
     }
 
-    // Check idempotency - has this message been processed before?
+    // Check idempotency
     if (messageId) {
       const existingMessage = await prisma.processedMessage.findUnique({
         where: {
@@ -231,35 +244,33 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
       }
     }
 
-    // Check if groups are enabled - ignore group messages if not
+    // Check if groups are enabled
     if (isGroup && !quepasaMapping.enableGroups) {
       logger.info({ fromNumber, isGroup, mappingId: quepasaMapping.id }, 'Ignoring group message - groups not enabled for this mapping');
       return res.json({ success: true, message: 'Group message ignored (groups not enabled)' });
     }
 
-    // Process Typebot if enabled and this is not a group message (Typebot usually for DMs)
+    // Process Typebot
     if (quepasaMapping.useTypebot && quepasaMapping.typebotFlowId && !isGroup) {
       try {
         const { typebotClient } = require('../clients/typebot.client');
         await typebotClient.initialize();
-        
-        const userId = fromNumber.replace(/\D/g, ''); // Clean phone number for userId
+
+        const userId = fromNumber.replace(/\D/g, '');
 
         let typebotSessionId: string | undefined;
         let letTypebotHandle = true;
 
-        // Check if there is an existing bot session paused
         const existingSession = await prisma.typebotSession.findFirst({
-          where: { phone: userId } // Simplified check
+          where: { phone: userId }
         });
 
         if (existingSession?.botPaused) {
-           letTypebotHandle = false; // BOT PAUSED, PASS TO CHATWOOT
+           letTypebotHandle = false;
            logger.info({ userId }, 'Typebot paused, handing over to Chatwoot');
         } else {
-           // Send to typebot
            logger.info({ userId }, 'Sending message to Typebot');
-           
+
            let typebotResponse;
            if (!existingSession) {
              typebotResponse = await typebotClient.startChat(
@@ -269,7 +280,6 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
                quepasaMapping.typebotHost,
                quepasaMapping.typebotApiKey || undefined
              );
-             // create mapping
              await prisma.typebotSession.create({
                 data: {
                   sessionId: quepasaMapping.quepasaToken,
@@ -287,11 +297,9 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
              );
            }
 
-           // Ensure Quepasa Client is initialized
            await quepasaClient.initialize();
            let chatId = fromNumber;
 
-           // Send Typebot responses via Quepasa
            for (const tMsg of typebotResponse.messages) {
                if (tMsg.type === 'text') {
                  await quepasaClient.sendTextMessage(token, chatId, tMsg.content);
@@ -304,10 +312,6 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
                  });
                }
            }
-
-           // Note: if typebot completes or there's handover block, logic can be added here
-           // For now, if typebot handles it, we don't send to Chatwoot (or we send as silent text).
-           // We will return early to drop Chatwoot if Typebot is fully responsive.
            return res.json({ success: true, processedByTypebot: true });
         }
       } catch (err: any) {
@@ -315,7 +319,7 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
       }
     }
 
-    // Build Chatwoot config from mapping
+    // Build Chatwoot config
     const chatwootConfig = {
       baseUrl: quepasaMapping.chatwootBaseUrl,
       apiAccessToken: quepasaMapping.chatwootApiToken,
@@ -328,130 +332,59 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
       let result: { conversationId: number; messageId: number };
 
       if (hasAttachment && messageId) {
-        // Handle media message - download from Quepasa and upload to Chatwoot
         logger.info({ messageId, messageType, fromNumber }, 'Processing media message');
-
-        // Initialize Quepasa client
         await quepasaClient.initialize();
-
-        // Download media from Quepasa
         const media = await quepasaClient.downloadMedia(token, messageId);
 
-        // Special handling for location messages - convert to Google Maps link
         if (messageType === 'location' || media.mimeType.includes('location')) {
           logger.info({ messageId, messageType, mimeType: media.mimeType, fromNumber }, '📍 Processing location message');
 
-          // Parse location data from buffer
           const locationData = media.buffer.toString('utf-8');
-          logger.info({ locationData, fromNumber }, '📍 Location data received');
-
-          // Extract latitude and longitude from location data
-          // Format can be: "geo:-15.7801,-47.9292" or just "-15.7801,-47.9292"
           const geoMatch = locationData.match(/geo:([-\d.]+),([-\d.]+)/i) || locationData.match(/([-\d.]+),([-\d.]+)/);
 
           if (geoMatch) {
             const latitude = geoMatch[1];
             const longitude = geoMatch[2];
             const mapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
-
-            // Create location message text
             const locationMessage = `📍 Localização compartilhada:\n${mapsLink}`;
-
-            logger.info({ latitude, longitude, mapsLink, fromNumber }, '📍 Created Google Maps link for location');
-
-            // Send as text message instead of file
             const displayName = isGroup ? `${senderName} (Grupo)` : senderName;
             result = await chatwootClient.processIncomingMessage(chatwootConfig, fromNumber, locationMessage, displayName, messageId, chatwootReplyToId, quepasaMapping.reopenClosedTickets);
-
-            logger.info(
-              { conversationId: result.conversationId, messageId: result.messageId, fromNumber, quepasaToken: token },
-              '📍 Location message forwarded to Chatwoot as text with Google Maps link'
-            );
           } else {
-            logger.warn({ locationData, fromNumber }, '📍 Failed to parse location coordinates');
-
-            // Fallback: send location data as text
             const displayName = isGroup ? `${senderName} (Grupo)` : senderName;
             result = await chatwootClient.processIncomingMessage(chatwootConfig, fromNumber, `📍 Localização: ${locationData}`, displayName, messageId, chatwootReplyToId, quepasaMapping.reopenClosedTickets);
-
-            logger.info(
-              { conversationId: result.conversationId, messageId: result.messageId, fromNumber, quepasaToken: token },
-              '📍 Location message forwarded to Chatwoot as raw text (parse failed)'
-            );
           }
         } else if (messageType === 'vcard' || media.mimeType.includes('vcard') || media.mimeType.includes('contact')) {
-          // Special handling for contact messages (vCard) - parse and format nicely
           logger.info({ messageId, messageType, mimeType: media.mimeType, fromNumber }, '👤 Processing vCard contact message');
-
-          // Parse vCard data from buffer
           const vcardData = media.buffer.toString('utf-8');
-          logger.info({ vcardData, fromNumber }, '👤 vCard data received');
 
           try {
-            // Extract contact name (FN field)
             const nameMatch = vcardData.match(/FN:(.+)/i);
             const contactName = nameMatch ? nameMatch[1].trim() : 'Contato';
-
-            // Extract all phone numbers (TEL fields)
             const phoneMatches = vcardData.matchAll(/TEL[^:]*:(.+)/gi);
             const phones: string[] = [];
             for (const match of phoneMatches) {
               phones.push(match[1].trim());
             }
-
-            // Extract email if available
             const emailMatch = vcardData.match(/EMAIL[^:]*:(.+)/i);
             const email = emailMatch ? emailMatch[1].trim() : null;
-
-            // Extract organization if available
             const orgMatch = vcardData.match(/ORG:(.+)/i);
             const organization = orgMatch ? orgMatch[1].trim() : null;
 
-            // Build formatted contact message
-            let contactMessage = `👤 Contato compartilhado:\n\n`;
-            contactMessage += `**Nome:** ${contactName}\n`;
-
+            let contactMessage = `👤 Contato compartilhado:\n\n**Nome:** ${contactName}\n`;
             if (phones.length > 0) {
               contactMessage += `**Telefone(s):**\n`;
-              phones.forEach(phone => {
-                contactMessage += `  • ${phone}\n`;
-              });
+              phones.forEach(phone => { contactMessage += `  • ${phone}\n`; });
             }
+            if (email) { contactMessage += `**Email:** ${email}\n`; }
+            if (organization) { contactMessage += `**Empresa:** ${organization}\n`; }
 
-            if (email) {
-              contactMessage += `**Email:** ${email}\n`;
-            }
-
-            if (organization) {
-              contactMessage += `**Empresa:** ${organization}\n`;
-            }
-
-            logger.info({ contactName, phones, email, organization, fromNumber }, '👤 Parsed vCard contact');
-
-            // Send as text message instead of file
             const displayName = isGroup ? `${senderName} (Grupo)` : senderName;
             result = await chatwootClient.processIncomingMessage(chatwootConfig, fromNumber, contactMessage, displayName, messageId, chatwootReplyToId, quepasaMapping.reopenClosedTickets);
-
-            logger.info(
-              { conversationId: result.conversationId, messageId: result.messageId, fromNumber, quepasaToken: token },
-              '👤 vCard contact forwarded to Chatwoot as formatted text'
-            );
           } catch (error: any) {
-            logger.warn({ error: error.message, vcardData, fromNumber }, '👤 Failed to parse vCard');
-
-            // Fallback: send vCard data as text
             const displayName = isGroup ? `${senderName} (Grupo)` : senderName;
             result = await chatwootClient.processIncomingMessage(chatwootConfig, fromNumber, `👤 Contato compartilhado:\n${vcardData}`, displayName, messageId, chatwootReplyToId, quepasaMapping.reopenClosedTickets);
-
-            logger.info(
-              { conversationId: result.conversationId, messageId: result.messageId, fromNumber, quepasaToken: token },
-              '👤 vCard contact forwarded to Chatwoot as raw text (parse failed)'
-            );
           }
         } else {
-          // Regular media message (not a location)
-          // Find or create conversation and contact
-          // Add (Grupo) suffix to name if it's a group
           const displayName = isGroup ? `${senderName} (Grupo)` : senderName;
           const { conversation, contact } = await chatwootClient.findOrCreateConversation(
             chatwootConfig,
@@ -460,21 +393,19 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
             quepasaMapping.reopenClosedTickets
           );
 
-          // Generate filename from type and timestamp
           const extension = media.mimeType.split('/')[1]?.split(';')[0] || 'bin';
           const filename = `${messageType}_${Date.now()}.${extension}`;
 
-          // Upload media to Chatwoot with Quepasa message ID as external_id
           const chatwootMessage = await chatwootClient.sendMessageWithFileUpload(
             chatwootConfig,
             conversation.id,
-            messageText || '', // Send empty caption if no text
+            messageText || '', 
             media.buffer,
             filename,
             media.mimeType,
             'incoming',
-            messageId,  // Store Quepasa message ID for reply support
-            chatwootReplyToId  // Reply to message ID (if this is a reply)
+            messageId,  
+            chatwootReplyToId  
           );
 
           result = {
@@ -482,78 +413,35 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
             messageId: chatwootMessage.id,
           };
 
-          logger.info(
-            { conversationId: result.conversationId, messageId: result.messageId, messageType, fromNumber, quepasaToken: token },
-            'Media message forwarded to Chatwoot'
-          );
-
-          // Update contact avatar with WhatsApp profile picture (async, non-blocking)
-          // Works for both individual contacts and groups
-          // Always update to sync profile picture changes
           if (fromNumber) {
             (async () => {
               try {
-                // Get profile picture URL from Quepasa
                 const profilePictureUrl = await quepasaClient.getProfilePictureUrl(token, fromNumber);
-
                 if (profilePictureUrl) {
-                  // Update contact avatar in Chatwoot
                   await chatwootClient.updateContactAvatar(chatwootConfig, contact.id, profilePictureUrl);
-                  const contactType = isGroup ? 'grupo' : 'contato';
-                  logger.info({ contactId: contact.id, fromNumber, hasAvatar: !!contact.thumbnail, isGroup }, `📸 Updated ${contactType} avatar from WhatsApp profile picture (media message)`);
-                } else {
-                  const contactType = isGroup ? 'grupo' : 'contato';
-                  logger.info({ contactId: contact.id, fromNumber, isGroup }, `📸 No profile picture found on WhatsApp for ${contactType} (media message)`);
                 }
-              } catch (error: any) {
-                const contactType = isGroup ? 'grupo' : 'contato';
-                logger.warn({ error: error.message, fromNumber, isGroup }, `Failed to update ${contactType} avatar (non-critical, media message)`);
-              }
+              } catch (error: any) {}
             })();
           }
         }
       } else {
-        // Handle text message
-        // Add (Grupo) suffix to name if it's a group
         const displayName = isGroup ? `${senderName} (Grupo)` : senderName;
         result = await chatwootClient.processIncomingMessage(chatwootConfig, fromNumber, messageText, displayName, messageId, chatwootReplyToId, quepasaMapping.reopenClosedTickets);
-
-        logger.info(
-          { conversationId: result.conversationId, messageId: result.messageId, fromNumber, quepasaToken: token },
-          'Text message forwarded to Chatwoot'
-        );
       }
 
-      // Update contact avatar with WhatsApp profile picture (async, non-blocking)
-      // Works for both individual contacts and groups
-      // Always update to sync profile picture changes
       if (fromNumber) {
         (async () => {
           try {
-            // Get contact to check if avatar already exists
             const { contact } = await chatwootClient.findOrCreateConversation(chatwootConfig, fromNumber, senderName, quepasaMapping.reopenClosedTickets);
-
-            // Get profile picture URL from Quepasa (always check for updates)
             await quepasaClient.initialize();
             const profilePictureUrl = await quepasaClient.getProfilePictureUrl(token, fromNumber);
-
             if (profilePictureUrl) {
-              // Update contact avatar in Chatwoot
               await chatwootClient.updateContactAvatar(chatwootConfig, contact.id, profilePictureUrl);
-              const contactType = isGroup ? 'grupo' : 'contato';
-              logger.info({ contactId: contact.id, fromNumber, hadAvatar: !!contact.thumbnail, isGroup }, `📸 Updated ${contactType} avatar from WhatsApp profile picture`);
-            } else {
-              const contactType = isGroup ? 'grupo' : 'contato';
-              logger.info({ contactId: contact.id, fromNumber, isGroup }, `📸 No profile picture found on WhatsApp for ${contactType}`);
             }
-          } catch (error: any) {
-            const contactType = isGroup ? 'grupo' : 'contato';
-            logger.warn({ error: error.message, fromNumber, isGroup }, `Failed to update ${contactType} avatar (non-critical)`);
-          }
+          } catch (error: any) {}
         })();
       }
 
-      // Store message mapping in database for reply functionality (if we have Quepasa message ID)
       if (messageId && result.messageId) {
         try {
           await prisma.messageMapping.create({
@@ -563,13 +451,9 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
               conversationId: result.conversationId,
             },
           });
-          logger.info({ chatwootMessageId: result.messageId, quepasaMessageId: messageId, conversationId: result.conversationId }, '💾 Stored message mapping for reply functionality');
-        } catch (error: any) {
-          logger.warn({ error: error.message, chatwootMessageId: result.messageId, quepasaMessageId: messageId }, 'Failed to store message mapping (non-critical)');
-        }
+        } catch (error: any) {}
       }
 
-      // Log outgoing event to Chatwoot
       await prisma.eventLog.create({
         data: {
           direction: 'out',
@@ -586,7 +470,6 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
         },
       });
 
-      // Mark message as processed (idempotency)
       if (messageId) {
         try {
           await prisma.processedMessage.create({
@@ -597,13 +480,7 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
               direction: 'incoming',
             },
           });
-          logger.info({ messageId, fromNumber }, '💾 Marked message as processed (idempotency)');
-        } catch (error: any) {
-          // Ignore unique constraint errors (race condition)
-          if (!error.message?.includes('Unique constraint')) {
-            logger.warn({ error: error.message, messageId }, 'Failed to mark message as processed (non-critical)');
-          }
-        }
+        } catch (error: any) {}
       }
 
       res.json({
@@ -613,8 +490,6 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
       });
     } catch (error: any) {
       logger.error({ error: error.message, fromNumber, quepasaToken: token }, 'Failed to process message in Chatwoot');
-
-      // Log error
       await prisma.eventLog.create({
         data: {
           direction: 'out',
@@ -627,7 +502,6 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
           },
         },
       });
-
       return res.status(500).json({ success: false, error: error.message });
     }
   } catch (error: any) {
@@ -637,88 +511,64 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
 });
 
 /**
- * FALLBACK: Webhook endpoint without token (for backward compatibility)
- * This is the old method using trackid from payload
- * NEW integrations should use /webhooks/quepasa/:token instead
+ * FALLBACK: Webhook endpoint without token
  */
 router.post('/webhooks/quepasa', async (req, res, next) => {
   try {
     const payload = req.body;
-
     logger.info({ payloadKeys: Object.keys(payload) }, 'Received webhook from Quepasa');
 
-    // Extract Quepasa phone number from webhook extra data (configured when setting up webhook)
     const quepasaPhoneNumber = payload.trackid || payload.extra?.phoneNumber;
 
-    // Log incoming event
+    let fromNumber = payload.chat?.id || payload.from || payload.chatId || payload.chat?.phone;
+
+    // CRITICAL FIX FOR LID
+    if (fromNumber && typeof fromNumber === 'string' && fromNumber.includes('@lid') && payload.chat?.phone) {
+        const cleanPhone = payload.chat.phone.replace(/[^0-9]/g, '');
+        fromNumber = `${cleanPhone}@s.whatsapp.net`;
+    }
+
+    const messageText = payload.text || payload.body || payload.message?.text || '';
+    const fromMe = payload.fromme || payload.fromMe || false;
+    const senderName = payload.chat?.title || payload.senderName || payload.pushname || fromNumber;
+
     await prisma.eventLog.create({
       data: {
         direction: 'in',
         provider: 'quepasa',
         sessionId: quepasaPhoneNumber || 'quepasa',
-        peer: payload.chat?.id || payload.chat?.phone || payload.from || payload.chatId || 'unknown',
+        peer: fromNumber || 'unknown',
         payload: payload,
       },
     });
 
-    // Extract message data from Quepasa webhook
-    // Quepasa sends: chat.id, chat.phone, text, fromme (lowercase!)
-    const fromNumber = payload.chat?.id || payload.chat?.phone || payload.from || payload.chatId;
-    const messageText = payload.text || payload.body || payload.message?.text || '';
-    const fromMe = payload.fromme || payload.fromMe || false; // Note: Quepasa uses lowercase 'fromme'
-    const senderName = payload.chat?.title || payload.senderName || payload.pushname || fromNumber;
-
-    // Validate required fields
     if (!fromNumber || !messageText) {
-      logger.warn({ payload }, 'Incomplete Quepasa webhook payload');
       return res.status(400).json({ error: 'Invalid webhook payload' });
     }
 
-    // Ignore messages sent by bot owner (fromMe = true)
     if (fromMe) {
-      logger.info({ fromNumber, fromMe }, 'Ignoring message from bot owner');
       return res.json({ success: true, message: 'Message from owner ignored' });
     }
 
-    // Check if this is a group message
-    const isGroup = fromNumber.includes('@g.us') || payload.isGroup;
+    const isGroup = (fromNumber && fromNumber.includes('@g.us')) || payload.isGroup;
 
-    if (isGroup) {
-      logger.info({ fromNumber, isGroup }, 'Group message received [LEGACY], will create ticket with (Grupo) suffix');
-    }
-
-    // Find QuepasaMapping configuration
     if (!quepasaPhoneNumber) {
-      logger.warn({ payload }, 'No Quepasa phone number in webhook payload');
       return res.status(400).json({ error: 'Missing Quepasa phone number identifier' });
     }
 
     const quepasaMapping = await prisma.quepasaMapping.findFirst({
-      where: {
-        phoneNumber: quepasaPhoneNumber,
-        active: true,
-      },
+      where: { phoneNumber: quepasaPhoneNumber, active: true },
       select: {
-        id: true,
-        quepasaToken: true,
-        phoneNumber: true,
-        name: true,
-        chatwootBaseUrl: true,
-        chatwootApiToken: true,
-        chatwootAccountId: true,
-        chatwootInboxId: true,
-        reopenClosedTickets: true,
-        showAgentName: true,
-        active: true,
+        id: true, quepasaToken: true, phoneNumber: true, name: true,
+        chatwootBaseUrl: true, chatwootApiToken: true, chatwootAccountId: true, chatwootInboxId: true,
+        reopenClosedTickets: true, showAgentName: true, active: true,
       },
     });
 
     if (!quepasaMapping) {
-      logger.warn({ quepasaPhoneNumber }, 'No active Quepasa mapping found');
       return res.status(404).json({ error: 'Quepasa mapping not found' });
     }
 
-    // Build Chatwoot config from mapping
     const chatwootConfig = {
       baseUrl: quepasaMapping.chatwootBaseUrl,
       apiAccessToken: quepasaMapping.chatwootApiToken,
@@ -726,66 +576,40 @@ router.post('/webhooks/quepasa', async (req, res, next) => {
       inboxId: quepasaMapping.chatwootInboxId,
     };
 
-    // Process message in Chatwoot
     try {
-      // Add (Grupo) suffix to name if it's a group
       const displayName = isGroup ? `${senderName} (Grupo)` : senderName;
       const result = await chatwootClient.processIncomingMessage(chatwootConfig, fromNumber, messageText, displayName, undefined, undefined, quepasaMapping.reopenClosedTickets);
 
-      logger.info(
-        { conversationId: result.conversationId, messageId: result.messageId, fromNumber, quepasaPhoneNumber },
-        'Message forwarded to Chatwoot'
-      );
-
-      // Log outgoing event to Chatwoot
       await prisma.eventLog.create({
         data: {
           direction: 'out',
           provider: 'chatwoot',
           sessionId: quepasaPhoneNumber,
           peer: fromNumber,
-          payload: {
-            conversationId: result.conversationId,
-            messageId: result.messageId,
-            text: messageText,
-          },
+          payload: { conversationId: result.conversationId, messageId: result.messageId, text: messageText },
         },
       });
 
-      res.json({
-        success: true,
-        conversationId: result.conversationId,
-        messageId: result.messageId,
-      });
+      res.json({ success: true, conversationId: result.conversationId, messageId: result.messageId });
     } catch (error: any) {
-      logger.error({ error: error.message, fromNumber, quepasaPhoneNumber }, 'Failed to process message in Chatwoot');
-
-      // Log error
       await prisma.eventLog.create({
         data: {
           direction: 'out',
           provider: 'chatwoot',
           sessionId: quepasaPhoneNumber,
           peer: fromNumber,
-          payload: {
-            error: error.message,
-            errorType: 'chatwoot_processing_failed',
-          },
+          payload: { error: error.message, errorType: 'chatwoot_processing_failed' },
         },
       });
-
       return res.status(500).json({ success: false, error: error.message });
     }
   } catch (error: any) {
-    logger.error({ error }, 'Quepasa webhook processing failed');
     next(error);
   }
 });
 
 /**
  * Webhook endpoint to receive outgoing messages from Chatwoot (with token in path)
- * Chatwoot sends agent responses here, we forward them to Quepasa (WhatsApp)
- * URL format: /webhooks/chatwoot/{quepasaToken}
  */
 router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
   try {
@@ -793,700 +617,284 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
     const payload = req.body;
 
     logger.info({ event: payload.event, hasToken: !!token }, 'Received webhook from Chatwoot with token');
+    const peerNumber = extractChatwootPhoneNumber(payload);
 
-    // Log incoming event
     await prisma.eventLog.create({
       data: {
-        direction: 'in',
-        provider: 'chatwoot',
-        sessionId: token || 'chatwoot',
-        peer: payload.conversation?.meta?.sender?.phone_number || 'unknown',
-        payload: payload,
+        direction: 'in', provider: 'chatwoot', sessionId: token || 'chatwoot', peer: peerNumber, payload: payload,
       },
     });
 
-    // Handle conversation resolved event
     if (payload.event === 'conversation_status_changed' && payload.status === 'resolved') {
-      logger.info({ conversationId: payload.conversation?.id }, 'Conversation resolved in Chatwoot');
-      
-      const quepasaMapping = await prisma.quepasaMapping.findFirst({
-        where: { quepasaToken: token, active: true }
-      });
-      
+      const quepasaMapping = await prisma.quepasaMapping.findFirst({ where: { quepasaToken: token, active: true } });
       if (quepasaMapping) {
         const payloadInboxId = payload.inbox?.id || payload.conversation?.inbox_id;
         if (payloadInboxId && payloadInboxId.toString() !== quepasaMapping.chatwootInboxId) {
-          logger.debug({ payloadInboxId, mappingInboxId: quepasaMapping.chatwootInboxId }, 'Ignoring chatwoot webhook event from different inbox');
           return res.json({ success: true, message: 'Event ignored - different inbox' });
         }
-
-        let phoneNumber = payload.conversation?.meta?.sender?.phone_number || payload.conversation?.meta?.sender?.identifier;
-        if (phoneNumber) {
-          let chatId = phoneNumber.includes('@g.us') ? phoneNumber : phoneNumber.replace(/@.*$/, '');
-          
+        let phoneNumber = extractChatwootPhoneNumber(payload);
+        if (phoneNumber && phoneNumber !== 'unknown') {
+          let chatId = phoneNumber.includes('@g.us') ? phoneNumber : phoneNumber.replace(/@.*$/, '').replace(/^\+/, '');
           await quepasaClient.initialize();
-          
-          // Send closing message if configured
           if (quepasaMapping.closingMessage) {
             await quepasaClient.sendTextMessage(token, chatId, quepasaMapping.closingMessage);
-            logger.info({ chatId }, 'Sent closing message to user');
           }
-          
-          // Call return webhook if configured
           if (quepasaMapping.returnWebhookUrl) {
             try {
               const axios = require('axios');
-              await axios.post(quepasaMapping.returnWebhookUrl, {
-                event: 'ticket_resolved',
-                chatId,
-                mappingId: quepasaMapping.id,
-                conversationId: payload.conversation?.id
-              });
-              logger.info({ webhookUrl: quepasaMapping.returnWebhookUrl }, 'Fired return webhook function');
-            } catch (err: any) {
-              logger.error({ error: err.message }, 'Failed to trigger return webhook');
-            }
+              await axios.post(quepasaMapping.returnWebhookUrl, { event: 'ticket_resolved', chatId, mappingId: quepasaMapping.id, conversationId: payload.conversation?.id });
+            } catch (err: any) {}
           }
         }
       }
       return res.json({ success: true, message: 'Processed resolved conversation' });
     }
 
-    // We only care about message_created events with outgoing messages for standard message processing
     if (payload.event !== 'message_created') {
-      logger.debug({ event: payload.event }, 'Ignoring non-message/non-resolution event');
       return res.json({ success: true, message: 'Event ignored' });
     }
 
-    // Extract message data
     const messageType = payload.message_type || payload.content_attributes?.message_type;
     let messageContent = payload.content || '';
     const conversationId = payload.conversation?.id;
-    // Use identifier as fallback for groups (phone_number is null for groups)
-    const phoneNumber = payload.conversation?.meta?.sender?.phone_number || payload.conversation?.meta?.sender?.identifier;
-    const isPrivate = payload.private || false;
+    const phoneNumber = extractChatwootPhoneNumber(payload);
     const attachments = payload.attachments || [];
     const hasAttachments = attachments.length > 0;
-
-    // Extract agent name from Chatwoot payload
     const agentName = payload.sender?.name || payload.sender?.available_name || payload.conversation?.meta?.assignee?.name || 'Atendente';
-
-    // Check if this is a reply to another message (for WhatsApp quote/reply functionality)
     const inReplyTo = payload.content_attributes?.in_reply_to || payload.in_reply_to;
-    const chatwootMessageId = payload.id; // Chatwoot message ID from webhook
+    const chatwootMessageId = payload.id; 
     let quepasaReplyId: string | undefined;
 
-    // DEBUG: Log all payload details to understand Chatwoot's reply structure
-    logger.info({
-      'payload.id': payload.id,
-      'payload.content_attributes': payload.content_attributes,
-      'payload.in_reply_to': payload.in_reply_to,
-      'inReplyTo': inReplyTo,
-      'conversationId': conversationId,
-      'messageContent': messageContent,
-    }, '🔍 DEBUG: Chatwoot webhook payload for reply detection');
-
-    // Only process outgoing messages (agent responses)
     if (messageType !== 'outgoing') {
-      logger.debug({ messageType }, 'Ignoring non-outgoing message');
       return res.json({ success: true, message: 'Not an outgoing message' });
     }
 
-    // Log if this is a private note (but send it anyway with reply support)
-    if (isPrivate) {
-      logger.info({ conversationId }, '📝 Processing private note (will be sent to customer with reply support)');
-    }
-
-    // Validate required fields (accept messages with attachments but no text)
-    if (!phoneNumber) {
-      logger.warn({ payload }, 'Incomplete Chatwoot webhook payload - missing phone number');
+    if (!phoneNumber || phoneNumber === 'unknown') {
       return res.status(400).json({ error: 'Invalid webhook payload - missing phone number' });
     }
-
-    // Must have either text or attachment
     if (!messageContent && !hasAttachments) {
-      logger.warn({ payload }, 'Incomplete Chatwoot webhook payload - no content or attachments');
       return res.status(400).json({ error: 'Invalid webhook payload - no content' });
     }
 
-    if (!token) {
-      logger.warn({ payload }, 'No token in Chatwoot webhook URL');
-      return res.status(400).json({ error: 'Missing token in URL path' });
-    }
-
-    // Find QuepasaMapping by Quepasa token (MUCH faster than inbox ID lookup!)
     const quepasaMapping = await prisma.quepasaMapping.findFirst({
-      where: {
-        quepasaToken: token,
-        active: true,
-      },
-      select: {
-        id: true,
-        quepasaToken: true,
-        phoneNumber: true,
-        name: true,
-        chatwootBaseUrl: true,
-        chatwootApiToken: true,
-        chatwootAccountId: true,
-        chatwootInboxId: true,
-        showAgentName: true,
-        active: true,
-      },
+      where: { quepasaToken: token, active: true },
+      select: { id: true, quepasaToken: true, phoneNumber: true, name: true, chatwootBaseUrl: true, chatwootApiToken: true, chatwootAccountId: true, chatwootInboxId: true, showAgentName: true, active: true },
     });
 
     if (!quepasaMapping) {
-      logger.warn({ token }, 'No active Quepasa mapping found for token');
       return res.status(404).json({ error: 'Quepasa mapping not found for this token' });
     }
 
-    // Since Account Webhooks can send events for ALL inboxes, ensure we only process messages for THIS mapping's inbox
     const payloadInboxId = payload.inbox?.id || payload.conversation?.inbox_id;
     if (payloadInboxId && payloadInboxId.toString() !== quepasaMapping.chatwootInboxId) {
-      logger.debug({ payloadInboxId, mappingInboxId: quepasaMapping.chatwootInboxId }, 'Ignoring message_created event from different inbox');
       return res.json({ success: true, message: 'Event ignored - different inbox' });
     }
 
-    // If showAgentName is enabled, prepend agent name to message content
     if (quepasaMapping.showAgentName && messageContent && agentName) {
       messageContent = `*${agentName}:*\n${messageContent}`;
-      logger.info({ agentName, mappingId: quepasaMapping.id }, '👤 Prepended agent name to message');
     }
 
-    // Build Chatwoot config from mapping
-    const chatwootConfig = {
-      baseUrl: quepasaMapping.chatwootBaseUrl,
-      apiAccessToken: quepasaMapping.chatwootApiToken,
-      accountId: quepasaMapping.chatwootAccountId,
-      inboxId: quepasaMapping.chatwootInboxId,
-    };
+    const chatwootConfig = { baseUrl: quepasaMapping.chatwootBaseUrl, apiAccessToken: quepasaMapping.chatwootApiToken, accountId: quepasaMapping.chatwootAccountId, inboxId: quepasaMapping.chatwootInboxId };
 
-    // If this is a reply, lookup the Quepasa message ID from our database
     if (inReplyTo && conversationId) {
       try {
-        const messageMapping = await prisma.messageMapping.findUnique({
-          where: {
-            chatwootMessageId: parseInt(inReplyTo),
-          },
-        });
-
-        if (messageMapping) {
-          quepasaReplyId = messageMapping.quepasaMessageId;
-          logger.info({ inReplyTo, quepasaReplyId, conversationId }, '✅ Found Quepasa message ID from database for reply');
-        } else {
-          logger.warn({ inReplyTo, conversationId }, 'No message mapping found in database for this Chatwoot message');
-        }
-      } catch (error: any) {
-        logger.warn({ error: error.message, inReplyTo, conversationId }, 'Failed to lookup message mapping from database');
-      }
+        const messageMapping = await prisma.messageMapping.findUnique({ where: { chatwootMessageId: parseInt(inReplyTo) } });
+        if (messageMapping) { quepasaReplyId = messageMapping.quepasaMessageId; }
+      } catch (error: any) {}
     }
 
-    // Initialize Quepasa client
     await quepasaClient.initialize();
-
-    // Format phone number for Quepasa
-    // For groups: Keep full ID with @g.us suffix (required by Quepasa)
-    // For individuals: Remove @s.whatsapp.net or @c.us suffix
     let isGroup = phoneNumber.includes('@g.us');
     let chatId = phoneNumber;
 
     if (isGroup) {
-      // New format: Already has @g.us, keep it
       chatId = phoneNumber;
-      logger.info({ phoneNumber, chatId, isGroup: true }, 'Detected group (has @g.us)');
     } else if (!phoneNumber.includes('@') && !phoneNumber.startsWith('+') && phoneNumber.length > 10) {
-      // Old format: Numeric ID without suffix (from old contacts) - probably a group
       isGroup = true;
       chatId = `${phoneNumber}@g.us`;
-      logger.info({ phoneNumber, chatId, isGroup: true }, 'Detected group (old format, added @g.us)');
     } else {
-      // Individual contact: Remove WhatsApp suffixes
-      chatId = phoneNumber.replace(/@.*$/, '');
-      logger.info({ phoneNumber, chatId, isGroup: false }, 'Detected individual contact');
+      chatId = phoneNumber.replace(/@.*$/, '').replace(/^\+/, '');
     }
 
-    // Send message via Quepasa
     try {
       let result;
-
       if (hasAttachments) {
-        // Send media message with first attachment
         const attachment = attachments[0];
         const mediaUrl = attachment.data_url || attachment.file_url;
-
-        // Extract extension from URL to determine correct MIME type
         const urlExtension = mediaUrl.match(/\.([a-z0-9]+)(?:\?|$)/i)?.[1]?.toLowerCase();
-        const mimeTypeMap: Record<string, string> = {
-          'mp3': 'audio/mpeg',
-          'ogg': 'audio/ogg',
-          'oga': 'audio/ogg',  // OGG Audio (common extension)
-          'opus': 'audio/opus',
-          'wav': 'audio/wav',
-          'mp4': 'video/mp4',
-          'jpg': 'image/jpeg',
-          'jpeg': 'image/jpeg',
-          'png': 'image/png',
-          'gif': 'image/gif',
-          'pdf': 'application/pdf',
-        };
+        const mimeTypeMap: Record<string, string> = { 'mp3': 'audio/mpeg', 'ogg': 'audio/ogg', 'oga': 'audio/ogg', 'opus': 'audio/opus', 'wav': 'audio/wav', 'mp4': 'video/mp4', 'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif', 'pdf': 'application/pdf' };
         let mimeType = (urlExtension && mimeTypeMap[urlExtension]) || attachment.file_type || 'application/octet-stream';
         const filename = attachment.file_name || `file.${urlExtension || 'bin'}`;
 
-        // DEBUG: Log detecção de áudio
-        logger.info({
-          mediaUrl,
-          urlExtension,
-          'attachment.file_type': attachment.file_type,
-          'attachment.file_name': attachment.file_name,
-          'attachment.data_url': attachment.data_url,
-          'attachment.file_url': attachment.file_url,
-          mimeType,
-          'isAudio_fileType': attachment.file_type === 'audio',
-          'isAudio_mimeType': mimeType.startsWith('audio'),
-        }, '🎧 DEBUG: Detectando tipo de arquivo');
-
-        // For audio files, download, convert to .oga, and send converted file URL
-        // Chatwoot sends file_type as "audio" (without slash), so check both cases
         if (attachment.file_type === 'audio' || mimeType.startsWith('audio')) {
-          logger.info({ mediaUrl, mimeType, urlExtension }, '🎧 Processing audio: download + convert to .oga + send');
-
-          // Import required modules
           const axios = require('axios');
           const { convertAudioToPTT } = require('../utils/audio');
           const { config } = require('../config');
 
-          // 1. Download audio from Chatwoot
-          logger.info({ mediaUrl }, '📥 Downloading audio from Chatwoot');
           const audioResponse = await axios.get(mediaUrl, { responseType: 'arraybuffer' });
           const audioBuffer = Buffer.from(audioResponse.data);
-          logger.info({ size: audioBuffer.length }, '✅ Audio downloaded');
-
-          // 2. Convert to PTT format (.oga)
-          logger.info('🔄 Converting audio to .oga PTT format');
           const { filePath: convertedFilePath, duration } = await convertAudioToPTT(audioBuffer);
-          const filename = require('path').basename(convertedFilePath);
-          logger.info({ filename, duration, filePath: convertedFilePath }, '✅ Audio converted to .oga');
+          const convertedFilename = require('path').basename(convertedFilePath);
+          const publicUrl = `${config.systemBaseUrl}/api/media/${convertedFilename}`;
 
-          // 3. Build public URL for converted file
-          const publicUrl = `${config.systemBaseUrl}/api/media/${filename}`;
-          logger.info({ publicUrl }, '🌐 Public URL created for converted audio');
-
-          // 4. Send converted file URL to Quepasa
-          logger.info({ publicUrl }, '📤 Sending converted .oga URL to Quepasa');
           result = await quepasaClient.sendAudioByURL(quepasaMapping.quepasaToken, chatId, publicUrl);
 
-          logger.info({ chatId, audioUrl: publicUrl, quepasaResponse: result }, '✅ Audio PTT sent by URL - converted .oga file');
-
-          // 5. Schedule automatic deletion after 3 minutes
           const { unlink } = require('fs/promises');
           setTimeout(async () => {
-            try {
-              await unlink(convertedFilePath);
-              logger.info({ filename, filePath: convertedFilePath }, '🗑️ Audio file deleted after 3 minutes');
-            } catch (error: any) {
-              logger.warn({ error: error.message, filename, filePath: convertedFilePath }, 'Failed to delete audio file (may already be deleted)');
-            }
-          }, 180000); // 3 minutes = 180000ms
-          logger.info({ filename, filePath: convertedFilePath, deleteAfterMs: 180000 }, '⏰ Scheduled audio file deletion in 3 minutes')
+            try { await unlink(convertedFilePath); } catch (error: any) {}
+          }, 180000); 
         } else {
-          // For non-audio files, use regular media message
-          logger.info({ chatId, mediaUrl, mimeType, filename, urlExtension }, 'Sending media message via Quepasa');
-
-          result = await quepasaClient.sendMediaMessage(quepasaMapping.quepasaToken, chatId, {
-            url: mediaUrl,
-            mime: mimeType,
-            filename: filename,
-            text: messageContent, // Caption for the media
-          });
+          result = await quepasaClient.sendMediaMessage(quepasaMapping.quepasaToken, chatId, { url: mediaUrl, mime: mimeType, filename: filename, text: messageContent });
         }
       } else {
-        // Send text message (with optional reply-to)
         result = await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, chatId, messageContent, quepasaReplyId);
       }
 
-      logger.info({ chatId, conversationId, quepasaPhone: quepasaMapping.phoneNumber, success: result.success, hasMedia: hasAttachments }, 'Message sent via Quepasa to WhatsApp');
-
-      // Store message mapping in database for reply functionality (if we have both IDs)
       const quepasaMessageId = result.message?.id;
       if (chatwootMessageId && quepasaMessageId && conversationId) {
         try {
           await prisma.messageMapping.create({
-            data: {
-              chatwootMessageId: chatwootMessageId,
-              quepasaMessageId: quepasaMessageId,
-              conversationId: conversationId,
-            },
+            data: { chatwootMessageId: chatwootMessageId, quepasaMessageId: quepasaMessageId, conversationId: conversationId },
           });
-          logger.info({ chatwootMessageId, quepasaMessageId, conversationId }, '💾 Stored Chatwoot→WhatsApp message mapping for reply functionality');
-        } catch (error: any) {
-          logger.warn({ error: error.message, chatwootMessageId, quepasaMessageId }, 'Failed to store Chatwoot→WhatsApp message mapping (non-critical)');
-        }
-      } else {
-        logger.warn({ chatwootMessageId, quepasaMessageId, conversationId, hasQuepasaId: !!quepasaMessageId }, 'Missing IDs for message mapping - cannot store for reply functionality');
+        } catch (error: any) {}
       }
 
-      // Log outgoing event to Quepasa
       await prisma.eventLog.create({
         data: {
-          direction: 'out',
-          provider: 'quepasa',
-          sessionId: quepasaMapping.phoneNumber,
-          peer: chatId,
-          payload: {
-            conversationId,
-            text: messageContent,
-            hasAttachments,
-            attachmentCount: attachments.length,
-            quepasaResponse: JSON.parse(JSON.stringify(result)),
-          },
+          direction: 'out', provider: 'quepasa', sessionId: quepasaMapping.phoneNumber, peer: chatId,
+          payload: { conversationId, text: messageContent, hasAttachments, attachmentCount: attachments.length, quepasaResponse: JSON.parse(JSON.stringify(result)) },
         },
       });
 
-      res.json({
-        success: true,
-        quepasaMessageId: result.message?.id,
-      });
+      res.json({ success: true, quepasaMessageId: result.message?.id });
     } catch (error: any) {
-      logger.error({ error: error.message, chatId, conversationId }, 'Failed to send message via Quepasa');
-
-      // Log error
       await prisma.eventLog.create({
-        data: {
-          direction: 'out',
-          provider: 'quepasa',
-          sessionId: quepasaMapping.phoneNumber,
-          peer: chatId,
-          payload: {
-            error: error.message,
-            errorType: 'quepasa_send_failed',
-            conversationId,
-          },
-        },
+        data: { direction: 'out', provider: 'quepasa', sessionId: quepasaMapping.phoneNumber, peer: chatId, payload: { error: error.message, errorType: 'quepasa_send_failed', conversationId } },
       });
-
       return res.status(500).json({ success: false, error: error.message });
     }
   } catch (error: any) {
-    logger.error({ error }, 'Chatwoot webhook processing failed');
     next(error);
   }
 });
 
 /**
- * FALLBACK: Webhook endpoint without token (for backward compatibility)
- * This is the old method using inbox ID from payload
- * NEW integrations should use /webhooks/chatwoot/:token instead
+ * FALLBACK: Webhook endpoint without token 
  */
 router.post('/webhooks/chatwoot', async (req, res, next) => {
   try {
     const payload = req.body;
-
-    logger.info({ event: payload.event }, 'Received webhook from Chatwoot (legacy method without token)');
-
-    // Extract inbox ID to find the corresponding Quepasa mapping
     const inboxId = payload.inbox?.id?.toString() || payload.conversation?.inbox_id?.toString();
+    const peerNumber = extractChatwootPhoneNumber(payload);
 
-    // Log incoming event
     await prisma.eventLog.create({
-      data: {
-        direction: 'in',
-        provider: 'chatwoot',
-        sessionId: inboxId || 'chatwoot',
-        peer: payload.conversation?.meta?.sender?.phone_number || 'unknown',
-        payload: payload,
-      },
+      data: { direction: 'in', provider: 'chatwoot', sessionId: inboxId || 'chatwoot', peer: peerNumber, payload: payload },
     });
 
-    // We only care about message_created events with outgoing messages
-    if (payload.event !== 'message_created') {
-      logger.debug({ event: payload.event }, 'Ignoring non-message event');
-      return res.json({ success: true, message: 'Event ignored' });
-    }
+    if (payload.event !== 'message_created') return res.json({ success: true, message: 'Event ignored' });
 
-    // Extract message data
     const messageType = payload.message_type || payload.content_attributes?.message_type;
     let messageContent = payload.content || '';
     const conversationId = payload.conversation?.id;
-    // Use identifier as fallback for groups (phone_number is null for groups)
-    const phoneNumber = payload.conversation?.meta?.sender?.phone_number || payload.conversation?.meta?.sender?.identifier;
-    const isPrivate = payload.private || false;
+    const phoneNumber = extractChatwootPhoneNumber(payload);
     const attachments = payload.attachments || [];
     const hasAttachments = attachments.length > 0;
-
-    // Extract agent name from Chatwoot payload (legacy)
     const agentName = payload.sender?.name || payload.sender?.available_name || payload.conversation?.meta?.assignee?.name || 'Atendente';
-
-    // Check if this is a reply to another message (for WhatsApp quote/reply functionality)
     const inReplyTo = payload.content_attributes?.in_reply_to || payload.in_reply_to;
-    const chatwootMessageId = payload.id; // Chatwoot message ID from webhook
+    const chatwootMessageId = payload.id; 
     let quepasaReplyId: string | undefined;
 
-    // DEBUG: Log all payload details to understand Chatwoot's reply structure
-    logger.info({
-      'payload.id': payload.id,
-      'payload.content_attributes': payload.content_attributes,
-      'payload.in_reply_to': payload.in_reply_to,
-      'inReplyTo': inReplyTo,
-      'conversationId': conversationId,
-      'messageContent': messageContent,
-    }, '🔍 DEBUG: Chatwoot webhook payload for reply detection');
+    if (messageType !== 'outgoing') return res.json({ success: true, message: 'Not an outgoing message' });
+    if (!phoneNumber || phoneNumber === 'unknown') return res.status(400).json({ error: 'Invalid webhook payload - missing phone number' });
+    if (!messageContent && !hasAttachments) return res.status(400).json({ error: 'Invalid webhook payload - no content' });
+    if (!inboxId) return res.status(400).json({ error: 'Missing inbox ID' });
 
-    // Only process outgoing messages (agent responses)
-    if (messageType !== 'outgoing') {
-      logger.debug({ messageType }, 'Ignoring non-outgoing message');
-      return res.json({ success: true, message: 'Not an outgoing message' });
-    }
-
-    // Log if this is a private note (but send it anyway with reply support)
-    if (isPrivate) {
-      logger.info({ conversationId }, '📝 Processing private note (will be sent to customer with reply support)');
-    }
-
-    // Validate required fields (accept messages with attachments but no text)
-    if (!phoneNumber) {
-      logger.warn({ payload }, 'Incomplete Chatwoot webhook payload - missing phone number');
-      return res.status(400).json({ error: 'Invalid webhook payload - missing phone number' });
-    }
-
-    // Must have either text or attachment
-    if (!messageContent && !hasAttachments) {
-      logger.warn({ payload }, 'Incomplete Chatwoot webhook payload - no content or attachments');
-      return res.status(400).json({ error: 'Invalid webhook payload - no content' });
-    }
-
-    if (!inboxId) {
-      logger.warn({ payload }, 'No inbox ID in Chatwoot webhook');
-      return res.status(400).json({ error: 'Missing inbox ID' });
-    }
-
-    // Find QuepasaMapping by Chatwoot inbox ID
     const quepasaMapping = await prisma.quepasaMapping.findFirst({
-      where: {
-        chatwootInboxId: inboxId,
-        active: true,
-      },
-      select: {
-        id: true,
-        quepasaToken: true,
-        phoneNumber: true,
-        name: true,
-        chatwootBaseUrl: true,
-        chatwootApiToken: true,
-        chatwootAccountId: true,
-        chatwootInboxId: true,
-        showAgentName: true,
-        active: true,
-      },
+      where: { chatwootInboxId: inboxId, active: true },
+      select: { id: true, quepasaToken: true, phoneNumber: true, name: true, chatwootBaseUrl: true, chatwootApiToken: true, chatwootAccountId: true, chatwootInboxId: true, showAgentName: true, active: true },
     });
 
-    if (!quepasaMapping) {
-      logger.warn({ inboxId }, 'No active Quepasa mapping found for Chatwoot inbox');
-      return res.status(404).json({ error: 'Quepasa mapping not found for this inbox' });
-    }
+    if (!quepasaMapping) return res.status(404).json({ error: 'Quepasa mapping not found for this inbox' });
 
-    // If showAgentName is enabled, prepend agent name to message content (legacy)
     if (quepasaMapping.showAgentName && messageContent && agentName) {
       messageContent = `*${agentName}:*\n${messageContent}`;
-      logger.info({ agentName, mappingId: quepasaMapping.id }, '👤 [LEGACY] Prepended agent name to message');
     }
 
-    // Build Chatwoot config from mapping
-    const chatwootConfig = {
-      baseUrl: quepasaMapping.chatwootBaseUrl,
-      apiAccessToken: quepasaMapping.chatwootApiToken,
-      accountId: quepasaMapping.chatwootAccountId,
-      inboxId: quepasaMapping.chatwootInboxId,
-    };
+    const chatwootConfig = { baseUrl: quepasaMapping.chatwootBaseUrl, apiAccessToken: quepasaMapping.chatwootApiToken, accountId: quepasaMapping.chatwootAccountId, inboxId: quepasaMapping.chatwootInboxId };
 
-    // If this is a reply, lookup the Quepasa message ID from our database [LEGACY]
     if (inReplyTo && conversationId) {
       try {
-        const messageMapping = await prisma.messageMapping.findUnique({
-          where: {
-            chatwootMessageId: parseInt(inReplyTo),
-          },
-        });
-
-        if (messageMapping) {
-          quepasaReplyId = messageMapping.quepasaMessageId;
-          logger.info({ inReplyTo, quepasaReplyId, conversationId }, '✅ [LEGACY] Found Quepasa message ID from database for reply');
-        } else {
-          logger.warn({ inReplyTo, conversationId }, '[LEGACY] No message mapping found in database for this Chatwoot message');
-        }
-      } catch (error: any) {
-        logger.warn({ error: error.message, inReplyTo, conversationId }, '[LEGACY] Failed to lookup message mapping from database');
-      }
+        const messageMapping = await prisma.messageMapping.findUnique({ where: { chatwootMessageId: parseInt(inReplyTo) } });
+        if (messageMapping) { quepasaReplyId = messageMapping.quepasaMessageId; }
+      } catch (error: any) {}
     }
 
-    // Initialize Quepasa client
     await quepasaClient.initialize();
-
-    // Format phone number for Quepasa
-    // For groups: Keep full ID with @g.us suffix (required by Quepasa)
-    // For individuals: Remove @s.whatsapp.net or @c.us suffix
     let isGroup = phoneNumber.includes('@g.us');
     let chatId = phoneNumber;
 
     if (isGroup) {
-      // New format: Already has @g.us, keep it
       chatId = phoneNumber;
-      logger.info({ phoneNumber, chatId, isGroup: true }, 'Detected group (has @g.us)');
     } else if (!phoneNumber.includes('@') && !phoneNumber.startsWith('+') && phoneNumber.length > 10) {
-      // Old format: Numeric ID without suffix (from old contacts) - probably a group
       isGroup = true;
       chatId = `${phoneNumber}@g.us`;
-      logger.info({ phoneNumber, chatId, isGroup: true }, 'Detected group (old format, added @g.us)');
     } else {
-      // Individual contact: Remove WhatsApp suffixes
-      chatId = phoneNumber.replace(/@.*$/, '');
-      logger.info({ phoneNumber, chatId, isGroup: false }, 'Detected individual contact');
+      chatId = phoneNumber.replace(/@.*$/, '').replace(/^\+/, '');
     }
 
-    // Send message via Quepasa
     try {
       let result;
-
       if (hasAttachments) {
-        // Send media message with first attachment
         const attachment = attachments[0];
         const mediaUrl = attachment.data_url || attachment.file_url;
         let mimeType = attachment.file_type || 'application/octet-stream';
         const filename = attachment.file_name || 'file';
 
-        // DEBUG: Log detecção de áudio (legacy)
-        logger.info({
-          mediaUrl,
-          'attachment.file_type': attachment.file_type,
-          'attachment.file_name': attachment.file_name,
-          'attachment.data_url': attachment.data_url,
-          'attachment.file_url': attachment.file_url,
-          mimeType,
-          'isAudio_fileType': attachment.file_type === 'audio',
-          'isAudio_mimeType': mimeType.startsWith('audio'),
-        }, '🎧 DEBUG [LEGACY]: Detectando tipo de arquivo');
-
-        // For audio files, download, convert to .oga, and send converted file URL
-        // Chatwoot sends file_type as "audio" (without slash), so check both cases
         if (attachment.file_type === 'audio' || mimeType.startsWith('audio')) {
-          logger.info({ mediaUrl, mimeType }, '🎧 [LEGACY] Processing audio: download + convert to .oga + send');
-
-          // Import required modules
           const axios = require('axios');
           const { convertAudioToPTT } = require('../utils/audio');
           const { config } = require('../config');
 
-          // 1. Download audio from Chatwoot
-          logger.info({ mediaUrl }, '📥 [LEGACY] Downloading audio from Chatwoot');
           const audioResponse = await axios.get(mediaUrl, { responseType: 'arraybuffer' });
           const audioBuffer = Buffer.from(audioResponse.data);
-          logger.info({ size: audioBuffer.length }, '✅ [LEGACY] Audio downloaded');
+          const { filePath: convertedFilePath } = await convertAudioToPTT(audioBuffer);
+          const convertedFilename = require('path').basename(convertedFilePath);
+          const publicUrl = `${config.systemBaseUrl}/api/media/${convertedFilename}`;
 
-          // 2. Convert to PTT format (.oga)
-          logger.info('🔄 [LEGACY] Converting audio to .oga PTT format');
-          const { filePath: convertedFilePath, duration } = await convertAudioToPTT(audioBuffer);
-          const filename = require('path').basename(convertedFilePath);
-          logger.info({ filename, duration, filePath: convertedFilePath }, '✅ [LEGACY] Audio converted to .oga');
-
-          // 3. Build public URL for converted file
-          const publicUrl = `${config.systemBaseUrl}/api/media/${filename}`;
-          logger.info({ publicUrl }, '🌐 [LEGACY] Public URL created for converted audio');
-
-          // 4. Send converted file URL to Quepasa
-          logger.info({ publicUrl }, '📤 [LEGACY] Sending converted .oga URL to Quepasa');
           result = await quepasaClient.sendAudioByURL(quepasaMapping.quepasaToken, chatId, publicUrl);
 
-          logger.info({ chatId, audioUrl: publicUrl, quepasaResponse: result }, '✅ [LEGACY] Audio PTT sent by URL - converted .oga file');
-
-          // 5. Schedule automatic deletion after 3 minutes
           const { unlink } = require('fs/promises');
           setTimeout(async () => {
-            try {
-              await unlink(convertedFilePath);
-              logger.info({ filename, filePath: convertedFilePath }, '🗑️ [LEGACY] Audio file deleted after 3 minutes');
-            } catch (error: any) {
-              logger.warn({ error: error.message, filename, filePath: convertedFilePath }, '[LEGACY] Failed to delete audio file (may already be deleted)');
-            }
-          }, 180000); // 3 minutes = 180000ms
-          logger.info({ filename, filePath: convertedFilePath, deleteAfterMs: 180000 }, '⏰ [LEGACY] Scheduled audio file deletion in 3 minutes')
+            try { await unlink(convertedFilePath); } catch (error: any) {}
+          }, 180000);
         } else {
-          // For non-audio files, use regular media message
-          logger.info({ chatId, mediaUrl, mimeType, filename }, 'Sending media message via Quepasa (legacy)');
-
-          result = await quepasaClient.sendMediaMessage(quepasaMapping.quepasaToken, chatId, {
-            url: mediaUrl,
-            mime: mimeType,
-            filename: filename,
-            text: messageContent, // Caption for the media
-          });
+          result = await quepasaClient.sendMediaMessage(quepasaMapping.quepasaToken, chatId, { url: mediaUrl, mime: mimeType, filename: filename, text: messageContent });
         }
       } else {
-        // Send text message (with optional reply-to)
         result = await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, chatId, messageContent, quepasaReplyId);
       }
 
-      logger.info({ chatId, conversationId, quepasaPhone: quepasaMapping.phoneNumber, success: result.success, hasMedia: hasAttachments }, 'Message sent via Quepasa to WhatsApp');
-
-      // Store message mapping in database for reply functionality (if we have both IDs)
       const quepasaMessageId = result.message?.id;
       if (chatwootMessageId && quepasaMessageId && conversationId) {
         try {
           await prisma.messageMapping.create({
-            data: {
-              chatwootMessageId: chatwootMessageId,
-              quepasaMessageId: quepasaMessageId,
-              conversationId: conversationId,
-            },
+            data: { chatwootMessageId: chatwootMessageId, quepasaMessageId: quepasaMessageId, conversationId: conversationId },
           });
-          logger.info({ chatwootMessageId, quepasaMessageId, conversationId }, '💾 Stored Chatwoot→WhatsApp message mapping for reply functionality');
-        } catch (error: any) {
-          logger.warn({ error: error.message, chatwootMessageId, quepasaMessageId }, 'Failed to store Chatwoot→WhatsApp message mapping (non-critical)');
-        }
-      } else {
-        logger.warn({ chatwootMessageId, quepasaMessageId, conversationId, hasQuepasaId: !!quepasaMessageId }, 'Missing IDs for message mapping - cannot store for reply functionality');
+        } catch (error: any) {}
       }
 
-      // Log outgoing event to Quepasa
       await prisma.eventLog.create({
-        data: {
-          direction: 'out',
-          provider: 'quepasa',
-          sessionId: quepasaMapping.phoneNumber,
-          peer: chatId,
-          payload: {
-            conversationId,
-            text: messageContent,
-            hasAttachments,
-            attachmentCount: attachments.length,
-            quepasaResponse: JSON.parse(JSON.stringify(result)),
-          },
-        },
+        data: { direction: 'out', provider: 'quepasa', sessionId: quepasaMapping.phoneNumber, peer: chatId, payload: { conversationId, text: messageContent, hasAttachments, attachmentCount: attachments.length, quepasaResponse: JSON.parse(JSON.stringify(result)) } },
       });
 
-      res.json({
-        success: true,
-        quepasaMessageId: result.message?.id,
-      });
+      res.json({ success: true, quepasaMessageId: result.message?.id });
     } catch (error: any) {
-      logger.error({ error: error.message, chatId, conversationId }, 'Failed to send message via Quepasa');
-
-      // Log error
       await prisma.eventLog.create({
-        data: {
-          direction: 'out',
-          provider: 'quepasa',
-          sessionId: quepasaMapping.phoneNumber,
-          peer: chatId,
-          payload: {
-            error: error.message,
-            errorType: 'quepasa_send_failed',
-            conversationId,
-          },
-        },
+        data: { direction: 'out', provider: 'quepasa', sessionId: quepasaMapping.phoneNumber, peer: chatId, payload: { error: error.message, errorType: 'quepasa_send_failed', conversationId } },
       });
-
       return res.status(500).json({ success: false, error: error.message });
     }
   } catch (error: any) {
-    logger.error({ error }, 'Chatwoot webhook processing failed (legacy method)');
     next(error);
   }
 });
