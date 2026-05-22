@@ -89,6 +89,7 @@ export const Sessions: React.FC = () => {
     botWelcomeMessage: '',
     botOptionsString: '',
     botInvalidMessage: '',
+    botClosingMessage: '',
     provider: 'quepasa',
     officialPhoneId: '',
     officialApiToken: '',
@@ -550,6 +551,7 @@ export const Sessions: React.FC = () => {
       botWelcomeMessage: '',
       botOptionsString: '',
       botInvalidMessage: '',
+      botClosingMessage: '',
       provider: 'quepasa',
       officialPhoneId: '',
       officialApiToken: '',
@@ -568,6 +570,7 @@ export const Sessions: React.FC = () => {
       botWelcomeMessage: mapping.botWelcomeMessage || 'Olá! Para começar, escolha o setor:',
       botOptionsString: mapping.botOptions ? (mapping.botOptions as any[]).map((o: any) => `${o.id}|${o.text}|${o.teamId||''}`).join('\n') : '1|Opção Exemplo|',
       botInvalidMessage: mapping.botInvalidMessage || 'Opção Inválida!',
+      botClosingMessage: mapping.closingMessage || 'Atendimento encerrado.',
       provider: mapping.provider || 'quepasa',
       officialPhoneId: mapping.officialPhoneId || '',
       officialApiToken: mapping.officialApiToken || '',
@@ -623,6 +626,7 @@ export const Sessions: React.FC = () => {
         botWelcomeMessage: typebotForm.botWelcomeMessage,
         botOptions: parsedOptions as any,
         botInvalidMessage: typebotForm.botInvalidMessage,
+        closingMessage: typebotForm.botClosingMessage,
         provider: typebotForm.provider,
         officialPhoneId: typebotForm.officialPhoneId || undefined,
         officialApiToken: typebotForm.officialApiToken || undefined,
@@ -679,6 +683,7 @@ export const Sessions: React.FC = () => {
         botWelcomeMessage: typebotForm.botWelcomeMessage,
         botOptions: parsedOptions as any,
         botInvalidMessage: typebotForm.botInvalidMessage,
+        closingMessage: typebotForm.botClosingMessage,
         provider: typebotForm.provider,
         officialPhoneId: typebotForm.officialPhoneId || undefined,
         officialApiToken: typebotForm.officialApiToken || undefined,
@@ -1700,6 +1705,10 @@ export const Sessions: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem de Opção Inválida</label>
                       <input type="text" value={typebotForm.botInvalidMessage} onChange={(e) => setTypebotForm({ ...typebotForm, botInvalidMessage: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Opção inválida, por favor digite um número válido." />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem de Finalização (Encerramento)</label>
+                      <input type="text" value={typebotForm.botClosingMessage} onChange={(e) => setTypebotForm({ ...typebotForm, botClosingMessage: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Atendimento encerrado." />
                     </div>
                   </div>
                 )}

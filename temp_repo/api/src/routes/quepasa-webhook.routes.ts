@@ -293,10 +293,8 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
           const welcomeMsg = quepasaMapping.botWelcomeMessage || 'Olá! Selecione uma opção:';
           const options = (quepasaMapping.botOptions as any[]) || [];
           
-          let menuText = welcomeMsg + '\n';
           const rows: { id: string; title: string }[] = [];
           options.forEach((opt: any) => {
-            menuText += `\n${opt.id} - ${opt.text}`;
             rows.push({
               id: String(opt.id),
               title: String(opt.text).substring(0, 24)
@@ -306,7 +304,6 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
           // Add 'Encerrar' option only if user didn't define '0'
           const hasZero = options.some((opt: any) => String(opt.id) === '0');
           if (!hasZero) {
-            menuText += `\n0 - Encerrar`;
             rows.push({
               id: '0',
               title: 'Encerrar'
@@ -315,13 +312,28 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
 
           const sections = [{ title: 'Opções', rows }];
 
-          logger.info({ phone: fromNumber, mappingId: quepasaMapping.id }, 'Sending native bot menu (Text Mode)');
+          logger.info({ phone: fromNumber, mappingId: quepasaMapping.id }, 'Sending native bot menu (List Mode)');
           await quepasaClient.initialize();
           
           try {
-            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+            // First send the welcome message separately, then the list?
+            // Wait, WAHA lists just take `bodyText`.
+            await quepasaClient.sendListMessage(
+              quepasaMapping.quepasaToken, 
+              fromNumber, 
+              welcomeMsg,
+              'Ver Opções',
+              'Menu',
+              sections
+            );
           } catch (listErr) {
-            logger.warn({ phone: fromNumber, error: (listErr as Error).message }, 'Failed to send text menu');
+            logger.warn({ phone: fromNumber, error: (listErr as Error).message }, 'Failed to send list menu, falling back to text');
+            // Fallback to text
+            let menuText = welcomeMsg + '\n';
+            rows.forEach((r) => {
+               menuText += `\n${r.id} - ${r.title}`;
+            });
+            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
           }
           
           return res.json({ success: true, message: 'Native bot menu sent' });
@@ -344,7 +356,7 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
               where: { id: botSession.id }
             });
             await quepasaClient.initialize();
-            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, 'Atendimento encerrado.');
+            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, quepasaMapping.closingMessage || 'Atendimento encerrado.');
             return res.json({ success: true, message: 'Native bot session closed by user' });
           }
 
@@ -384,17 +396,46 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
             
           } else {
             // Invalid choice
+            const greetings = ['oi', 'olá', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'opa', 'hello'];
+            const isGreeting = greetings.includes(cleanChoice);
+            
             const welcomeMsg = quepasaMapping.botWelcomeMessage || 'Olá! Selecione uma opção:';
-            let menuText = welcomeMsg + '\n';
+            
+            const rows: { id: string; title: string }[] = [];
             options.forEach((opt: any) => {
-              menuText += `\n${opt.id} - ${opt.text}`;
+              rows.push({
+                id: String(opt.id),
+                title: String(opt.text).substring(0, 24)
+              });
             });
+
             const hasZero = options.some((opt: any) => String(opt.id) === '0');
-            if (!hasZero) menuText += `\n0 - Encerrar`;
+            if (!hasZero) {
+              rows.push({ id: '0', title: 'Encerrar' });
+            }
+
+            const sections = [{ title: 'Opções', rows }];
+            const invalidMsg = isGreeting ? welcomeMsg : `${quepasaMapping.botInvalidMessage || 'Opção inválida.'}\n\n${welcomeMsg}`;
 
             await quepasaClient.initialize();
-            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, (quepasaMapping.botInvalidMessage || 'Opção inválida.') + '\n\n' + menuText);
-            return res.json({ success: true, message: 'Native bot invalid option' });
+            
+            try {
+              await quepasaClient.sendListMessage(
+                quepasaMapping.quepasaToken, 
+                fromNumber, 
+                invalidMsg,
+                'Ver Opções',
+                'Menu',
+                sections
+              );
+            } catch (listErr) {
+              // Fallback to text
+              let menuText = invalidMsg + '\n';
+              rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
+              await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+            }
+            
+            return res.json({ success: true, message: 'Native bot invalid option / resent menu' });
           }
         }
       } catch (err: any) {
