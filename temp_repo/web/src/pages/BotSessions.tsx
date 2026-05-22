@@ -41,8 +41,8 @@ export const BotSessions: React.FC = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Sessões Bot Nativo</h1>
-            <p className="text-gray-600 mt-1">Acompanhe e gerencie o estado dos usuários no bot</p>
+            <h1 className="text-2xl font-bold text-gray-900">Sessões Bot</h1>
+            <p className="text-gray-600 mt-1">Acompanhe e gerencie o estado dos usuários no bot nativo e typebot</p>
           </div>
           <button
             onClick={() => loadSessions()}
@@ -58,6 +58,7 @@ export const BotSessions: React.FC = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-medium">
+                  <th className="p-4">Tipo</th>
                   <th className="p-4">Número (Usuário)</th>
                   <th className="p-4">Conexão ID</th>
                   <th className="p-4">Estado</th>
@@ -68,13 +69,16 @@ export const BotSessions: React.FC = () => {
               <tbody className="text-sm divide-y divide-gray-100">
                 {sessions.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-gray-500">
+                    <td colSpan={6} className="p-8 text-center text-gray-500">
                       Nenhuma sessão de bot encontrada.
                     </td>
                   </tr>
                 ) : (
                   sessions.map((session) => (
                     <tr key={session.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="p-4 font-medium text-gray-500">
+                         {session.botType === 'typebot' ? 'Typebot' : 'Nativo'}
+                      </td>
                       <td className="p-4 font-medium text-gray-900">{session.phone}</td>
                       <td className="p-4 text-gray-600 truncate max-w-[150px]" title={session.quepasaMappingId}>
                         {session.quepasaMappingId}

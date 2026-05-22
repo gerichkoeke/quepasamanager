@@ -604,7 +604,11 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
            // Save messages to forward to chatwoot
            typebotMessagesToForward = processedMessages || [];
            typebotHandled = true;
-           // DO NOT RETURN YET - let chatwoot process incoming message first
+           
+           if (!isHandoff) {
+             return res.json({ success: true, processedByTypebot: true, message: 'Message handled strictly by Typebot' });
+           }
+           // If it's a handoff, we continue so Chatwoot processes the incoming message that triggered it
         }
       } catch (err: any) {
         logger.error({ error: err.message }, 'Typebot processing failed, falling back to chatwoot');

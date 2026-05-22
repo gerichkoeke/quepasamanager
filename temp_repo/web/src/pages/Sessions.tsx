@@ -1706,14 +1706,14 @@ export const Sessions: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem de Boas Vindas</label>
                       <textarea value={typebotForm.botWelcomeMessage} onChange={(e) => setTypebotForm({ ...typebotForm, botWelcomeMessage: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm h-20" placeholder="Olá! Seja bem-vindo. Qual setor deseja falar?" />
                     </div>
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Menu</label>
                       <select value={typebotForm.botMenuType} onChange={(e) => setTypebotForm({ ...typebotForm, botMenuType: e.target.value as 'text' | 'list' })} className="w-full px-3 py-2 border rounded-lg text-sm bg-white">
                         <option value="text">Menu de Texto Comum</option>
                         <option value="list">Menu Interativo (Lista)</option>
                       </select>
                       <p className="text-[10px] text-gray-500 mt-1">Lista interativa pode não ser suportada em todos provedores.</p>
-                    </div>
+                    </div> */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Opções do Menu (Uma por linha: ID|Texto|TeamID|Etiquetas|Texto_Submenu)</label>
                       <textarea value={typebotForm.botOptionsString} onChange={(e) => setTypebotForm({ ...typebotForm, botOptionsString: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm h-24 font-mono" placeholder="1|Suporte|15&#10;2|Financeiro|16" />

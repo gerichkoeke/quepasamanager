@@ -844,23 +844,57 @@ router.post('/quepasa-mappings/with-chatwoot', authMiddleware, async (req, res, 
 // Get all native bot sessions
 router.get('/bot-sessions', async (req, res) => {
   try {
-    const sessions = await prisma.nativeBotSession.findMany({
+    const nativeSessions = await prisma.nativeBotSession.findMany({
       orderBy: { updatedAt: 'desc' }
     });
-    return res.json(sessions);
+    
+    const typebotSessions = await prisma.typebotSession.findMany({
+      orderBy: { updatedAt: 'desc' }
+    });
+    
+    const combined = [
+      ...nativeSessions.map((s: any) => ({ ...s, botType: 'native' })),
+      ...typebotSessions.map((s: any) => ({ 
+        id: s.id,
+        phone: s.phone,
+        quepasaMappingId: s.sessionId || 'typebot', // map sessionId to connection ID
+        state: s.botPaused ? 'paused' : 'menu',
+        botType: 'typebot',
+        createdAt: s.createdAt,
+        updatedAt: s.updatedAt
+      }))
+    ].sort((a: any, b: any) => b.updatedAt.getTime() - a.updatedAt.getTime());
+
+    return res.json(combined);
   } catch (error: any) {
     logger.error({ error: error.message }, 'Failed to fetch bot sessions');
     return res.status(500).json({ error: 'Failed to fetch bot sessions' });
   }
 });
 
-// Delete a native bot session
+// Delete a native or typebot bot session
 router.delete('/bot-sessions/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.nativeBotSession.delete({
-      where: { id }
-    });
+    
+    // Try to delete from native first
+    let deleted = false;
+    try {
+      await prisma.nativeBotSession.delete({ where: { id } });
+      deleted = true;
+    } catch (e) {
+      // Ignored
+    }
+    
+    if (!deleted) {
+      // Try to delete from typebot
+      try {
+         await prisma.typebotSession.delete({ where: { id } });
+      } catch (e) {
+         // Ignored
+      }
+    }
+
     return res.json({ success: true });
   } catch (error: any) {
     logger.error({ error: error.message }, 'Failed to delete bot session');
