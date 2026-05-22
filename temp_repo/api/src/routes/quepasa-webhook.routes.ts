@@ -384,8 +384,16 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
             
           } else {
             // Invalid choice
+            const welcomeMsg = quepasaMapping.botWelcomeMessage || 'Olá! Selecione uma opção:';
+            let menuText = welcomeMsg + '\n';
+            options.forEach((opt: any) => {
+              menuText += `\n${opt.id} - ${opt.text}`;
+            });
+            const hasZero = options.some((opt: any) => String(opt.id) === '0');
+            if (!hasZero) menuText += `\n0 - Encerrar`;
+
             await quepasaClient.initialize();
-            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, quepasaMapping.botInvalidMessage || 'Opção inválida.');
+            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, (quepasaMapping.botInvalidMessage || 'Opção inválida.') + '\n\n' + menuText);
             return res.json({ success: true, message: 'Native bot invalid option' });
           }
         }
