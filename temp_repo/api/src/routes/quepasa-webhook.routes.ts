@@ -379,18 +379,36 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
             
             // If they had an option, show it. If they didn't, just pass it forward silently
             if (option) {
-              // Generate Protocol
-              const prefix = String(option.text).substring(0, 3).toUpperCase();
-              const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-              const protocol = `${prefix}-${randomCode}`;
-              
-              logger.info({ phone: fromNumber, teamId: option.teamId, protocol }, 'Native bot menu choice selected, routing to team');
-              
-              await quepasaClient.initialize();
-              await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, `Opção selecionada: *${option.text}*\nSeu protocolo de atendimento é: *${protocol}*.\n\nAguarde, em breve um de nossos atendentes falará com você.`);
-              
-              // Let the message proceed to Chatwoot!
-              (req as any).nativeBotTeamId = option.teamId;
+              if (option.submenuText) {
+                // If it has submenu text, we send it, but we LEAVE the bot active (don't pause) or we pause.
+                // Wait, if it has a submenu text, we should probably output the submenu text, and end the interaction (pause bot), or just remain in menu state?
+                // Let's pause it since they might want to talk to human now, or it answers their question. 
+                // Let's just send the text, and pause the bot to let human take over, unless teamId is also set.
+                await quepasaClient.initialize();
+                await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, option.submenuText);
+                
+                (req as any).nativeBotTeamId = option.teamId;
+                if (option.labels) {
+                  (req as any).nativeBotLabels = option.labels;
+                }
+                
+                // Keep botPaused because we handled it.
+              } else {
+                // Generate Protocol
+                const prefix = String(option.text).substring(0, 3).toUpperCase();
+                const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                const protocol = `${prefix}-${randomCode}`;
+                
+                logger.info({ phone: fromNumber, teamId: option.teamId, protocol }, 'Native bot menu choice selected, routing to team');
+                
+                await quepasaClient.initialize();
+                await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, `Opção selecionada: *${option.text}*\nSeu protocolo de atendimento é: *${protocol}*.\n\nAguarde, em breve um de nossos atendentes falará com você.`);
+                
+                (req as any).nativeBotTeamId = option.teamId;
+                if (option.labels) {
+                   (req as any).nativeBotLabels = option.labels;
+                }
+              }
               messageText = option.text; // Change the incoming message text so Chatwoot shows the option name
             } else {
                logger.info({ phone: fromNumber }, 'Native bot has no options configured, auto-pausing and letting user proceed to Chatwoot.');
@@ -790,16 +808,25 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
         result = await chatwootClient.processIncomingMessage(chatwootConfig, fromNumber, messageText, displayName, messageId, chatwootReplyToId, quepasaMapping.reopenClosedTickets);
 
         logger.info({ conversationId: result.conversationId, messageId: result.messageId, fromNumber, quepasaToken: token }, 'Text message forwarded to Chatwoot');
-        if ((req as any).nativeBotTeamId && result && result.conversationId) {
+        if (result && result.conversationId) {
           try {
             const axios = require('axios');
-            const teamId = (req as any).nativeBotTeamId;
             const baseUrl = chatwootConfig.baseUrl.replace(/\/$/, '');
             const headers = { 'api_access_token': chatwootConfig.apiAccessToken, 'Content-Type': 'application/json' };
-            await axios.post(`${baseUrl}/api/v1/accounts/${chatwootConfig.accountId}/conversations/${result.conversationId}/assignments`, { team_id: teamId }, { headers });
-            logger.info({ conversationId: result.conversationId, teamId }, 'Assigned conversation to team via Native Bot');
+            
+            if ((req as any).nativeBotTeamId) {
+              const teamId = (req as any).nativeBotTeamId;
+              await axios.post(`${baseUrl}/api/v1/accounts/${chatwootConfig.accountId}/conversations/${result.conversationId}/assignments`, { team_id: teamId }, { headers });
+              logger.info({ conversationId: result.conversationId, teamId }, 'Assigned conversation to team via Native Bot');
+            }
+            
+            if ((req as any).nativeBotLabels) {
+              const labels = (req as any).nativeBotLabels;
+              await axios.post(`${baseUrl}/api/v1/accounts/${chatwootConfig.accountId}/conversations/${result.conversationId}/labels`, { labels }, { headers });
+              logger.info({ conversationId: result.conversationId, labels }, 'Assigned labels to conversation via Native Bot');
+            }
           } catch(e) {
-            logger.error('Failed to assign team via Native Bot');
+            logger.error('Failed to assign team/labels via Native Bot');
           }
         }
 
@@ -1138,7 +1165,7 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
             await prisma.nativeBotSession.deleteMany({
               where: {
                 quepasaMappingId: quepasaMapping.id, 
-                phone: { in: [chatId, targetPhone, targetPhone+'@c.us'] }
+                phone: { in: [chatId, targetPhone, targetPhone+'@c.us', targetPhone+'@s.whatsapp.net'] }
               }
             });
             logger.info({ chatId }, 'Cleared Native Bot session for user');
@@ -1148,7 +1175,7 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
             await prisma.typebotSession.updateMany({
               where: {
                 sessionId: quepasaMapping.quepasaToken,
-                phone: { in: [chatId, targetPhone, targetPhone+'@c.us'] }
+                phone: { in: [chatId, targetPhone, targetPhone+'@c.us', targetPhone+'@s.whatsapp.net'] }
               },
               data: { botPaused: false }
             });

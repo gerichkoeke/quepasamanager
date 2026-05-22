@@ -570,7 +570,7 @@ export const Sessions: React.FC = () => {
       typebotApiKey: mapping.typebotApiKey || '',
       useNativeBot: mapping.useNativeBot || false,
       botWelcomeMessage: mapping.botWelcomeMessage || 'Olá! Para começar, escolha o setor:',
-      botOptionsString: mapping.botOptions ? (mapping.botOptions as any[]).map((o: any) => `${o.id}|${o.text}|${o.teamId||''}`).join('\n') : '1|Opção Exemplo|',
+      botOptionsString: mapping.botOptions ? (mapping.botOptions as any[]).map((o: any) => `${o.id}|${o.text}|${o.teamId||''}|${(o.labels||[]).join(',')}|${o.submenuText||''}`).join('\n') : '1|Opção Exemplo|',
       botInvalidMessage: mapping.botInvalidMessage || 'Opção Inválida!',
       botClosingMessage: mapping.closingMessage || 'Atendimento encerrado.',
       botMenuType: mapping.botMenuType || 'text',
@@ -616,7 +616,9 @@ export const Sessions: React.FC = () => {
         return {
           id: parts[0] ? parts[0].trim() : '',
           text: parts[1] ? parts[1].trim() : '',
-          teamId: parts[2] ? parseInt(parts[2].trim()) : undefined
+          teamId: parts[2] ? parseInt(parts[2].trim()) : undefined,
+          labels: parts[3] ? parts[3].split(',').map(s => s.trim()).filter(Boolean) : undefined,
+          submenuText: parts[4] ? parts[4].trim() : undefined
         };
       }).filter((o: any) => o.id && o.text);
       
@@ -674,7 +676,9 @@ export const Sessions: React.FC = () => {
         return {
           id: parts[0] ? parts[0].trim() : '',
           text: parts[1] ? parts[1].trim() : '',
-          teamId: parts[2] ? parseInt(parts[2].trim()) : undefined
+          teamId: parts[2] ? parseInt(parts[2].trim()) : undefined,
+          labels: parts[3] ? parts[3].split(',').map(s => s.trim()).filter(Boolean) : undefined,
+          submenuText: parts[4] ? parts[4].trim() : undefined
         };
       }).filter((o: any) => o.id && o.text);
 
@@ -1711,9 +1715,9 @@ export const Sessions: React.FC = () => {
                       <p className="text-[10px] text-gray-500 mt-1">Lista interativa pode não ser suportada em todos provedores.</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Opções do Menu (Uma por linha: ID|Texto|TeamID_Chatwoot)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Opções do Menu (Uma por linha: ID|Texto|TeamID|Etiquetas|Texto_Submenu)</label>
                       <textarea value={typebotForm.botOptionsString} onChange={(e) => setTypebotForm({ ...typebotForm, botOptionsString: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm h-24 font-mono" placeholder="1|Suporte|15&#10;2|Financeiro|16" />
-                      <p className="text-[10px] text-gray-500 mt-1">Exemplo: 1|Suporte Técnico|10 (Onde 10 é o ID interno da equipe no Chatwoot para direcionamento)</p>
+                      <p className="text-[10px] text-gray-500 mt-1">Exemplo: 1|Suporte Técnico|10|suporte,vip|Mensagem customizada <br/>(TeamID, Etiquetas e Texto do Submenu são opcionais)</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem de Opção Inválida</label>

@@ -35,6 +35,7 @@ const quepasaMappingSchema = z.object({
   botWelcomeMessage: z.string().optional(),
   botOptions: z.any().optional(), // using any for JSON array for simplicity
   botInvalidMessage: z.string().optional(),
+  botMenuType: z.string().optional(),
   provider: z.string().optional(),
   officialPhoneId: z.string().optional(),
   officialApiToken: z.string().optional(),
@@ -83,6 +84,7 @@ router.get('/quepasa-mappings', authMiddleware, async (req, res, next) => {
         botWelcomeMessage: true,
         botOptions: true,
         botInvalidMessage: true,
+        botMenuType: true,
         provider: true,
         officialPhoneId: true,
         officialApiToken: true,
@@ -165,9 +167,14 @@ router.get('/quepasa-mappings', authMiddleware, async (req, res, next) => {
                 const cleanPhoneNumber = mapping.phoneNumber?.split(':')[0] || mapping.phoneNumber;
 
                 // Send success message
-                const successMessage = `✅ *Conexão estabelecida com sucesso!*\n\n` +
-                  `📱 Número: ${cleanPhoneNumber}\n` +
-                  `📝 Nome: ${mapping.name}\n\n` +
+                const successMessage = `✅ *Conexão estabelecida com sucesso!*
+
+` +
+                  `📱 Número: ${cleanPhoneNumber}
+` +
+                  `📝 Nome: ${mapping.name}
+
+` +
                   `Sua instância do WhatsApp está conectada e pronta para uso. As mensagens já estão sendo recebidas no Chatwoot.`;
 
                 await chatwootClient.sendMessage(
@@ -293,6 +300,7 @@ router.post('/quepasa-mappings', authMiddleware, async (req, res, next) => {
         botWelcomeMessage: validated.botWelcomeMessage || null,
         botOptions: validated.botOptions ? JSON.parse(JSON.stringify(validated.botOptions)) : undefined,
         botInvalidMessage: validated.botInvalidMessage || null,
+        botMenuType: validated.botMenuType || null,
         provider: validated.provider || "quepasa",
         officialPhoneId: validated.officialPhoneId || null,
         officialApiToken: validated.officialApiToken || null,
@@ -470,9 +478,14 @@ router.delete('/quepasa-mappings/:id', authMiddleware, async (req, res, next) =>
           const cleanPhoneNumber = existing.phoneNumber?.split(':')[0] || existing.phoneNumber || 'N/A';
 
           // Send deletion message
-          const deletionMessage = `🗑️ *Conexão excluída*\n\n` +
-            `📱 Número: ${cleanPhoneNumber}\n` +
-            `📝 Nome: ${existing.name}\n\n` +
+          const deletionMessage = `🗑️ *Conexão excluída*
+
+` +
+            `📱 Número: ${cleanPhoneNumber}
+` +
+            `📝 Nome: ${existing.name}
+
+` +
             `A conexão foi removida permanentemente do sistema.`;
 
           await chatwootClient.sendMessage(
@@ -683,6 +696,7 @@ router.post('/quepasa-mappings/with-chatwoot', authMiddleware, async (req, res, 
         botWelcomeMessage: null,
         botOptions: undefined,
         botInvalidMessage: null,
+        botMenuType: "text",
         provider: "quepasa",
         officialPhoneId: null,
         officialApiToken: null,
