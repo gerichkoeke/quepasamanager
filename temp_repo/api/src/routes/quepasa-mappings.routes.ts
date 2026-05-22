@@ -300,7 +300,7 @@ router.post('/quepasa-mappings', authMiddleware, async (req, res, next) => {
         botWelcomeMessage: validated.botWelcomeMessage || null,
         botOptions: validated.botOptions ? JSON.parse(JSON.stringify(validated.botOptions)) : undefined,
         botInvalidMessage: validated.botInvalidMessage || null,
-        botMenuType: validated.botMenuType || null,
+        botMenuType: validated.botMenuType || undefined,
         provider: validated.provider || "quepasa",
         officialPhoneId: validated.officialPhoneId || null,
         officialApiToken: validated.officialApiToken || null,
