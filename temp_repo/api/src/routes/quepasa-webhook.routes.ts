@@ -315,22 +315,13 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
 
           const sections = [{ title: 'Opções', rows }];
 
-          logger.info({ phone: fromNumber, mappingId: quepasaMapping.id }, 'Sending native bot menu');
+          logger.info({ phone: fromNumber, mappingId: quepasaMapping.id }, 'Sending native bot menu (Text Mode)');
           await quepasaClient.initialize();
           
           try {
-            await quepasaClient.sendListMessage(
-              quepasaMapping.quepasaToken,
-              fromNumber,
-              welcomeMsg,
-              'Selecione uma opção',
-              'Menu',
-              sections
-            );
-          } catch (listErr) {
-            logger.warn({ phone: fromNumber, error: (listErr as Error).message }, 'Failed to send list message, falling back to text');
-            // Fallback to text if list fails
             await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+          } catch (listErr) {
+            logger.warn({ phone: fromNumber, error: (listErr as Error).message }, 'Failed to send text menu');
           }
           
           return res.json({ success: true, message: 'Native bot menu sent' });
@@ -365,26 +356,31 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
           
           logger.info({ phone: fromNumber, choiceId, cleanChoice, matchedOption: option?.id || null, availableOptions: options.map(o => o.id) }, 'Menu choice evaluation');
 
-          if (option) {
+          if (option || options.length === 0) {
             // Pause bot
             await prisma.nativeBotSession.update({
               where: { id: botSession.id },
               data: { state: 'paused' }
             });
             
-            // Generate Protocol
-            const prefix = String(option.text).substring(0, 3).toUpperCase();
-            const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-            const protocol = `${prefix}-${randomCode}`;
-            
-            logger.info({ phone: fromNumber, teamId: option.teamId, protocol }, 'Native bot menu choice selected, routing to team');
-            
-            await quepasaClient.initialize();
-            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, `Opção selecionada: *${option.text}*\nSeu protocolo de atendimento é: *${protocol}*.\n\nAguarde, em breve um de nossos atendentes falará com você.`);
-            
-            // Let the message proceed to Chatwoot!
-            (req as any).nativeBotTeamId = option.teamId;
-            messageText = option.text; // Change the incoming message text so Chatwoot shows the option name
+            // If they had an option, show it. If they didn't, just pass it forward silently
+            if (option) {
+              // Generate Protocol
+              const prefix = String(option.text).substring(0, 3).toUpperCase();
+              const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+              const protocol = `${prefix}-${randomCode}`;
+              
+              logger.info({ phone: fromNumber, teamId: option.teamId, protocol }, 'Native bot menu choice selected, routing to team');
+              
+              await quepasaClient.initialize();
+              await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, `Opção selecionada: *${option.text}*\nSeu protocolo de atendimento é: *${protocol}*.\n\nAguarde, em breve um de nossos atendentes falará com você.`);
+              
+              // Let the message proceed to Chatwoot!
+              (req as any).nativeBotTeamId = option.teamId;
+              messageText = option.text; // Change the incoming message text so Chatwoot shows the option name
+            } else {
+               logger.info({ phone: fromNumber }, 'Native bot has no options configured, auto-pausing and letting user proceed to Chatwoot.');
+            }
             
           } else {
             // Invalid choice
@@ -472,6 +468,18 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
         }
       } catch (err: any) {
         logger.error({ error: err.message }, 'Typebot processing failed, falling back to chatwoot');
+        await prisma.eventLog.create({
+          data: {
+            direction: 'out',
+            provider: 'typebot',
+            sessionId: token,
+            peer: fromNumber,
+            payload: {
+              error: err.message,
+              errorType: 'typebot_processing_failed',
+            },
+          },
+        });
       }
     }
 
