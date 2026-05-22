@@ -19,6 +19,12 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
 
     logger.info({ hasToken: !!token, payloadKeys: Object.keys(payload), payload: JSON.stringify(payload) }, 'Received webhook from Quepasa with token');
 
+    // Ignore system events from WAHA/Quepasa
+    if (payload.event || payload.type === 'state') {
+      logger.info({ event: payload.event }, 'Ignoring system event from Quepasa');
+      return res.json({ success: true, message: 'System event ignored' });
+    }
+
     // Extract message data from Quepasa webhook
     // Quepasa sends: chat.id, chat.phone, text, fromme (lowercase!)
     
@@ -38,6 +44,19 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
     const fromNumber = nonLidId || possibleIds[0] || 'unknown';
 
     let messageText = payload.text || payload.body || payload.message?.text || '';
+    
+    // Ignore internal Z-API / WAHA text masquerades for system events
+    if (
+        messageText.startsWith('WhatsApp disconnected:') ||
+        messageText.includes('WhatsApp connection state changed') ||
+        messageText.includes('History synchronization event') ||
+        (messageText.startsWith('{') && messageText.includes('"event":')) ||
+        (messageText.startsWith('{') && messageText.includes('"description":'))
+    ) {
+        logger.info({ messageText }, 'Ignoring system text message masquerading as real message');
+        return res.json({ success: true, message: 'System message masquerade ignored' });
+    }
+
     const fromMe = payload.fromme || payload.fromMe || false; // Note: Quepasa uses lowercase 'fromme'
     const senderName = payload.chat?.title || payload.senderName || payload.pushname || payload.sender?.name || fromNumber;
 
@@ -969,6 +988,12 @@ router.post('/webhooks/quepasa', async (req, res, next) => {
 
     logger.info({ payloadKeys: Object.keys(payload) }, 'Received webhook from Quepasa');
 
+    // Ignore system events from WAHA/Quepasa/Z-API
+    if (payload.event || payload.type === 'state') {
+      logger.info({ event: payload.event }, 'Ignoring system event from Quepasa');
+      return res.json({ success: true, message: 'System event ignored' });
+    }
+
     // Extract Quepasa phone number from webhook extra data (configured when setting up webhook)
     const quepasaPhoneNumber = payload.trackid || payload.extra?.phoneNumber;
 
@@ -999,6 +1024,19 @@ router.post('/webhooks/quepasa', async (req, res, next) => {
     const fromNumber = nonLidId || possibleIds[0] || 'unknown';
 
     const messageText = payload.text || payload.body || payload.message?.text || '';
+    
+    // Ignore internal Z-API / WAHA text masquerades for system events
+    if (
+        messageText.startsWith('WhatsApp disconnected:') ||
+        messageText.includes('WhatsApp connection state changed') ||
+        messageText.includes('History synchronization event') ||
+        (messageText.startsWith('{') && messageText.includes('"event":')) ||
+        (messageText.startsWith('{') && messageText.includes('"description":'))
+    ) {
+        logger.info({ messageText }, 'Ignoring system text message masquerading as real message');
+        return res.json({ success: true, message: 'System message masquerade ignored' });
+    }
+
     const fromMe = payload.fromme || payload.fromMe || false; // Note: Quepasa uses lowercase 'fromme'
     const senderName = payload.chat?.title || payload.senderName || payload.pushname || payload.sender?.name || fromNumber;
 
