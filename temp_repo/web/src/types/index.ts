@@ -129,6 +129,7 @@ export interface QuepasaMapping {
   botWelcomeMessage?: string;
   botOptions?: BotOption[];
   botInvalidMessage?: string;
+  botMenuType?: string;
   provider?: string;
   officialPhoneId?: string;
   officialApiToken?: string;
@@ -161,6 +162,7 @@ export interface CreateQuepasaMappingRequest {
   botWelcomeMessage?: string;
   botOptions?: BotOption[];
   botInvalidMessage?: string;
+  botMenuType?: string;
   provider?: string;
   officialPhoneId?: string;
   officialApiToken?: string;

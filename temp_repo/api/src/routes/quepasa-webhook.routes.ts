@@ -312,27 +312,28 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
 
           const sections = [{ title: 'Opções', rows }];
 
-          logger.info({ phone: fromNumber, mappingId: quepasaMapping.id }, 'Sending native bot menu (List Mode)');
+          logger.info({ phone: fromNumber, mappingId: quepasaMapping.id, menuType: quepasaMapping.botMenuType }, 'Sending native bot menu');
           await quepasaClient.initialize();
           
-          try {
-            // First send the welcome message separately, then the list?
-            // Wait, WAHA lists just take `bodyText`.
-            await quepasaClient.sendListMessage(
-              quepasaMapping.quepasaToken, 
-              fromNumber, 
-              welcomeMsg,
-              'Ver Opções',
-              'Menu',
-              sections
-            );
-          } catch (listErr) {
-            logger.warn({ phone: fromNumber, error: (listErr as Error).message }, 'Failed to send list menu, falling back to text');
-            // Fallback to text
+          if (quepasaMapping.botMenuType === 'list') {
+            try {
+              await quepasaClient.sendListMessage(
+                quepasaMapping.quepasaToken, 
+                fromNumber, 
+                welcomeMsg,
+                'Ver Opções',
+                'Menu',
+                sections
+              );
+            } catch (listErr) {
+              logger.warn({ phone: fromNumber, error: (listErr as Error).message }, 'Failed to send list menu, falling back to text');
+              let menuText = welcomeMsg + '\n';
+              rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
+              await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+            }
+          } else {
             let menuText = welcomeMsg + '\n';
-            rows.forEach((r) => {
-               menuText += `\n${r.id} - ${r.title}`;
-            });
+            rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
             await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
           }
           
@@ -419,17 +420,23 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
 
             await quepasaClient.initialize();
             
-            try {
-              await quepasaClient.sendListMessage(
-                quepasaMapping.quepasaToken, 
-                fromNumber, 
-                invalidMsg,
-                'Ver Opções',
-                'Menu',
-                sections
-              );
-            } catch (listErr) {
-              // Fallback to text
+            if (quepasaMapping.botMenuType === 'list') {
+              try {
+                await quepasaClient.sendListMessage(
+                  quepasaMapping.quepasaToken, 
+                  fromNumber, 
+                  invalidMsg,
+                  'Ver Opções',
+                  'Menu',
+                  sections
+                );
+              } catch (listErr) {
+                // Fallback to text
+                let menuText = invalidMsg + '\n';
+                rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
+                await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+              }
+            } else {
               let menuText = invalidMsg + '\n';
               rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
               await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
@@ -1122,6 +1129,30 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
         let phoneNumber = payload.conversation?.meta?.sender?.phone_number || payload.conversation?.meta?.sender?.identifier;
         if (phoneNumber) {
           let chatId = phoneNumber.includes('@g.us') ? phoneNumber : phoneNumber.replace(/@.*$/, '');
+          
+          // Unpause native bot and typebot
+          let targetPhone = chatId.replace(/\D/g, ''); 
+
+          try {
+            await prisma.nativeBotSession.deleteMany({
+              where: {
+                quepasaMappingId: quepasaMapping.id, 
+                phone: { in: [chatId, targetPhone, targetPhone+'@c.us'] }
+              }
+            });
+            logger.info({ chatId }, 'Cleared Native Bot session for user');
+          } catch (e) {}
+
+          try {
+            await prisma.typebotSession.updateMany({
+              where: {
+                quepasaMappingId: quepasaMapping.id,
+                phone: { in: [chatId, targetPhone, targetPhone+'@c.us'] }
+              },
+              data: { botPaused: false }
+            });
+            logger.info({ chatId }, 'Unpaused Typebot session for user');
+          } catch (e) {}
           
           await quepasaClient.initialize();
           

@@ -90,6 +90,7 @@ export const Sessions: React.FC = () => {
     botOptionsString: '',
     botInvalidMessage: '',
     botClosingMessage: '',
+    botMenuType: 'text',
     provider: 'quepasa',
     officialPhoneId: '',
     officialApiToken: '',
@@ -552,6 +553,7 @@ export const Sessions: React.FC = () => {
       botOptionsString: '',
       botInvalidMessage: '',
       botClosingMessage: '',
+      botMenuType: 'text',
       provider: 'quepasa',
       officialPhoneId: '',
       officialApiToken: '',
@@ -571,6 +573,7 @@ export const Sessions: React.FC = () => {
       botOptionsString: mapping.botOptions ? (mapping.botOptions as any[]).map((o: any) => `${o.id}|${o.text}|${o.teamId||''}`).join('\n') : '1|Opção Exemplo|',
       botInvalidMessage: mapping.botInvalidMessage || 'Opção Inválida!',
       botClosingMessage: mapping.closingMessage || 'Atendimento encerrado.',
+      botMenuType: mapping.botMenuType || 'text',
       provider: mapping.provider || 'quepasa',
       officialPhoneId: mapping.officialPhoneId || '',
       officialApiToken: mapping.officialApiToken || '',
@@ -616,7 +619,7 @@ export const Sessions: React.FC = () => {
           teamId: parts[2] ? parseInt(parts[2].trim()) : undefined
         };
       }).filter((o: any) => o.id && o.text);
-
+      
       const updateData: Partial<CreateQuepasaMappingRequest> = {
         useTypebot: typebotForm.useTypebot,
         typebotFlowId: typebotForm.typebotFlowId || undefined,
@@ -627,6 +630,7 @@ export const Sessions: React.FC = () => {
         botOptions: parsedOptions as any,
         botInvalidMessage: typebotForm.botInvalidMessage,
         closingMessage: typebotForm.botClosingMessage,
+        botMenuType: typebotForm.botMenuType,
         provider: typebotForm.provider,
         officialPhoneId: typebotForm.officialPhoneId || undefined,
         officialApiToken: typebotForm.officialApiToken || undefined,
@@ -684,6 +688,7 @@ export const Sessions: React.FC = () => {
         botOptions: parsedOptions as any,
         botInvalidMessage: typebotForm.botInvalidMessage,
         closingMessage: typebotForm.botClosingMessage,
+        botMenuType: typebotForm.botMenuType,
         provider: typebotForm.provider,
         officialPhoneId: typebotForm.officialPhoneId || undefined,
         officialApiToken: typebotForm.officialApiToken || undefined,
@@ -1696,6 +1701,14 @@ export const Sessions: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem de Boas Vindas</label>
                       <textarea value={typebotForm.botWelcomeMessage} onChange={(e) => setTypebotForm({ ...typebotForm, botWelcomeMessage: e.target.value })} className="w-full px-3 py-2 border rounded-lg text-sm h-20" placeholder="Olá! Seja bem-vindo. Qual setor deseja falar?" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Menu</label>
+                      <select value={typebotForm.botMenuType} onChange={(e) => setTypebotForm({ ...typebotForm, botMenuType: e.target.value as 'text' | 'list' })} className="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+                        <option value="text">Menu de Texto Comum</option>
+                        <option value="list">Menu Interativo (Lista)</option>
+                      </select>
+                      <p className="text-[10px] text-gray-500 mt-1">Lista interativa pode não ser suportada em todos provedores.</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Opções do Menu (Uma por linha: ID|Texto|TeamID_Chatwoot)</label>

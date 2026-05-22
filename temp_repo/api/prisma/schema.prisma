@@ -88,6 +88,7 @@ model QuepasaMapping {
   typebotHost               String?  @map("typebot_host") // URL do typebot
   typebotApiKey             String?  @map("typebot_api_key") // (Opcional) Chave da API do typebot
   useNativeBot              Boolean  @default(false) @map("use_native_bot")
+  botMenuType               String   @default("text") @map("bot_menu_type") // text or list
   botWelcomeMessage         String?  @map("bot_welcome_message")
   botOptions                Json?    @map("bot_options") // JSON array for bot options
   botInvalidMessage         String?  @map("bot_invalid_message")
