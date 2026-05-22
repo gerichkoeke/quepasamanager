@@ -181,6 +181,7 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
         botWelcomeMessage: true,
         botOptions: true,
         botInvalidMessage: true,
+        botMenuType: true,
         provider: true,
         officialPhoneId: true,
         officialApiToken: true,
@@ -1146,7 +1147,7 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
           try {
             await prisma.typebotSession.updateMany({
               where: {
-                quepasaMappingId: quepasaMapping.id,
+                sessionId: quepasaMapping.quepasaToken,
                 phone: { in: [chatId, targetPhone, targetPhone+'@c.us'] }
               },
               data: { botPaused: false }
