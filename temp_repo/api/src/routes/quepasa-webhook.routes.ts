@@ -1204,7 +1204,7 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
     }
 
     // Ignore bot-generated echoes to prevent dupes in WhatsApp
-    if (messageContent.trim().startsWith('🤖 Bot:') || messageContent.trim().startsWith('🤖 Bot (Mídia):') || messageContent.trim() === '🤖 Bot foi pausado / Transferido para humano.') {
+    if (messageContent.includes('🤖 Bot:') || messageContent.includes('🤖 Bot (Mídia):') || messageContent.includes('🤖 Bot foi pausado / Transferido para humano.')) {
       logger.debug('Ignoring bot echo message');
       return res.json({ success: true, message: 'Ignored bot echo' });
     }
@@ -1554,7 +1554,7 @@ router.post('/webhooks/chatwoot', async (req, res, next) => {
     }
 
     // Ignore bot-generated echoes to prevent dupes in WhatsApp
-    if (messageContent.trim().startsWith('🤖 Bot:') || messageContent.trim().startsWith('🤖 Bot (Mídia):') || messageContent.trim() === '🤖 Bot foi pausado / Transferido para humano.') {
+    if (messageContent.includes('🤖 Bot:') || messageContent.includes('🤖 Bot (Mídia):') || messageContent.includes('🤖 Bot foi pausado / Transferido para humano.')) {
       logger.debug('Ignoring bot echo message');
       return res.json({ success: true, message: 'Ignored bot echo' });
     }
