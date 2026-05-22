@@ -107,7 +107,7 @@ router.get('/metrics', authMiddleware, async (req, res, next) => {
         chatwoot_connections: quepasaWithChatwoot + wahaWithChatwoot,
         typebot_connections: quepasaWithTypebot + wahaWithTypebot
       },
-      recent_activity: recentActivity.map((event) => ({
+      recent_activity: recentActivity.map((event: any) => ({
         id: event.id,
         session_name: event.sessionId,
         event_type: `${event.direction === 'in' ? 'Entrada' : 'Saída'} - ${event.provider}`,
@@ -118,7 +118,7 @@ router.get('/metrics', authMiddleware, async (req, res, next) => {
         incomingCount,
         outgoingCount,
       },
-      topSessions: eventsBySession.map((row) => ({
+      topSessions: eventsBySession.map((row: any) => ({
         sessionId: row.session_id,
         eventCount: Number(row.count),
       })),

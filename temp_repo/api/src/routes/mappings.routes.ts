@@ -66,7 +66,7 @@ router.get('/mappings', authMiddleware, async (req, res, next) => {
     });
 
     // Mask API keys and tokens, map to frontend format
-    const sanitized = mappings.map((mapping) => ({
+    const sanitized = mappings.map((mapping: any) => ({
       id: mapping.id,
       session_name: mapping.sessionId,
       typebot_id: mapping.typebotFlowId,
@@ -133,7 +133,7 @@ router.get('/mappings/session/:sessionId', authMiddleware, async (req, res, next
       orderBy: { createdAt: 'desc' },
     });
 
-    const sanitized = mappings.map((mapping) => ({
+    const sanitized = mappings.map((mapping: any) => ({
       id: mapping.id,
       session_name: mapping.sessionId,
       typebot_id: mapping.typebotFlowId,

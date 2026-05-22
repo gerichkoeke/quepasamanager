@@ -97,7 +97,7 @@ class QuepasaClient {
         },
       });
 
-      const settingsMap = settings.reduce((acc, setting) => {
+      const settingsMap = settings.reduce((acc: any, setting: any) => {
         acc[setting.key] = setting.value;
         return acc;
       }, {} as Record<string, string>);

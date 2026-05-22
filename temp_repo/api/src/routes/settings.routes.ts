@@ -37,7 +37,7 @@ router.get('/settings', authMiddleware, async (req, res, next) => {
   try {
     const settings = await prisma.appSetting.findMany();
 
-    const settingsMap = settings.reduce((acc, setting) => {
+    const settingsMap = settings.reduce((acc: Record<string, string>, setting: any) => {
       // Don't expose sensitive keys - return empty string if exists
       if (setting.key.includes('api_key') || setting.key.includes('token') || setting.key.includes('password')) {
         acc[setting.key] = '';

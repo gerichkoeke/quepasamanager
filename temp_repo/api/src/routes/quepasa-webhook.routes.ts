@@ -454,12 +454,42 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
            // Ensure Quepasa Client is initialized
            await quepasaClient.initialize();
            let chatId = fromNumber;
+           
+           let isHandoff = false;
+           let extractedTeamId: string | undefined;
 
-           // Send Typebot responses via Quepasa
-           for (const tMsg of typebotResponse.messages) {
-               if (tMsg.type === 'text') {
-                 await quepasaClient.sendTextMessage(token, chatId, tMsg.content);
+           // Filter and process Typebot responses
+           const processedMessages = [];
+
+           for (let tMsg of typebotResponse.messages) {
+               if (tMsg.type === 'text' && tMsg.content) {
+                 if (tMsg.content.includes('HANDOFF_CHATWOOT')) {
+                   isHandoff = true;
+                   
+                   // Extract Team ID if present using regex "Team ID: 123"
+                   const match = tMsg.content.match(/Team ID:\s*([^\s\n]+)/i);
+                   if (match && match[1]) {
+                     extractedTeamId = match[1];
+                     (req as any).nativeBotTeamId = extractedTeamId; // Reuse the property for chatwoot routing later
+                     logger.info({ extractedTeamId }, '✅ Typebot requested handoff with Team ID');
+                   } else {
+                     logger.info('✅ Typebot requested handoff with no Team ID');
+                   }
+
+                   // Clean up the text to send to user by removing the handoff block
+                   // We just want to keep the friendly message before HANDOFF_CHATWOOT if any
+                   const cleanText = tMsg.content.split('HANDOFF_CHATWOOT')[0].trim();
+                   if (cleanText) {
+                     tMsg = { ...tMsg, content: cleanText };
+                     processedMessages.push(tMsg);
+                     await quepasaClient.sendTextMessage(token, chatId, cleanText);
+                   }
+                 } else {
+                   processedMessages.push(tMsg);
+                   await quepasaClient.sendTextMessage(token, chatId, tMsg.content);
+                 }
                } else {
+                 processedMessages.push(tMsg);
                  await quepasaClient.sendMediaMessage(token, chatId, {
                    url: tMsg.content,
                    mime: tMsg.type === 'image' ? 'image/jpeg' : 'application/octet-stream',
@@ -468,9 +498,25 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
                  });
                }
            }
+           
+           if (isHandoff && existingSession) {
+             await prisma.typebotSession.update({
+               where: { id: existingSession.id },
+               data: { botPaused: true }
+             });
+           } else if (isHandoff && !existingSession) {
+              // Usually we just created the session right before this
+              const createdSession = await prisma.typebotSession.findFirst({ where: { phone: userId } });
+              if (createdSession) {
+                await prisma.typebotSession.update({
+                  where: { id: createdSession.id },
+                  data: { botPaused: true }
+                });
+              }
+           }
 
            // Save messages to forward to chatwoot
-           typebotMessagesToForward = typebotResponse.messages || [];
+           typebotMessagesToForward = processedMessages || [];
            typebotHandled = true;
            // DO NOT RETURN YET - let chatwoot process incoming message first
         }
@@ -1157,6 +1203,12 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
       return res.json({ success: true, message: 'Not an outgoing message' });
     }
 
+    // Ignore bot-generated echoes to prevent dupes in WhatsApp
+    if (messageContent.trim().startsWith('🤖 Bot:') || messageContent.trim().startsWith('🤖 Bot (Mídia):') || messageContent.trim() === '🤖 Bot foi pausado / Transferido para humano.') {
+      logger.debug('Ignoring bot echo message');
+      return res.json({ success: true, message: 'Ignored bot echo' });
+    }
+
     // Log if this is a private note (but send it anyway with reply support)
     if (isPrivate) {
       logger.info({ conversationId }, '📝 Processing private note (will be sent to customer with reply support)');
@@ -1499,6 +1551,12 @@ router.post('/webhooks/chatwoot', async (req, res, next) => {
     if (messageType !== 'outgoing') {
       logger.debug({ messageType }, 'Ignoring non-outgoing message');
       return res.json({ success: true, message: 'Not an outgoing message' });
+    }
+
+    // Ignore bot-generated echoes to prevent dupes in WhatsApp
+    if (messageContent.trim().startsWith('🤖 Bot:') || messageContent.trim().startsWith('🤖 Bot (Mídia):') || messageContent.trim() === '🤖 Bot foi pausado / Transferido para humano.') {
+      logger.debug('Ignoring bot echo message');
+      return res.json({ success: true, message: 'Ignored bot echo' });
     }
 
     // Log if this is a private note (but send it anyway with reply support)

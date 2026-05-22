@@ -127,7 +127,7 @@ export class TypebotClient {
       },
     });
 
-    return settings.reduce((acc, setting) => {
+    return settings.reduce((acc: any, setting: any) => {
       acc[setting.key] = setting.value;
       return acc;
     }, {} as Record<string, string>);
