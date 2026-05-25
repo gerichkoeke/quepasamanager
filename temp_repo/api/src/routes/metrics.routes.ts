@@ -55,6 +55,13 @@ router.get('/metrics', authMiddleware, async (req, res, next) => {
       }
     });
 
+    // Count active bots
+    const activeNativeBots = await prisma.nativeBotSession.count({
+      where: { state: 'menu' }
+    });
+
+    const activeTypebots = await prisma.typebotSession.count();
+
     // Count unique sessions
     const uniqueSessions = await prisma.eventLog.findMany({
       where: { sessionId: { not: null } },
@@ -97,6 +104,7 @@ router.get('/metrics', authMiddleware, async (req, res, next) => {
 
     res.json({
       total_sessions: uniqueSessions.length,
+      active_bots: activeNativeBots + activeTypebots,
       active_integrations: totalActiveMappings,
       messages_processed: totalEvents,
       rabbitmq_connected: rabbitMQService.isConnected(),

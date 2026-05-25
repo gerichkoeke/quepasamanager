@@ -40,6 +40,7 @@ export interface LogsResponse {
 
 export interface Metrics {
   total_sessions: number;
+  active_bots?: number;
   active_integrations: number;
   messages_processed: number;
   rabbitmq_connected?: boolean;
