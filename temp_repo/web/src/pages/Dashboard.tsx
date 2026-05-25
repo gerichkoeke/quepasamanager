@@ -45,143 +45,132 @@ export const Dashboard: React.FC = () => {
 
   return (
     <Layout>
-      <div className="max-w-[1400px] mx-auto space-y-8 pb-12 animate-in fade-in duration-500">
+      <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* Header section - clean & minimal */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Header section - WAHA / technical style */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-gray-200">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Dashboard Central</h1>
-            <p className="text-sm text-gray-500 mt-1">Visão geral e saúde das integrações (últimas 24h)</p>
+            <h1 className="text-2xl font-normal text-gray-800 tracking-tight">Overview</h1>
+            <p className="text-sm text-gray-500 mt-1">WAHA API / Engine Status</p>
           </div>
           {metrics && (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 shadow-sm">
-                <Database className="w-4 h-4 text-gray-400" />
-                <span className="font-medium text-gray-900">{metrics.messages_processed.toLocaleString('pt-BR')}</span> Msg Processadas
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded text-sm text-gray-700">
+                <Database className="w-4 h-4 text-gray-500" />
+                <span className="font-medium text-gray-900">{metrics.messages_processed.toLocaleString('pt-BR')}</span> Messages
               </div>
-              <div className={`flex items-center gap-2 px-3 py-1.5 border rounded-lg text-sm shadow-sm ${metrics.rabbitmq_connected ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
-                <div className={`w-2 h-2 rounded-full ${metrics.rabbitmq_connected ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                RabbitMQ {metrics.rabbitmq_connected ? 'Online' : 'Offline'}
+              <div className={`flex items-center gap-2 px-3 py-1.5 border rounded text-sm ${metrics.rabbitmq_connected ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                <div className={`w-2 h-2 rounded-full ${metrics.rabbitmq_connected ? 'bg-green-500' : 'bg-red-500'}`} />
+                RabbitMQ
               </div>
             </div>
           )}
         </header>
 
-        {/* Core Metrics Grid - Removed heavy styling, more subtle */}
+        {/* Core Metrics Grid - Material Design / Admin style */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)]">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                <Smartphone className="w-5 h-5" />
-              </div>
-              <h3 className="text-sm font-medium text-gray-600">Instâncias WhatsApp</h3>
+          <div className="bg-white p-4 rounded shadow-sm border border-gray-200 border-t-4 border-t-blue-500 flex flex-col justify-between h-32">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">WhatsApp Instances</h3>
+            <div className="flex items-end justify-between mt-auto">
+              <p className="text-4xl font-light text-gray-800">{metrics?.instances?.quepasa_active || 0}</p>
+              <Smartphone className="w-8 h-8 text-blue-500/20" />
             </div>
-            <p className="text-3xl font-semibold text-gray-900">{metrics?.instances?.quepasa_active || 0}</p>
-            <p className="text-xs text-gray-400 mt-2 font-medium uppercase tracking-wider">Ativas e Conectadas</p>
           </div>
 
-          <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)]">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                <MessageCircle className="w-5 h-5" />
-              </div>
-              <h3 className="text-sm font-medium text-gray-600">Caixas Chatwoot</h3>
+          <div className="bg-white p-4 rounded shadow-sm border border-gray-200 border-t-4 border-t-indigo-500 flex flex-col justify-between h-32">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Chatwoot Inboxes</h3>
+            <div className="flex items-end justify-between mt-auto">
+              <p className="text-4xl font-light text-gray-800">{metrics?.instances?.chatwoot_connections || 0}</p>
+              <MessageCircle className="w-8 h-8 text-indigo-500/20" />
             </div>
-            <p className="text-3xl font-semibold text-gray-900">{metrics?.instances?.chatwoot_connections || 0}</p>
-            <p className="text-xs text-gray-400 mt-2 font-medium uppercase tracking-wider">Redirecionando Fluxo</p>
           </div>
 
-          <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)]">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                <Bot className="w-5 h-5" />
-              </div>
-              <h3 className="text-sm font-medium text-gray-600">Sessões Bots (Ativas)</h3>
+          <div className="bg-white p-4 rounded shadow-sm border border-gray-200 border-t-4 border-t-purple-500 flex flex-col justify-between h-32">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Active Bot Sessions</h3>
+            <div className="flex items-end justify-between mt-auto">
+              <p className="text-4xl font-light text-gray-800">{metrics?.active_bots || 0}</p>
+              <Bot className="w-8 h-8 text-purple-500/20" />
             </div>
-            <p className="text-3xl font-semibold text-gray-900">{metrics?.active_bots || 0}</p>
-            <p className="text-xs text-gray-400 mt-2 font-medium uppercase tracking-wider">Ocupação Atual Menus</p>
           </div>
 
-          <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)]">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-rose-50 text-rose-600 rounded-lg">
-                <Activity className="w-5 h-5" />
-              </div>
-              <h3 className="text-sm font-medium text-gray-600">Eventos Hoje</h3>
+          <div className="bg-white p-4 rounded shadow-sm border border-gray-200 border-t-4 border-t-emerald-500 flex flex-col justify-between h-32">
+            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Events (24h)</h3>
+            <div className="flex items-end justify-between mt-auto">
+              <p className="text-4xl font-light text-gray-800">{metrics?.recent_events_count || 0}</p>
+              <Activity className="w-8 h-8 text-emerald-500/20" />
             </div>
-            <p className="text-3xl font-semibold text-gray-900">{metrics?.recent_events_count || 0}</p>
-            <p className="text-xs text-gray-400 mt-2 font-medium uppercase tracking-wider">Últimas 24 Horas</p>
           </div>
         </div>
 
-        {/* Data Lists - Cleaner tables */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Data Lists - Table style like React Admin */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
           {/* Top Sessions */}
-          <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100/60 bg-gray-50/50 flex items-center gap-2">
+          <div className="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+               <h3 className="text-sm font-medium text-gray-800">Top Sessions / Interactions</h3>
                <TrendingUp className="w-4 h-4 text-gray-400" />
-               <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Top Interações</h3>
             </div>
-            <div className="p-0">
+            <div>
               {!metrics?.topSessions || metrics.topSessions.length === 0 ? (
-                <div className="p-10 text-center text-gray-400 text-sm">Nenhum evento processado.</div>
+                <div className="p-8 text-center text-gray-500 text-sm">No data available.</div>
               ) : (
-                <div className="divide-y divide-gray-50">
-                  {metrics.topSessions.map((session, index) => (
-                    <div key={session.sessionId} className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50/50 group">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-mono text-gray-400 w-4">{index + 1}.</span>
-                        <p className="text-sm font-medium text-gray-800 font-mono truncate max-w-[200px] sm:max-w-xs">{session.sessionId}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md">
-                          {session.eventCount} evt
-                        </span>
-                        <div className="w-16 sm:w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className="bg-blue-500 h-full rounded-full"
-                            style={{ width: `${(session.eventCount / metrics.topSessions[0].eventCount) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-200 text-xs text-gray-500">
+                       <th className="font-medium px-4 py-2">ID</th>
+                       <th className="font-medium px-4 py-2 text-right">Events</th>
+                       <th className="font-medium px-4 py-2 w-24">Activity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {metrics.topSessions.map((session, index) => (
+                      <tr key={session.sessionId} className="border-b border-gray-100 hover:bg-gray-50 last:border-0">
+                        <td className="px-4 py-2 text-sm font-mono text-gray-700 truncate max-w-[200px]">{session.sessionId}</td>
+                        <td className="px-4 py-2 text-sm text-gray-600 text-right">{session.eventCount}</td>
+                        <td className="px-4 py-2">
+                           <div className="w-full h-1.5 bg-gray-100 rounded-sm overflow-hidden">
+                             <div className="bg-blue-500 h-full" style={{ width: `${(session.eventCount / metrics.topSessions[0].eventCount) * 100}%` }} />
+                           </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
           </div>
 
           {/* Recent Activity */}
-          <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100/60 bg-gray-50/50 flex items-center gap-2">
+          <div className="bg-white border border-gray-200 rounded shadow-sm overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+               <h3 className="text-sm font-medium text-gray-800">Recent Logs</h3>
                <Activity className="w-4 h-4 text-gray-400" />
-               <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Últimos Registros (Logs)</h3>
             </div>
-            <div className="p-0">
+            <div>
               {!metrics?.recent_activity || metrics.recent_activity.length === 0 ? (
-                <div className="p-10 text-center text-gray-400 text-sm">Sem rastros recentes.</div>
+                <div className="p-8 text-center text-gray-500 text-sm">No data available.</div>
               ) : (
-                <div className="divide-y divide-gray-50 relative">
+                <ul className="divide-y divide-gray-100">
                   {metrics.recent_activity.map((activity) => {
                     const isIncoming = activity.event_type.includes('Entrada');
                     return (
-                      <div key={activity.id} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50/50">
-                         <div className={`w-2 h-2 rounded-full shrink-0 ${isIncoming ? 'bg-emerald-500' : 'bg-blue-500'}`} />
+                      <li key={activity.id} className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50">
+                         <div className={`mt-1 flex-shrink-0 w-2 h-2 rounded-full ${isIncoming ? 'bg-green-500' : 'bg-blue-500'}`} />
                          <div className="flex-1 min-w-0">
-                           <p className="text-sm text-gray-800 truncate">
-                             <span className="font-medium">{isIncoming ? 'Recebida' : 'Enviada'}</span> 
-                             <span className="text-gray-400 mx-1">via</span> 
+                           <p className="text-sm text-gray-800">
+                             <span className="font-medium">{isIncoming ? 'IN' : 'OUT'}</span>
+                             <span className="text-gray-400 mx-2">|</span>
                              {activity.event_type.split(' - ')[1]}
                            </p>
-                           <p className="text-xs text-gray-400 font-mono mt-0.5 truncate">{activity.session_name}</p>
+                           <p className="text-xs text-gray-500 font-mono mt-1 truncate">{activity.session_name}</p>
                          </div>
-                         <div className="text-xs font-medium text-gray-500 shrink-0">
+                         <div className="text-xs text-gray-400 whitespace-nowrap">
                            {formatTimestamp(activity.timestamp).split(' ')[1]}
                          </div>
-                      </div>
+                      </li>
                     );
                   })}
-                </div>
+                </ul>
               )}
             </div>
           </div>
