@@ -5,6 +5,7 @@ import {
   Settings,
   MessageSquare,
   FileText,
+  Plug,
   Bot,
   LogOut,
   Menu,
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Conexões', href: '/sessions', icon: MessageSquare },
   { name: 'Sessões Bot', href: '/bot-sessions', icon: Bot },
   { name: 'Logs', href: '/logs', icon: FileText },
+  { name: 'Integrações', href: '/integrations', icon: Plug },
   { name: 'Configurações', href: '/settings', icon: Settings },
 ];
 

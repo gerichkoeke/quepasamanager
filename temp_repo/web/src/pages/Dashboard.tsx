@@ -123,7 +123,7 @@ export const Dashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {metrics.topSessions.map((session, index) => (
+                    {metrics.topSessions.map((session) => (
                       <tr key={session.sessionId} className="border-b border-gray-100 hover:bg-gray-50 last:border-0">
                         <td className="px-4 py-2 text-sm font-mono text-gray-700 truncate max-w-[200px]">{session.sessionId}</td>
                         <td className="px-4 py-2 text-sm text-gray-600 text-right">{session.eventCount}</td>

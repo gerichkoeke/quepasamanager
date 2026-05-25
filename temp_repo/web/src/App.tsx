@@ -7,6 +7,7 @@ import { Settings } from './pages/Settings';
 import { Sessions } from './pages/Sessions';
 import { Logs } from './pages/Logs';
 import { BotSessions } from './pages/BotSessions';
+import { Integrations } from './pages/Integrations';
 import Connect from './pages/Connect';
 
 // Protected Route Component
@@ -102,6 +103,14 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <Settings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/integrations"
+        element={
+          <ProtectedRoute>
+            <Integrations />
           </ProtectedRoute>
         }
       />
