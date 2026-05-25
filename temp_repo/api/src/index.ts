@@ -18,6 +18,7 @@ import quepasaMappingsRoutes from './routes/quepasa-mappings.routes';
 import metricsRoutes from './routes/metrics.routes';
 import logsRoutes from './routes/logs.routes';
 import mediaRoutes from './routes/media.routes';
+import typebotIntegrationRoutes from './routes/typebot-integration.routes';
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use('/', quepasaWebhookRoutes); // Quepasa-Chatwoot integration webhooks
 app.use('/', quepasaMappingsRoutes); // Quepasa mappings CRUD
 app.use('/', metricsRoutes);
 app.use('/', logsRoutes);
+app.use('/', typebotIntegrationRoutes);
 
 // 404 handler
 app.use((req, res) => {
