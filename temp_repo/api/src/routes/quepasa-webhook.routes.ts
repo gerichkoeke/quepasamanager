@@ -569,10 +569,12 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
                      tMsg = { ...tMsg, content: cleanText };
                      processedMessages.push(tMsg);
                      await quepasaClient.sendTextMessage(token, chatId, cleanText);
+                     await prisma.eventLog.create({ data: { direction: 'out', provider: 'typebot', sessionId: token, peer: chatId, payload: { type: 'text', text: cleanText } }});
                    }
                  } else {
                    processedMessages.push(tMsg);
                    await quepasaClient.sendTextMessage(token, chatId, tMsg.content);
+                   await prisma.eventLog.create({ data: { direction: 'out', provider: 'typebot', sessionId: token, peer: chatId, payload: { type: 'text', text: tMsg.content } }});
                  }
                } else {
                  processedMessages.push(tMsg);
@@ -582,6 +584,7 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
                    filename: 'media',
                    text: tMsg.caption
                  });
+                 await prisma.eventLog.create({ data: { direction: 'out', provider: 'typebot', sessionId: token, peer: chatId, payload: { type: 'media', url: tMsg.content } }});
                }
            }
            
@@ -1214,14 +1217,13 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
           } catch (e) {}
 
           try {
-            await prisma.typebotSession.updateMany({
+            await prisma.typebotSession.deleteMany({
               where: {
                 sessionId: quepasaMapping.quepasaToken,
                 phone: { in: [chatId, targetPhone, targetPhone+'@c.us', targetPhone+'@s.whatsapp.net'] }
-              },
-              data: { botPaused: false }
+              }
             });
-            logger.info({ chatId }, 'Unpaused Typebot session for user');
+            logger.info({ chatId }, 'Cleared Typebot session for user');
           } catch (e) {}
           
           await quepasaClient.initialize();
@@ -1654,6 +1656,68 @@ router.post('/webhooks/chatwoot', async (req, res, next) => {
         payload: payload,
       },
     });
+
+    // Handle conversation resolved event
+    if (payload.event === 'conversation_status_changed' && payload.status === 'resolved') {
+      logger.info({ conversationId: payload.conversation?.id, inboxId }, 'Conversation resolved in Chatwoot (legacy webhook)');
+      
+      const quepasaMapping = await prisma.quepasaMapping.findFirst({
+        where: { chatwootInboxId: inboxId, active: true }
+      });
+      
+      if (quepasaMapping) {
+        let phoneNumber = payload.conversation?.meta?.sender?.phone_number || payload.conversation?.meta?.sender?.identifier;
+        if (phoneNumber) {
+          let chatId = phoneNumber.includes('@g.us') ? phoneNumber : phoneNumber.replace(/@.*$/, '');
+          
+          let targetPhone = chatId.replace(/\D/g, ''); 
+
+          try {
+            await prisma.nativeBotSession.deleteMany({
+              where: {
+                quepasaMappingId: quepasaMapping.id, 
+                phone: { in: [chatId, targetPhone, targetPhone+'@c.us', targetPhone+'@s.whatsapp.net'] }
+              }
+            });
+            logger.info({ chatId }, 'Cleared Native Bot session for user');
+          } catch (e) {}
+
+          try {
+            await prisma.typebotSession.deleteMany({
+              where: {
+                sessionId: quepasaMapping.quepasaToken,
+                phone: { in: [chatId, targetPhone, targetPhone+'@c.us', targetPhone+'@s.whatsapp.net'] }
+              }
+            });
+            logger.info({ chatId }, 'Cleared Typebot session for user');
+          } catch (e) {}
+          
+          await quepasaClient.initialize();
+          
+          let token = quepasaMapping.quepasaToken;
+          if (quepasaMapping.closingMessage && token) {
+            try {
+              let finalMessage = quepasaMapping.closingMessage;
+              if (quepasaMapping.showAgentName) {
+                const agentName = payload.sender?.name || payload.sender?.available_name || payload.conversation?.meta?.assignee?.name || 'Atendente';
+                finalMessage = `👤 *${agentName}*:\n\n${finalMessage}`;
+              }
+              await quepasaClient.sendTextMessage(token, chatId, finalMessage);
+              await prisma.eventLog.create({
+                data: {
+                  direction: 'out',
+                  provider: 'quepasa',
+                  sessionId: token,
+                  peer: chatId,
+                  payload: { type: 'closing_message', text: finalMessage },
+                }
+              });
+            } catch (err) { }
+          }
+        }
+      }
+      return res.json({ success: true, message: 'Resolved event processed' });
+    }
 
     // We only care about message_created events with outgoing messages
     if (payload.event !== 'message_created') {
