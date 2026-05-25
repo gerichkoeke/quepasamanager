@@ -337,16 +337,26 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
           
           if (quepasaMapping.botMenuType === 'list') {
             try {
-              await quepasaClient.sendListMessage(
-                quepasaMapping.quepasaToken, 
-                fromNumber, 
-                welcomeMsg,
-                'Ver Opções',
-                'Menu',
-                sections
-              );
+              if (rows.length <= 3 && rows.length > 0) {
+                // Use Buttons for up to 3 options
+                const buttons = rows.map(r => `${r.id} - ${r.title}`);
+                await quepasaClient.sendButtonMessage(
+                  quepasaMapping.quepasaToken,
+                  fromNumber,
+                  welcomeMsg,
+                  buttons,
+                  'Escolha uma opção'
+                );
+              } else {
+                // Quepasa/WAHA often drops the 'list' structure silently leaving an empty message.
+                // We manually render it as text for > 3 options to ensure the user sees them.
+                logger.warn({ phone: fromNumber }, 'More than 3 options for interactive menu, falling back to text to prevent missing list dropping.');
+                let menuText = welcomeMsg + '\n';
+                rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
+                await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+              }
             } catch (listErr) {
-              logger.warn({ phone: fromNumber, error: (listErr as Error).message }, 'Failed to send list menu, falling back to text');
+              logger.warn({ phone: fromNumber, error: (listErr as Error).message }, 'Failed to send interactive menu, falling back to text');
               let menuText = welcomeMsg + '\n';
               rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
               await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
@@ -460,14 +470,21 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
             
             if (quepasaMapping.botMenuType === 'list') {
               try {
-                await quepasaClient.sendListMessage(
-                  quepasaMapping.quepasaToken, 
-                  fromNumber, 
-                  invalidMsg,
-                  'Ver Opções',
-                  'Menu',
-                  sections
-                );
+                if (rows.length <= 3 && rows.length > 0) {
+                  const buttons = rows.map(r => `${r.id} - ${r.title}`);
+                  await quepasaClient.sendButtonMessage(
+                    quepasaMapping.quepasaToken,
+                    fromNumber,
+                    invalidMsg,
+                    buttons,
+                    'Escolha uma opção'
+                  );
+                } else {
+                  logger.warn({ phone: fromNumber }, 'More than 3 options for interactive menu, falling back to text.');
+                  let menuText = invalidMsg + '\n';
+                  rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
+                  await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+                }
               } catch (listErr) {
                 // Fallback to text
                 let menuText = invalidMsg + '\n';
@@ -573,8 +590,9 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
                            if (tMsg.buttons.length <= 3) {
                               await quepasaClient.sendButtonMessage(token, chatId, cleanText, tMsg.buttons);
                            } else {
-                              const rows = tMsg.buttons.map((b: string, i: number) => ({ id: String(i+1), title: b.substring(0, 24) }));
-                              await quepasaClient.sendListMessage(token, chatId, cleanText, 'Opções', 'Opções', rows);
+                              let menuText = cleanText + '\n';
+                              tMsg.buttons.forEach((b: string, i: number) => { menuText += `\n${i+1} - ${b}`; });
+                              await quepasaClient.sendTextMessage(token, chatId, menuText);
                            }
                         } catch(e) {
                            await quepasaClient.sendTextMessage(token, chatId, cleanText);
@@ -591,8 +609,9 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
                         if (tMsg.buttons.length <= 3) {
                            await quepasaClient.sendButtonMessage(token, chatId, tMsg.content, tMsg.buttons);
                         } else {
-                           const rows = tMsg.buttons.map((b: string, i: number) => ({ id: String(i+1), title: b.substring(0, 24) }));
-                           await quepasaClient.sendListMessage(token, chatId, tMsg.content, 'Opções', 'Opções', rows);
+                           let menuText = tMsg.content + '\n';
+                           tMsg.buttons.forEach((b: string, i: number) => { menuText += `\n${i+1} - ${b}`; });
+                           await quepasaClient.sendTextMessage(token, chatId, menuText);
                         }
                      } catch(e) {
                         await quepasaClient.sendTextMessage(token, chatId, tMsg.content);

@@ -669,44 +669,32 @@ export const Sessions: React.FC = () => {
     try {
       setIsSubmitting(true);
 
-      // First, update the mapping with Chatwoot credentials
-      // Parse bot options
-      const parsedOptions = typebotForm.botOptionsString.split('\n').filter(Boolean).map((line: string) => {
-        const parts = line.split('|');
-        return {
-          id: parts[0] ? parts[0].trim() : '',
-          text: parts[1] ? parts[1].trim() : '',
-          teamId: parts[2] ? parseInt(parts[2].trim()) : undefined,
-          labels: parts[3] ? parts[3].split(',').map(s => s.trim()).filter(Boolean) : undefined,
-          submenuText: parts[4] ? parts[4].trim() : undefined
-        };
-      }).filter((o: any) => o.id && o.text);
-
       const updateData: Partial<CreateQuepasaMappingRequest> = {
-        useTypebot: typebotForm.useTypebot,
-        typebotFlowId: typebotForm.typebotFlowId || undefined,
-        typebotHost: typebotForm.typebotHost || undefined,
-        typebotApiKey: typebotForm.typebotApiKey || undefined,
-        useNativeBot: typebotForm.useNativeBot,
-        botWelcomeMessage: typebotForm.botWelcomeMessage,
-        botOptions: parsedOptions as any,
-        botInvalidMessage: typebotForm.botInvalidMessage,
-        closingMessage: typebotForm.botClosingMessage,
-        botMenuType: typebotForm.botMenuType,
-        provider: typebotForm.provider,
-        officialPhoneId: typebotForm.officialPhoneId || undefined,
-        officialApiToken: typebotForm.officialApiToken || undefined,
-        officialWabaId: typebotForm.officialWabaId || undefined,
+        name: chatwootForm.name,
+        chatwootBaseUrl: chatwootForm.chatwootBaseUrl,
+        chatwootAccountId: chatwootForm.chatwootAccountId,
+        chatwootInboxName: chatwootForm.chatwootInboxName || undefined,
+        closingMessage: chatwootForm.closingMessage || undefined,
+        returnWebhookUrl: chatwootForm.returnWebhookUrl || undefined,
+        active: chatwootForm.active,
+        enableGroups: chatwootForm.enableGroups,
+        rejectCalls: chatwootForm.rejectCalls,
+        reopenClosedTickets: chatwootForm.reopenClosedTickets || false,
+        showAgentName: chatwootForm.showAgentName || false,
       };
-      
+
+      if (chatwootForm.chatwootApiToken && chatwootForm.chatwootApiToken !== '••••••••••••••') {
+        updateData.chatwootApiToken = chatwootForm.chatwootApiToken;
+      }
+
       await api.updateQuepasaMapping(editingQuepasa.id, updateData);
       
-      toast.success('Configuração Typebot salva com sucesso!');
-      setShowTypebotConfigModal(false);
-      resetTypebotForm();
+      toast.success('Configuração Chatwoot salva com sucesso!');
+      setShowChatwootConfigModal(false);
+      resetChatwootForm();
       loadData();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Falha ao salvar configuração do Typebot');
+      toast.error(error.response?.data?.error || 'Falha ao salvar integração do Chatwoot');
     } finally {
       setIsSubmitting(false);
     }

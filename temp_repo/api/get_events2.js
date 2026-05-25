@@ -1,10 +1,10 @@
-const { PrismaClient } = require('./node_modules/@prisma/client');
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 async function main() {
   const events = await prisma.eventLog.findMany({
-    where: { peer: { contains: '@lid' } },
     orderBy: { createdAt: 'desc' },
-    take: 1
+    where: { provider: 'chatwoot', payload: { path: ['event'], equals: 'conversation_status_changed' } },
+    take: 5
   });
   console.log(JSON.stringify(events, null, 2));
 }
