@@ -1185,7 +1185,11 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
     });
 
     // Handle conversation resolved event
-    if (payload.event === 'conversation_status_changed' && payload.status === 'resolved') {
+    if (payload.event === 'conversation_status_changed' || payload.event === 'conversation_updated') {
+      logger.info({ event: payload.event, rootStatus: payload.status, convStatus: payload.conversation?.status }, 'Checking Chatwoot conversation status (token webhook)');
+    }
+    
+    if ((payload.event === 'conversation_status_changed' || payload.event === 'conversation_updated') && (payload.status === 'resolved' || (payload.conversation && payload.conversation.status === 'resolved'))) {
       logger.info({ conversationId: payload.conversation?.id }, 'Conversation resolved in Chatwoot');
       
       const quepasaMapping = await prisma.quepasaMapping.findFirst({
@@ -1193,12 +1197,6 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
       });
       
       if (quepasaMapping) {
-        const payloadInboxId = payload.inbox?.id || payload.conversation?.inbox_id;
-        if (payloadInboxId && payloadInboxId.toString() !== quepasaMapping.chatwootInboxId) {
-          logger.debug({ payloadInboxId, mappingInboxId: quepasaMapping.chatwootInboxId }, 'Ignoring chatwoot webhook event from different inbox');
-          return res.json({ success: true, message: 'Event ignored - different inbox' });
-        }
-
         let phoneNumber = payload.conversation?.meta?.sender?.phone_number || payload.conversation?.meta?.sender?.identifier;
         if (phoneNumber) {
           let chatId = phoneNumber.includes('@g.us') ? phoneNumber : phoneNumber.replace(/@.*$/, '');
@@ -1209,7 +1207,6 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
           try {
             await prisma.nativeBotSession.deleteMany({
               where: {
-                quepasaMappingId: quepasaMapping.id, 
                 phone: { in: [chatId, targetPhone, targetPhone+'@c.us', targetPhone+'@s.whatsapp.net'] }
               }
             });
@@ -1219,7 +1216,6 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
           try {
             await prisma.typebotSession.deleteMany({
               where: {
-                sessionId: quepasaMapping.quepasaToken,
                 phone: { in: [chatId, targetPhone, targetPhone+'@c.us', targetPhone+'@s.whatsapp.net'] }
               }
             });
@@ -1658,7 +1654,11 @@ router.post('/webhooks/chatwoot', async (req, res, next) => {
     });
 
     // Handle conversation resolved event
-    if (payload.event === 'conversation_status_changed' && payload.status === 'resolved') {
+    if (payload.event === 'conversation_status_changed' || payload.event === 'conversation_updated') {
+      logger.info({ event: payload.event, rootStatus: payload.status, convStatus: payload.conversation?.status }, 'Checking Chatwoot conversation status (legacy webhook)');
+    }
+    
+    if ((payload.event === 'conversation_status_changed' || payload.event === 'conversation_updated') && (payload.status === 'resolved' || (payload.conversation && payload.conversation.status === 'resolved'))) {
       logger.info({ conversationId: payload.conversation?.id, inboxId }, 'Conversation resolved in Chatwoot (legacy webhook)');
       
       const quepasaMapping = await prisma.quepasaMapping.findFirst({
@@ -1675,7 +1675,6 @@ router.post('/webhooks/chatwoot', async (req, res, next) => {
           try {
             await prisma.nativeBotSession.deleteMany({
               where: {
-                quepasaMappingId: quepasaMapping.id, 
                 phone: { in: [chatId, targetPhone, targetPhone+'@c.us', targetPhone+'@s.whatsapp.net'] }
               }
             });
@@ -1685,7 +1684,6 @@ router.post('/webhooks/chatwoot', async (req, res, next) => {
           try {
             await prisma.typebotSession.deleteMany({
               where: {
-                sessionId: quepasaMapping.quepasaToken,
                 phone: { in: [chatId, targetPhone, targetPhone+'@c.us', targetPhone+'@s.whatsapp.net'] }
               }
             });
