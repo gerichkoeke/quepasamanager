@@ -568,13 +568,39 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
                    if (cleanText) {
                      tMsg = { ...tMsg, content: cleanText };
                      processedMessages.push(tMsg);
-                     await quepasaClient.sendTextMessage(token, chatId, cleanText);
-                     await prisma.eventLog.create({ data: { direction: 'out', provider: 'typebot', sessionId: token, peer: chatId, payload: { type: 'text', text: cleanText } }});
+                     if (tMsg.buttons && tMsg.buttons.length > 0) {
+                        try {
+                           if (tMsg.buttons.length <= 3) {
+                              await quepasaClient.sendButtonMessage(token, chatId, cleanText, tMsg.buttons);
+                           } else {
+                              const rows = tMsg.buttons.map((b: string, i: number) => ({ id: String(i+1), title: b.substring(0, 24) }));
+                              await quepasaClient.sendListMessage(token, chatId, cleanText, 'Opções', 'Opções', rows);
+                           }
+                        } catch(e) {
+                           await quepasaClient.sendTextMessage(token, chatId, cleanText);
+                        }
+                     } else {
+                        await quepasaClient.sendTextMessage(token, chatId, cleanText);
+                     }
+                     await prisma.eventLog.create({ data: { direction: 'out', provider: 'typebot', sessionId: token, peer: chatId, payload: { type: 'text', text: cleanText, buttons: tMsg.buttons } }});
                    }
                  } else {
                    processedMessages.push(tMsg);
-                   await quepasaClient.sendTextMessage(token, chatId, tMsg.content);
-                   await prisma.eventLog.create({ data: { direction: 'out', provider: 'typebot', sessionId: token, peer: chatId, payload: { type: 'text', text: tMsg.content } }});
+                   if (tMsg.buttons && tMsg.buttons.length > 0) {
+                     try {
+                        if (tMsg.buttons.length <= 3) {
+                           await quepasaClient.sendButtonMessage(token, chatId, tMsg.content, tMsg.buttons);
+                        } else {
+                           const rows = tMsg.buttons.map((b: string, i: number) => ({ id: String(i+1), title: b.substring(0, 24) }));
+                           await quepasaClient.sendListMessage(token, chatId, tMsg.content, 'Opções', 'Opções', rows);
+                        }
+                     } catch(e) {
+                        await quepasaClient.sendTextMessage(token, chatId, tMsg.content);
+                     }
+                   } else {
+                     await quepasaClient.sendTextMessage(token, chatId, tMsg.content);
+                   }
+                   await prisma.eventLog.create({ data: { direction: 'out', provider: 'typebot', sessionId: token, peer: chatId, payload: { type: 'text', text: tMsg.content, buttons: tMsg.buttons } }});
                  }
                } else {
                  processedMessages.push(tMsg);
@@ -1197,7 +1223,7 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
       });
       
       if (quepasaMapping) {
-        let phoneNumber = payload.conversation?.meta?.sender?.phone_number || payload.conversation?.meta?.sender?.identifier;
+        let phoneNumber = payload.meta?.sender?.phone_number || payload.meta?.sender?.identifier || payload.conversation?.meta?.sender?.phone_number || payload.conversation?.meta?.sender?.identifier;
         if (phoneNumber) {
           let chatId = phoneNumber.includes('@g.us') ? phoneNumber : phoneNumber.replace(/@.*$/, '');
           
@@ -1211,7 +1237,9 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
               }
             });
             logger.info({ chatId }, 'Cleared Native Bot session for user');
-          } catch (e) {}
+          } catch (e: any) {
+             logger.error({ error: e.message, chatId }, 'Failed to clear Native Bot session');
+          }
 
           try {
             await prisma.typebotSession.deleteMany({
@@ -1220,7 +1248,9 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
               }
             });
             logger.info({ chatId }, 'Cleared Typebot session for user');
-          } catch (e) {}
+          } catch (e: any) {
+             logger.error({ error: e.message, chatId }, 'Failed to clear Typebot session');
+          }
           
           await quepasaClient.initialize();
           
@@ -1666,7 +1696,7 @@ router.post('/webhooks/chatwoot', async (req, res, next) => {
       });
       
       if (quepasaMapping) {
-        let phoneNumber = payload.conversation?.meta?.sender?.phone_number || payload.conversation?.meta?.sender?.identifier;
+        let phoneNumber = payload.meta?.sender?.phone_number || payload.meta?.sender?.identifier || payload.conversation?.meta?.sender?.phone_number || payload.conversation?.meta?.sender?.identifier;
         if (phoneNumber) {
           let chatId = phoneNumber.includes('@g.us') ? phoneNumber : phoneNumber.replace(/@.*$/, '');
           
@@ -1679,7 +1709,9 @@ router.post('/webhooks/chatwoot', async (req, res, next) => {
               }
             });
             logger.info({ chatId }, 'Cleared Native Bot session for user');
-          } catch (e) {}
+          } catch (e: any) {
+             logger.error({ error: e.message, chatId }, 'Failed to clear Native Bot session');
+          }
 
           try {
             await prisma.typebotSession.deleteMany({
@@ -1688,7 +1720,9 @@ router.post('/webhooks/chatwoot', async (req, res, next) => {
               }
             });
             logger.info({ chatId }, 'Cleared Typebot session for user');
-          } catch (e) {}
+          } catch (e: any) {
+             logger.error({ error: e.message, chatId }, 'Failed to clear Typebot session (legacy)');
+          }
           
           await quepasaClient.initialize();
           

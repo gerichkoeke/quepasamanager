@@ -44,6 +44,7 @@ export interface ProcessedMessage {
   type: 'text' | 'image' | 'video' | 'audio';
   content: string; // text content or media URL
   caption?: string; // for media messages
+  buttons?: string[]; // buttons for interactive messages
 }
 
 export class TypebotClient {
@@ -199,13 +200,11 @@ export class TypebotClient {
 
       // Add buttons as text if present
       if (response.data.input?.items && response.data.input.items.length > 0) {
-        const buttonsText = '\n\n' + response.data.input.items.map((item: any) => item.content).join('\n');
-
-        // Append buttons to last text message or create new one
+        const buttons = response.data.input.items.map((item: any) => item.content);
         if (messages.length > 0 && messages[messages.length - 1].type === 'text') {
-          messages[messages.length - 1].content += buttonsText;
+           messages[messages.length - 1].buttons = buttons;
         } else {
-          messages.push({ id: response.data.input.id, type: 'text', content: buttonsText.trim() });
+           messages.push({ id: response.data.input.id, type: 'text', content: 'Opções:', buttons });
         }
       }
 
@@ -260,13 +259,11 @@ export class TypebotClient {
 
       // Add buttons as text if present
       if (response.data.input?.items && response.data.input.items.length > 0) {
-        const buttonsText = '\n\n' + response.data.input.items.map((item: any) => item.content).join('\n');
-
-        // Append buttons to last text message or create new one
+        const buttons = response.data.input.items.map((item: any) => item.content);
         if (messages.length > 0 && messages[messages.length - 1].type === 'text') {
-          messages[messages.length - 1].content += buttonsText;
+           messages[messages.length - 1].buttons = buttons;
         } else {
-          messages.push({ id: response.data.input.id, type: 'text', content: buttonsText.trim() });
+           messages.push({ id: response.data.input.id, type: 'text', content: 'Opções:', buttons });
         }
       }
 
