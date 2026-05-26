@@ -1224,7 +1224,7 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
         direction: 'in',
         provider: 'chatwoot',
         sessionId: token || 'chatwoot',
-        peer: payload.conversation?.meta?.sender?.phone_number || 'unknown',
+        peer: payload.conversation?.meta?.sender?.phone_number || payload.conversation?.meta?.sender?.identifier || payload.meta?.sender?.phone_number || payload.meta?.sender?.identifier || payload.sender?.identifier || 'unknown',
         payload: payload,
       },
     });
@@ -1702,7 +1702,7 @@ router.post('/webhooks/chatwoot', async (req, res, next) => {
         direction: 'in',
         provider: 'chatwoot',
         sessionId: inboxId || 'chatwoot',
-        peer: payload.conversation?.meta?.sender?.phone_number || 'unknown',
+        peer: payload.conversation?.meta?.sender?.phone_number || payload.conversation?.meta?.sender?.identifier || payload.meta?.sender?.phone_number || payload.meta?.sender?.identifier || payload.sender?.identifier || 'unknown',
         payload: payload,
       },
     });
