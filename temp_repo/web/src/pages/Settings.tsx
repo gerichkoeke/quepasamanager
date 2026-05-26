@@ -5,9 +5,15 @@ import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { api } from '../services/api';
 import { Settings as SettingsType } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 import toast from 'react-hot-toast';
 
 export const Settings: React.FC = () => {
+  const { companyName, setCompanyName, logoUrl, setLogoUrl } = useTheme();
+
+  const [localCompanyName, setLocalCompanyName] = useState(companyName);
+  const [localLogoUrl, setLocalLogoUrl] = useState(logoUrl);
+
   const [settings, setSettings] = useState<SettingsType>({
     quepasa_url: '',
     quepasa_user: '',
@@ -61,6 +67,10 @@ export const Settings: React.FC = () => {
         settingsToSave.quepasa_password = settings.quepasa_password;
       }
 
+      // Whitelabel fields
+      if (localCompanyName) setCompanyName(localCompanyName);
+      if (localLogoUrl) setLogoUrl(localLogoUrl);
+
       await api.updateSettings(settingsToSave as SettingsType);
       toast.success('Configurações salvas com sucesso');
 
@@ -109,6 +119,39 @@ export const Settings: React.FC = () => {
         </div>
 
         <form onSubmit={handleSave} className="space-y-6">
+          {/* Whitelabel Settings */}
+          <Card title="Configurações de Whitelabel (Aparência)">
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Nome da Empresa / Plataforma
+                </label>
+                <input
+                  id="company_name"
+                  type="text"
+                  value={localCompanyName}
+                  onChange={(e) => setLocalCompanyName(e.target.value)}
+                  placeholder="Ex: Minha Empresa"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="logo_url" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  URL da Logo
+                </label>
+                <input
+                  id="logo_url"
+                  type="text"
+                  value={localLogoUrl}
+                  onChange={(e) => setLocalLogoUrl(e.target.value)}
+                  placeholder="/logoastra.png ou https://..."
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
+                />
+              </div>
+            </div>
+          </Card>
+
           {/* Quepasa Settings */}
           <Card title="Configuração Quepasa">
             <div className="space-y-4">
