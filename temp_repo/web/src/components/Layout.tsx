@@ -87,8 +87,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   to={item.href}
                   className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-primary bg-opacity-10 text-primary dark:text-primary dark:bg-opacity-20'
-                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                      ? 'bg-primary bg-opacity-10 text-primary dark:bg-white/10 dark:text-white'
+                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
