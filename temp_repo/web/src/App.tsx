@@ -8,6 +8,8 @@ import { Sessions } from './pages/Sessions';
 import { Logs } from './pages/Logs';
 import { BotSessions } from './pages/BotSessions';
 import { Integrations } from './pages/Integrations';
+import { Campaigns } from './pages/Campaigns';
+import { SSOIntegrations } from './pages/SSOIntegrations';
 import Connect from './pages/Connect';
 
 // Protected Route Component
@@ -111,6 +113,22 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <Integrations />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campaigns"
+        element={
+          <ProtectedRoute>
+            <Campaigns />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sso"
+        element={
+          <ProtectedRoute>
+            <SSOIntegrations />
           </ProtectedRoute>
         }
       />

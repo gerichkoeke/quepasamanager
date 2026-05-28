@@ -12,6 +12,8 @@ import {
   X,
   Moon,
   Sun,
+  Send,
+  Shield,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../contexts/ThemeContext';
@@ -22,10 +24,12 @@ interface LayoutProps {
 
 const navigation = [
   { name: 'Painel', href: '/', icon: LayoutDashboard },
-  { name: 'Conexões', href: '/sessions', icon: MessageSquare },
+  { name: 'Instâncias WhatsApp', href: '/sessions', icon: MessageSquare },
+  { name: 'Disparador', href: '/campaigns', icon: Send },
   { name: 'Sessões Bot', href: '/bot-sessions', icon: Bot },
   { name: 'Logs', href: '/logs', icon: FileText },
   { name: 'Integrações', href: '/integrations', icon: Plug },
+  { name: 'SSO / Keycloak', href: '/sso', icon: Shield },
   { name: 'Configurações', href: '/settings', icon: Settings },
 ];
 
