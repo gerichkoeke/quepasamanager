@@ -14,13 +14,30 @@ import Connect from './pages/Connect';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, verifyAuth } = useAuth();
+  const { isAuthenticated, verifyAuth, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isVerifying, setIsVerifying] = React.useState(true);
 
   useEffect(() => {
     const verify = async () => {
+      // Check if there is a SSO token in URL
+      const urlParams = new URLSearchParams(location.search);
+      const urlToken = urlParams.get('token');
+      
+      if (urlToken) {
+        // We login with the URL token, which saves it to localStorage and state
+        const success = await login(urlToken);
+        if (success) {
+          // Remove token from URL for security
+          navigate(location.pathname, { replace: true });
+        } else {
+          setIsVerifying(false);
+          navigate('/login', { state: { from: location.pathname } });
+          return;
+        }
+      }
+
       const valid = await verifyAuth();
       setIsVerifying(false);
       if (!valid) {
@@ -29,7 +46,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     };
 
     verify();
-  }, []);
+  }, [location.pathname, location.search]);
 
   if (isVerifying) {
     return (

@@ -9,6 +9,37 @@ import { rabbitMQService } from '../services/rabbitmq.service';
 
 const router = Router();
 
+// SAML Callback
+router.post('/saml/callback', (req, res) => {
+  try {
+    const { SAMLResponse } = req.body;
+    if (!SAMLResponse) {
+      return res.status(400).send('No SAMLResponse found');
+    }
+    
+    // Decodifica a resposta base64
+    const xml = Buffer.from(SAMLResponse, 'base64').toString('utf-8');
+    
+    // Verificação rudimentar de sucesso no SAML (Para produção, deve verificar assinatura X509)
+    if (xml.includes('urn:oasis:names:tc:SAML:2.0:status:Success')) {
+      // Pega o token master
+      const baseUrl = '/'; // Redireciona para raiz
+      
+      // Redireciona com o token na URL (o app vai interceptar)
+      res.redirect(302, `${baseUrl}?token=${config.adminToken}`);
+    } else {
+      res.status(401).send(`
+        <h3>Autenticação SAML Falhou</h3>
+        <p>A resposta IdP não indicou sucesso.</p>
+        <a href="/">Voltar ao início</a>
+      `);
+    }
+  } catch (error) {
+    logger.error({ error }, 'Error processing SAML response');
+    res.status(500).send('Erro interno processando SAML');
+  }
+});
+
 // Toggle RabbitMQ Connection
 router.post('/settings/rabbitmq/toggle', authMiddleware, async (req, res, next) => {
   try {

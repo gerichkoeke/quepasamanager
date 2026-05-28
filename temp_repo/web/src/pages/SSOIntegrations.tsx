@@ -132,6 +132,23 @@ export const SSOIntegrations: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <div className="flex justify-between items-end">
+                         <span>URL de Retorno (ACS URL / Valid Redirect URIs)</span>
+                      </div>
+                    </label>
+                    <input
+                      type="text"
+                      disabled
+                      value={window.location.origin + '/api/saml/callback'}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 outline-none transition-colors"
+                    />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Você deve configurar essa URL no Keycloak no campo <strong>Valid redirect URIs</strong> e <strong>Master SAML Processing URL</strong>.
+                    </p>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       ID da Aplicação (Client ID / Entity ID)
                     </label>
                     <input
