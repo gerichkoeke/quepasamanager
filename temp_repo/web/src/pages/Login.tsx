@@ -46,11 +46,11 @@ export const Login: React.FC = () => {
          const issueInstant = new Date().toISOString();
          
          // Use the configured Issuer (Entity ID / Client ID)
-         const issuer = config.issuer || window.location.origin;
+         const issuer = (config.issuer || (window.location.origin + '/api/saml/callback')).trim();
          
          // ACS URL (Assertion Consumer Service) - Should match Valid Redirect URIs
          // Directing to backend for POST parsing
-         const redirectUrl = window.location.origin + '/api/saml/callback';
+         const redirectUrl = (window.location.origin + '/api/saml/callback').trim();
 
          const samlRequest = `<?xml version="1.0" encoding="UTF-8"?>
 <samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="${id}" Version="2.0" IssueInstant="${issueInstant}" Destination="${config.entryPoint}" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" AssertionConsumerServiceURL="${redirectUrl}">
