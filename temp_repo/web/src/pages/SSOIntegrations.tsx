@@ -30,6 +30,22 @@ export const SSOIntegrations: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (ssoConfig.enabled) {
+      if (!ssoConfig.entryPoint || !ssoConfig.entryPoint.trim()) {
+        toast.error('URL de Login é obrigatória para o SSO');
+        return;
+      }
+      if (!ssoConfig.issuer || !ssoConfig.issuer.trim()) {
+        toast.error('Emissor (Entity ID) é obrigatório para o SSO');
+        return;
+      }
+      if (ssoConfig.provider === 'custom' && (!ssoConfig.cert || !ssoConfig.cert.trim())) {
+        toast.error('Certificado é obrigatório para Custom SAML');
+        return;
+      }
+    }
+
     setIsSaving(true);
     try {
       // Simular save API
