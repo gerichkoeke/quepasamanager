@@ -41,7 +41,40 @@ export const Login: React.FC = () => {
     if (saved) {
       const config = JSON.parse(saved);
       if (config.entryPoint) {
-         window.location.href = config.entryPoint;
+         // Create SAML AuthnRequest XML
+         const id = '_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+         const issueInstant = new Date().toISOString();
+         
+         // Use the configured Issuer (Entity ID / Client ID)
+         const issuer = config.issuer || window.location.origin;
+         
+         // ACS URL (Assertion Consumer Service) - Should match Valid Redirect URIs
+         // We'll use the current origin + / (as per their setup)
+         const redirectUrl = window.location.origin + '/';
+
+         const samlRequest = `<?xml version="1.0" encoding="UTF-8"?>
+<samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="${id}" Version="2.0" IssueInstant="${issueInstant}" Destination="${config.entryPoint}" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" AssertionConsumerServiceURL="${redirectUrl}">
+    <saml:Issuer>${issuer}</saml:Issuer>
+    <samlp:NameIDPolicy Format="urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified" AllowCreate="true"/>
+</samlp:AuthnRequest>`;
+
+         // Base64 encode the XML
+         const base64Request = btoa(unescape(encodeURIComponent(samlRequest)));
+
+         // Use HTTP-POST Binding via hidden form to bypass the need for deflating the payload
+         const form = document.createElement('form');
+         form.method = 'POST';
+         form.action = config.entryPoint;
+         form.style.display = 'none';
+
+         const input = document.createElement('input');
+         input.type = 'hidden';
+         input.name = 'SAMLRequest';
+         input.value = base64Request;
+         
+         form.appendChild(input);
+         document.body.appendChild(form);
+         form.submit();
       } else {
          alert('URL de Login do Provedor não configurada.');
       }
