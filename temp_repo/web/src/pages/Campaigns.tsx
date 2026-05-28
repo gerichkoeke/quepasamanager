@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
-import { Send, Upload, Users, MessageSquare } from 'lucide-react';
+import { Send, Users, MessageSquare } from 'lucide-react';
 import { api } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -21,7 +21,7 @@ export const Campaigns: React.FC = () => {
   const loadSessions = async () => {
     try {
       setIsLoading(true);
-      const data = await api.getQuepasaSessions();
+      const data = await api.getSessions();
       // Filter only active sessions if needed, but for now just map them
       setSessions(data || []);
       if (data && data.length > 0) {
@@ -151,7 +151,7 @@ export const Campaigns: React.FC = () => {
           </Card>
 
           <div className="flex justify-end gap-4">
-             <Button type="button" variant="outline" onClick={() => { setNumbersInput(''); setMessage(''); }} disabled={isSending}>
+             <Button type="button" variant="secondary" onClick={() => { setNumbersInput(''); setMessage(''); }} disabled={isSending}>
                 Limpar Campos
              </Button>
              <Button type="submit" variant="primary" isLoading={isSending} size="lg">
