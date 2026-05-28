@@ -119,7 +119,7 @@ export const SSOIntegrations: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      URL de Login do Provedor de Identidade (Single Sign-On Service URL)
+                       URL de Login do Provedor de Identidade (Single Sign-On Service URL)
                     </label>
                     <input
                       type="url"
@@ -128,6 +128,9 @@ export const SSOIntegrations: React.FC = () => {
                       placeholder="https://keycloak.suaempresa.com.br/realms/master/protocol/saml"
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
                     />
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      O endpoint SAML do seu Keycloak. Ex: <strong>https://sso.armazem.cloud/realms/Armazem/protocol/saml</strong>
+                    </p>
                   </div>
 
                   <div>

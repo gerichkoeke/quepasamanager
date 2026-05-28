@@ -4,6 +4,7 @@ import { prisma } from '../db/client';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { logger } from '../utils/logger';
 import { quepasaClient } from '../clients/quepasa.client';
+import { config } from '../config';
 
 import { rabbitMQService } from '../services/rabbitmq.service';
 
