@@ -86,6 +86,47 @@ class ApiClient {
     }
   }
 
+  async loginLocal(data: any): Promise<{ success: boolean; message: string; token?: string; requireMfa?: boolean }> {
+    try {
+      const response = await this.client.post('/auth/local', data);
+      if (response.data.success && response.data.token) {
+        this.setToken(response.data.token);
+        return response.data;
+      }
+      return { success: false, message: 'Login falhou' };
+    } catch (error: any) {
+      if (error.response?.data?.requireMfa) {
+        return { success: false, message: 'MFA requisitado', requireMfa: true };
+      }
+      return { success: false, message: error.response?.data?.error || 'Erro no login' };
+    }
+  }
+
+  async getLocalAuthConfig(): Promise<{ configured: boolean; mfaEnabled: boolean }> {
+    const response = await this.client.get('/auth/local/config');
+    return response.data;
+  }
+
+  async setupLocalAuth(data: any): Promise<{ success: boolean }> {
+    const response = await this.client.post('/auth/local/config', data);
+    return response.data;
+  }
+
+  async generateMfa(): Promise<{ secret: string; otpauth: string }> {
+    const response = await this.client.post('/auth/mfa/generate');
+    return response.data;
+  }
+
+  async enableMfa(data: { secret: string; token: string }): Promise<{ success: boolean }> {
+    const response = await this.client.post('/auth/mfa/enable', data);
+    return response.data;
+  }
+
+  async disableMfa(): Promise<{ success: boolean }> {
+    const response = await this.client.post('/auth/mfa/disable');
+    return response.data;
+  }
+
   async verifyToken(): Promise<{ valid: boolean }> {
     try {
       await this.client.get('/settings');

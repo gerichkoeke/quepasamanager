@@ -2,13 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from '../components/Button';
-import { Shield, Key } from 'lucide-react';
+import { Shield, Key, User, Lock, Smartphone } from 'lucide-react';
+import { api } from '../services/api';
+import toast from 'react-hot-toast';
 
 export const Login: React.FC = () => {
   const [token, setToken] = useState('');
-  const [loginMethod, setLoginMethod] = useState<'token' | 'saml'>('token');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
+  const [loginMethod, setLoginMethod] = useState<'local' | 'token' | 'saml'>('local');
   const [ssoEnabled, setSsoEnabled] = useState(false);
-  const { login, isLoading } = useAuth();
+  const [requireMfa, setRequireMfa] = useState(false);
+  const { login: loginWithToken, isLoading } = useAuth();
+  const [isLocalLoading, setIsLocalLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,7 +25,7 @@ export const Login: React.FC = () => {
       const config = JSON.parse(saved);
       if (config.enabled) {
         setSsoEnabled(true);
-        setLoginMethod('saml');
+        // Maybe default to SAML if enabled, but local is also standard
       }
     }
   }, []);
@@ -29,9 +36,33 @@ export const Login: React.FC = () => {
       return;
     }
 
-    const success = await login(token);
+    const success = await loginWithToken(token);
     if (success) {
       navigate('/');
+    }
+  };
+
+  const handleLocalLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username.trim() || !password.trim()) return;
+
+    setIsLocalLoading(true);
+    const data: any = { username, password };
+    if (requireMfa && mfaCode) {
+      data.mfaCode = mfaCode;
+    }
+
+    const response = await api.loginLocal(data);
+    setIsLocalLoading(false);
+
+    if (response.success && response.token) {
+      toast.success('Login realizado com sucesso!');
+      window.location.href = '/'; // Full reload to catch Auth provider updates
+    } else if (response.requireMfa) {
+      setRequireMfa(true);
+      toast('Autenticação de Dois Fatores (MFA) necessária', { icon: '🔐' });
+    } else {
+      toast.error(response.message || 'Erro ao realizar login');
     }
   };
 
@@ -97,6 +128,17 @@ export const Login: React.FC = () => {
           <div className="flex rounded-md shadow-sm mb-6 p-1 bg-gray-100 dark:bg-gray-700">
             <button
               type="button"
+              onClick={() => setLoginMethod('local')}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                loginMethod === 'local'
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+              }`}
+            >
+               Usuário
+            </button>
+            <button
+              type="button"
               onClick={() => setLoginMethod('saml')}
               className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                 loginMethod === 'saml'
@@ -120,7 +162,111 @@ export const Login: React.FC = () => {
           </div>
         )}
 
-        {loginMethod === 'token' ? (
+        {!ssoEnabled && (
+          <div className="flex rounded-md shadow-sm mb-6 p-1 bg-gray-100 dark:bg-gray-700">
+             <button
+              type="button"
+              onClick={() => setLoginMethod('local')}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                loginMethod === 'local'
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+              }`}
+            >
+               Usuário e Senha
+            </button>
+            <button
+              type="button"
+              onClick={() => setLoginMethod('token')}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                loginMethod === 'token'
+                  ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow'
+                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+              }`}
+            >
+              Token API
+            </button>
+          </div>
+        )}
+
+        {loginMethod === 'local' ? (
+           <form onSubmit={handleLocalLogin} className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+             {!requireMfa ? (
+                <>
+                   <div>
+                     <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                       <div className="flex items-center gap-2">
+                         <User className="w-4 h-4" /> Usuário
+                       </div>
+                     </label>
+                     <input
+                       id="username"
+                       type="text"
+                       value={username}
+                       onChange={(e) => setUsername(e.target.value)}
+                       placeholder="Seu usuário"
+                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
+                       required
+                       disabled={isLocalLoading}
+                     />
+                   </div>
+                   <div>
+                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                       <div className="flex items-center gap-2">
+                         <Lock className="w-4 h-4" /> Senha
+                       </div>
+                     </label>
+                     <input
+                       id="password"
+                       type="password"
+                       value={password}
+                       onChange={(e) => setPassword(e.target.value)}
+                       placeholder="Sua senha"
+                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
+                       required
+                       disabled={isLocalLoading}
+                     />
+                   </div>
+                </>
+             ) : (
+                <div>
+                  <label htmlFor="mfaCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="w-4 h-4" /> Código MFA
+                    </div>
+                  </label>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                     Digite o código de 6 dígitos gerado pelo seu aplicativo autenticador.
+                  </p>
+                  <input
+                    id="mfaCode"
+                    type="text"
+                    value={mfaCode}
+                    onChange={(e) => setMfaCode(e.target.value)}
+                    placeholder="000000"
+                    maxLength={6}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white text-center tracking-widest text-lg font-mono font-bold"
+                    required
+                    disabled={isLocalLoading}
+                  />
+                  <div className="mt-2 text-right">
+                    <button type="button" className="text-xs text-primary hover:underline" onClick={() => setRequireMfa(false)}>
+                      Voltar ao login
+                    </button>
+                  </div>
+                </div>
+             )}
+             <Button
+               type="submit"
+               variant="primary"
+               className="w-full"
+               isLoading={isLocalLoading}
+               disabled={(!requireMfa && (!username.trim() || !password.trim())) || (requireMfa && mfaCode.length < 6)}
+             >
+               {isLocalLoading ? 'Entrando...' : 'Entrar'}
+             </Button>
+           </form>
+        ) : loginMethod === 'token' ? (
           <form onSubmit={handleSubmitToken} className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
             <div>
               <label htmlFor="token" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
