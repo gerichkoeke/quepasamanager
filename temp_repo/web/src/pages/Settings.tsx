@@ -22,6 +22,8 @@ export const Settings: React.FC = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [hasQuepasaPassword, setHasQuepasaPassword] = useState(false);
+  const [isEditingQuepasaPassword, setIsEditingQuepasaPassword] = useState(false);
   const [authConfig, setAuthConfig] = useState({ configured: false, mfaEnabled: false });
   const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
@@ -294,7 +296,7 @@ export const Settings: React.FC = () => {
                                <ShieldAlert className="w-6 h-6" />
                                <span>MFA não está habilitado</span>
                              </div>
-                             <Button variant="outline" size="sm" onClick={handleGenerateMfa} disabled={isGeneratingMfa}>
+                             <Button variant="secondary" size="sm" onClick={handleGenerateMfa} disabled={isGeneratingMfa}>
                                Configurar MFA
                              </Button>
                           </div>
