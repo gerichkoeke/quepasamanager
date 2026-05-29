@@ -4,7 +4,7 @@ import { prisma } from '../db/client';
 import { config } from '../config';
 import { logger } from '../utils/logger';
 import bcrypt from 'bcryptjs';
-import { authenticator } from 'otplib';
+import speakeasy from 'speakeasy';
 import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -58,9 +58,10 @@ router.post('/auth/local', async (req, res, next) => {
       }
 
       if (mfaSecretSetting && mfaSecretSetting.value) {
-        const isValidMfa = authenticator.verify({
+        const isValidMfa = speakeasy.totp.verify({
           token: mfaCode,
           secret: mfaSecretSetting.value,
+          encoding: 'base32',
         });
 
         if (!isValidMfa) {
@@ -129,16 +130,15 @@ router.get('/auth/local/config', authMiddleware, async (req, res, next) => {
 
 router.post('/auth/mfa/generate', authMiddleware, async (req, res, next) => {
   try {
-    const secret = authenticator.generateSecret();
     const userSetting = await prisma.appSetting.findUnique({
       where: { key: 'admin_username' },
     });
     const username = userSetting?.value || 'admin';
-    const otpauth = authenticator.keyuri(username, 'QuepasaManager', secret);
+    const secretInfo = speakeasy.generateSecret({ name: `QuepasaManager (${username})` });
 
     res.json({
-      secret,
-      otpauth,
+      secret: secretInfo.base32,
+      otpauth: secretInfo.otpauth_url,
     });
   } catch (error) {
     next(error);
@@ -153,7 +153,7 @@ router.post('/auth/mfa/enable', authMiddleware, async (req, res, next) => {
       return res.status(400).json({ error: 'Secret e Token são obrigatórios' });
     }
 
-    const isValid = authenticator.verify({ token, secret });
+    const isValid = speakeasy.totp.verify({ token, secret, encoding: 'base32' });
     if (!isValid) {
       return res.status(400).json({ error: 'Token MFA inválido' });
     }
