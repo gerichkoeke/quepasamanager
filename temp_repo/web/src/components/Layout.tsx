@@ -94,7 +94,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
+            <h3 className="px-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2 mt-4 first:mt-0">Módulos de Sistema</h3>
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href;
@@ -118,37 +119,39 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </nav>
 
           {/* Logout & Theme Toggle */}
-          <div className="px-4 py-6 border-t border-gray-100 dark:border-gray-800/60 flex flex-col gap-4">
-            <div className="bg-gradient-to-r from-primary to-indigo-600 rounded-2xl p-4 text-white shadow-lg shadow-primary/20">
-              <p className="text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">Status do Servidor</p>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]"></div>
-                <span className="font-bold text-sm tracking-wide">Online e Seguro</span>
+          <div className="px-4 py-4 border-t border-gray-100 dark:border-gray-800/60 flex flex-col gap-4">
+            {user && (
+              <div className="bg-white dark:bg-[#111322] border border-gray-100 dark:border-gray-800/60 rounded-2xl p-3 shadow-sm flex items-center justify-between">
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0"></div>
+                    <p className="text-xs font-bold text-gray-900 dark:text-white truncate uppercase tracking-wider">{user.username}</p>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1.5 ml-4">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                      {isAdmin ? 'ADMIN' : 'USER'}
+                    </span>
+                    <span className="text-[10px] text-gray-500 truncate">{companyName}</span>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="flex flex-col gap-1 mt-2">
+            <div className="flex flex-col gap-1">
               <button
                 onClick={toggleDarkMode}
-                className="flex items-center w-full px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
+                className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-all duration-200"
               >
-                {isDarkMode ? (
-                  <>
-                    <Sun className="w-5 h-5 mr-3 text-amber-500" />
-                    Tema Claro
-                  </>
-                ) : (
-                  <>
-                    <Moon className="w-5 h-5 mr-3 text-indigo-500" />
-                    Tema Escuro
-                  </>
-                )}
+                <div className="flex items-center">
+                  {isDarkMode ? <Sun className="w-4 h-4 mr-3 text-amber-500" /> : <Moon className="w-4 h-4 mr-3 text-indigo-500" />}
+                  Tema {isDarkMode ? 'Claro' : 'Escuro'}
+                </div>
               </button>
               <button
                 onClick={handleLogout}
-                className="flex items-center w-full px-4 py-3 text-sm font-medium text-red-500 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200"
+                className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-red-500 rounded-xl border border-red-500/20 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-all duration-200"
               >
-                <LogOut className="w-5 h-5 mr-3" />
+                <LogOut className="w-4 h-4 mr-2" />
                 Sair do Sistema
               </button>
             </div>
