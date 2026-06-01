@@ -111,7 +111,7 @@ export const ConfigExtra: React.FC = () => {
 
     const sidebarWidth = getSidebarWidth();
     const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
-    const bg = theme === 'dark' ? '#111214' : '#f4f6f8';
+    const bg = theme === 'dark' ? '#1A1D24' : '#f4f6f8';
     
     panel.style.cssText = \`position:fixed;top:0;right:0;bottom:0;left:\${sidebarWidth}px;background:\${bg};z-index:998;display:block;box-shadow: -4px 0 15px rgba(0,0,0,0.05);\`;
     
@@ -142,7 +142,7 @@ export const ConfigExtra: React.FC = () => {
         const iframe = document.getElementById('quepasa-hub-iframe');
         
         if (panel) {
-          const bg = theme === 'dark' ? '#111214' : '#f4f6f8';
+          const bg = theme === 'dark' ? '#1A1D24' : '#f4f6f8';
           panel.style.background = bg;
           if (iframe) iframe.style.background = bg;
         }
