@@ -8,7 +8,7 @@ import { api } from '../services/api';
 import { QuepasaMapping, CreateQuepasaMappingRequest } from '../types';
 import toast from 'react-hot-toast';
 
-export const QuepasaMappings: React.FC = () => {
+export const Conexoes: React.FC = () => {
   const [mappings, setMappings] = useState<QuepasaMapping[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);

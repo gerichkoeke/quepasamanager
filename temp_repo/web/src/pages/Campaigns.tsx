@@ -53,15 +53,15 @@ export const Campaigns: React.FC = () => {
   const loadInstances = async () => {
     try {
       setIsLoadingInstances(true);
-      // Fetch both Waha sessions and Quepasa mappings to allow the user to select
-      const [waha, quepasa] = await Promise.all([
-        api.getSessions().catch(() => []),
-        api.getQuepasaMappings().catch(() => [])
-      ]);
+      const quepasa = await api.getQuepasaMappings().catch(() => []);
       
       const merged: any[] = [];
-      waha.forEach((w: any) => merged.push({ id: `waha_${w.name}`, name: `WAHA - ${w.name}`, type: 'waha', status: w.status }));
-      quepasa.forEach((q: any) => merged.push({ id: `qp_${q.id}`, name: `Quepasa - ${q.name || q.phone || q.id}`, type: 'quepasa', status: 'Ativo' }));
+      quepasa.forEach((q: any) => merged.push({ 
+        id: `qp_${q.id}`, 
+        name: `${q.provider === 'official' ? 'API Oficial' : 'Quepasa'} - ${q.name || q.phoneNumber || q.id}`, 
+        type: q.provider === 'official' ? 'official' : 'quepasa', 
+        status: q.active ? 'Ativo' : 'Inativo' 
+      }));
       
       setInstances(merged);
     } catch (error: any) {
@@ -185,7 +185,9 @@ export const Campaigns: React.FC = () => {
                     <div>
                       <label className="block text-xs font-semibold text-gray-400 mb-1">Provedor</label>
                       <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-transparent dark:text-white text-sm">
-                        <option>Selecionar...</option>
+                        <option value="">Selecionar...</option>
+                        <option value="quepasa">Quepasa</option>
+                        <option value="official">API Oficial</option>
                       </select>
                     </div>
                     <div>

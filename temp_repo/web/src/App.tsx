@@ -3,12 +3,12 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-
 import { useAuth } from './hooks/useAuth';
 import { Login } from './pages/Login';
 import { Dashboard } from './pages/Dashboard';
-import { Settings } from './pages/Settings';
-import { Sessions } from './pages/Sessions';
+import { ConfigExtra } from './pages/ConfigExtra';
 import { Logs } from './pages/Logs';
 import { BotSessions } from './pages/BotSessions';
 import { Integrations } from './pages/Integrations';
 import { Campaigns } from './pages/Campaigns';
+import { Conexoes } from './pages/Conexoes';
 import { SSOIntegrations } from './pages/SSOIntegrations';
 import Connect from './pages/Connect';
 import { UsersPage } from './pages/Users';
@@ -95,10 +95,10 @@ const App: React.FC = () => {
         }
       />
       <Route
-        path="/sessions"
+        path="/conexoes"
         element={
           <ProtectedRoute>
-            <Sessions />
+            <Conexoes />
           </ProtectedRoute>
         }
       />
@@ -119,10 +119,10 @@ const App: React.FC = () => {
         }
       />
       <Route
-        path="/settings"
+        path="/config-extra"
         element={
           <ProtectedRoute>
-            <Settings />
+            <ConfigExtra />
           </ProtectedRoute>
         }
       />

@@ -25,13 +25,13 @@ interface LayoutProps {
 
 const allNavigation = [
   { name: 'Painel', href: '/', icon: LayoutDashboard, module: 'painel' },
-  { name: 'Instâncias WhatsApp', href: '/sessions', icon: MessageSquare, module: 'instancias' },
+  { name: 'Conexões', href: '/conexoes', icon: MessageSquare, module: 'instancias' },
   { name: 'Disparador', href: '/campaigns', icon: Send, module: 'disparador' },
   { name: 'Sessões Bot', href: '/bot-sessions', icon: Bot, module: 'sessoes_bot' },
   { name: 'Logs', href: '/logs', icon: FileText, module: 'logs' },
   { name: 'Integrações', href: '/integrations', icon: Plug, module: 'integracoes' },
   { name: 'SSO / Keycloak', href: '/sso', icon: Shield, module: 'sso' },
-  { name: 'Configurações', href: '/settings', icon: Settings, module: 'configuracoes' },
+  { name: 'Config Extra', href: '/config-extra', icon: Settings, module: 'configuracoes' },
   { name: 'Usuários', href: '/users', icon: Users, module: 'usuarios', adminOnly: true },
 ];
 
