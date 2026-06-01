@@ -66,7 +66,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
 
   return (
-    <div className={`min-h-screen bg-slate-50 dark:bg-[#0B0F19] transition-colors font-sans ${isEmbedded ? 'embedded' : ''}`}>
+    <div className={`min-h-screen bg-cw-bg-light dark:bg-cw-bg-dark transition-colors font-sans ${isEmbedded ? 'embedded' : ''}`}>
       {/* Mobile sidebar backdrop */}
       {!isEmbedded && sidebarOpen && (
         <div
@@ -78,13 +78,13 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Sidebar */}
       {!isEmbedded && (
         <div
-          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-[#15172b] border-r border-gray-100 dark:border-gray-800/60 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-cw-surface-dark border-r border-cw-border-light dark:border-cw-border-dark/60 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } shadow-lg lg:shadow-none`}
         >
-        <div className="flex flex-col h-full bg-slate-50/30 dark:bg-transparent">
+        <div className="flex flex-col h-full bg-cw-bg-light/30 dark:bg-transparent">
           {/* Logo */}
-          <div className="flex items-center justify-between px-6 py-6 border-b border-gray-100 dark:border-gray-800/60">
+          <div className="flex items-center justify-between px-6 py-6 border-b border-cw-border-light dark:border-cw-border-dark/60">
             <div className="flex items-center gap-3 overflow-hidden">
               <div className="bg-gradient-to-br from-primary to-indigo-600 w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-primary/30">
                 <Shield className="w-5 h-5 text-white" />
@@ -129,9 +129,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </nav>
 
           {/* Logout & Theme Toggle */}
-          <div className="px-4 py-4 border-t border-gray-100 dark:border-gray-800/60 flex flex-col gap-4">
+          <div className="px-4 py-4 border-t border-cw-border-light dark:border-cw-border-dark/60 flex flex-col gap-4">
             {user && (
-              <div className="bg-white dark:bg-[#111322] border border-gray-100 dark:border-gray-800/60 rounded-2xl p-3 shadow-sm flex items-center justify-between">
+              <div className="bg-white dark:bg-cw-bg-dark border border-cw-border-light dark:border-cw-border-dark/60 rounded-2xl p-3 shadow-sm flex items-center justify-between">
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] shrink-0"></div>
@@ -174,7 +174,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className={`${!isEmbedded ? 'lg:pl-64' : ''} flex flex-col h-screen`}>
         {/* Top bar (Mobile) */}
         {!isEmbedded && (
-          <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 lg:hidden">
+          <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-cw-border-light dark:border-cw-border-dark lg:hidden">
             <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-2">
               {logoUrl ? (

@@ -999,7 +999,7 @@ export const Sessions: React.FC = () => {
                 className={`p-1 rounded transition-colors ${
                   mapping.useTypebot
                     ? 'text-blue-600 hover:bg-blue-50'
-                    : 'text-gray-400 hover:bg-gray-50'
+                    : 'text-gray-400 hover:bg-cw-bg-light'
                 }`}
                 title="Configurar Typebot"
               >
@@ -1074,7 +1074,7 @@ export const Sessions: React.FC = () => {
                 placeholder="Buscar conexões..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                className="w-full pl-10 pr-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
               />
             </div>
           </div>
@@ -1124,7 +1124,7 @@ export const Sessions: React.FC = () => {
                   className={`p-3 border-2 rounded-lg transition-all ${
                     connectionType === 'waha'
                       ? 'border-primary bg-primary bg-opacity-5'
-                      : 'border-gray-300 hover:border-gray-400'
+                      : 'border-cw-border-light hover:border-gray-400'
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
@@ -1144,7 +1144,7 @@ export const Sessions: React.FC = () => {
                   className={`p-3 border-2 rounded-lg transition-all ${
                     connectionType === 'quepasa'
                       ? 'border-purple-500 bg-purple-50'
-                      : 'border-gray-300 hover:border-gray-400'
+                      : 'border-cw-border-light hover:border-gray-400'
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
@@ -1164,7 +1164,7 @@ export const Sessions: React.FC = () => {
                   className={`p-3 border-2 rounded-lg transition-all ${
                     connectionType === 'official'
                       ? 'border-green-500 bg-green-50'
-                      : 'border-gray-300 hover:border-gray-400'
+                      : 'border-cw-border-light hover:border-gray-400'
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
@@ -1192,7 +1192,7 @@ export const Sessions: React.FC = () => {
                   value={newSessionName}
                   onChange={(e) => setNewSessionName(e.target.value)}
                   placeholder="e.g., NomeEstancia"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                  className="w-full px-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -1520,7 +1520,7 @@ export const Sessions: React.FC = () => {
               </button>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-cw-bg-light rounded-lg">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-900 mb-1">
                   Rejeitar Ligações
@@ -1655,7 +1655,7 @@ export const Sessions: React.FC = () => {
               </div>
 
               {/* Bot Strategy Selection */}
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <div className="bg-cw-bg-light p-4 rounded-lg border border-cw-border-light">
                 <h4 className="font-medium text-gray-800 mb-3">Estratégia de Atendimento (Bot)</h4>
                 
                 <div className="flex flex-col gap-3 mb-4">
@@ -1674,7 +1674,7 @@ export const Sessions: React.FC = () => {
                 </div>
 
                 {typebotForm.useTypebot && (
-                  <div className="space-y-3 bg-white p-4 rounded border border-gray-100">
+                  <div className="space-y-3 bg-white p-4 rounded border border-cw-border-light">
                     <p className="text-xs text-gray-500 mb-2">Configure os dados do Typebot para atendimento primário.</p>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">URL do Typebot</label>
@@ -1692,7 +1692,7 @@ export const Sessions: React.FC = () => {
                 )}
 
                 {typebotForm.useNativeBot && (
-                  <div className="space-y-3 bg-white p-4 rounded border border-gray-100">
+                  <div className="space-y-3 bg-white p-4 rounded border border-cw-border-light">
                     <p className="text-xs text-gray-500 mb-2">Crie um menu inicial simples que direciona para as equipes do Chatwoot.</p>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem de Boas Vindas</label>
@@ -1791,7 +1791,7 @@ export const Sessions: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <div className="bg-white rounded-lg p-4 border border-cw-border-light">
                 <label className="text-xs font-semibold text-gray-500 mb-2 block uppercase">
                   Link de Conexão
                 </label>
@@ -1800,7 +1800,7 @@ export const Sessions: React.FC = () => {
                     type="text"
                     value={shareUrl}
                     readOnly
-                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm font-mono text-gray-800 focus:outline-none select-all"
+                    className="flex-1 px-3 py-2 bg-cw-bg-light border border-cw-border-light rounded-lg text-sm font-mono text-gray-800 focus:outline-none select-all"
                   />
                   <button
                     onClick={handleCopyShareUrl}
@@ -1856,7 +1856,7 @@ export const Sessions: React.FC = () => {
                 value={createForm.typebot_id}
                 onChange={(e) => setCreateForm({ ...createForm, typebot_id: e.target.value })}
                 placeholder="Digite o ID do Typebot"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                className="w-full px-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
                 required
               />
             </div>
@@ -1870,7 +1870,7 @@ export const Sessions: React.FC = () => {
                 value={createForm.typebot_url}
                 onChange={(e) => setCreateForm({ ...createForm, typebot_url: e.target.value })}
                 placeholder="https://typebot.example.com/api/v1/..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                className="w-full px-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
                 required
               />
             </div>
@@ -1884,7 +1884,7 @@ export const Sessions: React.FC = () => {
                 value={createForm.restart_keyword || ''}
                 onChange={(e) => setCreateForm({ ...createForm, restart_keyword: e.target.value })}
                 placeholder="Ex: reiniciar, /start, menu"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                className="w-full px-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
               />
               <p className="mt-1 text-sm text-gray-500">
                 Quando o usuário enviar esta palavra, o fluxo será reiniciado do zero
@@ -1901,7 +1901,7 @@ export const Sessions: React.FC = () => {
                 value={createForm.session_timeout || ''}
                 onChange={(e) => setCreateForm({ ...createForm, session_timeout: e.target.value ? parseInt(e.target.value) : undefined })}
                 placeholder="Ex: 30"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                className="w-full px-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
               />
               <p className="mt-1 text-sm text-gray-500">
                 Tempo em minutos após o qual a sessão expira e reinicia (deixe vazio para nunca expirar)
@@ -1941,7 +1941,7 @@ export const Sessions: React.FC = () => {
                 value={createForm.owner_resume_keyword || ''}
                 onChange={(e) => setCreateForm({ ...createForm, owner_resume_keyword: e.target.value })}
                 placeholder="Ex: retomar"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                className="w-full px-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
               />
               <p className="mt-1 text-sm text-gray-500">
                 Palavra que você pode enviar para o cliente para retomar o bot do início
@@ -2026,7 +2026,7 @@ export const Sessions: React.FC = () => {
               {sessionMappings.map((mapping) => (
                 <div
                   key={mapping.id}
-                  className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+                  className="p-4 border border-cw-border-light rounded-lg hover:border-cw-border-light transition-colors"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -2143,7 +2143,7 @@ export const Sessions: React.FC = () => {
                 value={testForm.phone}
                 onChange={(e) => setTestForm({ ...testForm, phone: e.target.value })}
                 placeholder="5511999999999"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                className="w-full px-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
                 required
               />
               <p className="text-xs text-gray-500 mt-1">Inclua o código do país sem o sinal +</p>
@@ -2156,7 +2156,7 @@ export const Sessions: React.FC = () => {
                 onChange={(e) => setTestForm({ ...testForm, message: e.target.value })}
                 placeholder="Digite sua mensagem de teste"
                 rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none resize-none"
+                className="w-full px-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none resize-none"
                 required
               />
             </div>

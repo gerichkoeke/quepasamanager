@@ -85,7 +85,7 @@ export const SSOIntegrations: React.FC = () => {
           <Card title={<div className="flex items-center gap-2"><Shield className="w-5 h-5 text-indigo-500" /> Provedor de Identidade</div>}>
             <div className="space-y-6">
               
-              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between p-4 bg-cw-bg-light dark:bg-gray-800 rounded-lg border border-cw-border-light dark:border-cw-border-dark">
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white">Ativar SSO (SAML)</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Permite que os usuários façam login usando as credenciais da rede</p>
@@ -97,7 +97,7 @@ export const SSOIntegrations: React.FC = () => {
                     checked={ssoConfig.enabled}
                     onChange={(e) => handleChange('enabled', e.target.checked)}
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/80 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/80 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-cw-border-light after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
                 </label>
               </div>
 
@@ -110,7 +110,7 @@ export const SSOIntegrations: React.FC = () => {
                     <select
                       value={ssoConfig.provider}
                       onChange={(e) => handleChange('provider', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
+                      className="w-full px-4 py-2 border border-cw-border-light dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
                     >
                       <option value="keycloak">Keycloak</option>
                       <option value="custom">Outro (Custom SAML)</option>
@@ -126,7 +126,7 @@ export const SSOIntegrations: React.FC = () => {
                       value={ssoConfig.entryPoint}
                       onChange={(e) => handleChange('entryPoint', e.target.value)}
                       placeholder="https://keycloak.suaempresa.com.br/realms/master/protocol/saml"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
+                      className="w-full px-4 py-2 border border-cw-border-light dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
                     />
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                       O endpoint SAML do seu Keycloak. Ex: <strong>https://sso.armazem.cloud/realms/Armazem/protocol/saml</strong>
@@ -143,7 +143,7 @@ export const SSOIntegrations: React.FC = () => {
                       type="text"
                       disabled
                       value={window.location.origin + '/api/saml/callback'}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 outline-none transition-colors"
+                      className="w-full px-4 py-2 border border-cw-border-light dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 outline-none transition-colors"
                     />
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                       Você deve configurar essa URL no Keycloak no campo <strong>Valid redirect URIs</strong> e <strong>Master SAML Processing URL</strong>.
@@ -159,7 +159,7 @@ export const SSOIntegrations: React.FC = () => {
                       value={ssoConfig.issuer}
                       onChange={(e) => handleChange('issuer', e.target.value)}
                       placeholder="Ex: https://quepasamanager.armazem.cloud/saml"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
+                      className="w-full px-4 py-2 border border-cw-border-light dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
                     />
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                       Deve ser exatamente igual ao campo <strong>Client ID</strong> configurado no Keycloak para esta aplicação. (Ex: o URL ou nome definido no Client).
@@ -175,7 +175,7 @@ export const SSOIntegrations: React.FC = () => {
                       onChange={(e) => handleChange('cert', e.target.value)}
                       placeholder="-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
                       rows={6}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white font-mono text-xs"
+                      className="w-full px-4 py-2 border border-cw-border-light dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white font-mono text-xs"
                     />
                   </div>
                   

@@ -232,7 +232,7 @@ export default function Connect() {
           {/* QR Code Display */}
           {sessionInfo.status === 'SCAN_QR_CODE' && (
             <div className="mb-6">
-              <div className="bg-gray-50 rounded-lg p-6 flex flex-col items-center justify-center">
+              <div className="bg-cw-bg-light rounded-lg p-6 flex flex-col items-center justify-center">
                 {qrCode ? (
                   <>
                     <img

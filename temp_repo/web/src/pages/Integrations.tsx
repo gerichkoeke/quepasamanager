@@ -55,7 +55,7 @@ export const Integrations: React.FC = () => {
                   value={softdeskUrl}
                   onChange={(e) => setSoftdeskUrl(e.target.value)}
                   placeholder="https://exemplo.softdesk.com.br/api/api.php"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                  className="w-full px-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
                 />
               </div>
 
@@ -68,17 +68,17 @@ export const Integrations: React.FC = () => {
                   value={softdeskToken}
                   onChange={(e) => setSoftdeskToken(e.target.value)}
                   placeholder="Digite o hash-api"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
+                  className="w-full px-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors"
                 />
               </div>
 
-              <div className="pt-4 mt-4 border-t border-gray-100">
+              <div className="pt-4 mt-4 border-t border-cw-border-light">
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={directTicketCreation}
                     onChange={(e) => setDirectTicketCreation(e.target.checked)}
-                    className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary"
+                    className="w-5 h-5 text-primary rounded border-cw-border-light focus:ring-primary"
                   />
                   <div>
                     <span className="block text-sm font-medium text-gray-900">

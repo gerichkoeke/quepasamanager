@@ -55,7 +55,7 @@ export const Dashboard: React.FC = () => {
           </div>
           {metrics && (
             <div className="flex items-center gap-3 mt-4 md:mt-0">
-              <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#15172b] border border-gray-100 dark:border-gray-800 rounded-full text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-full text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm">
                 <Database className="w-4 h-4 text-primary" />
                 <span>{metrics.messages_processed.toLocaleString('pt-BR')} Mensagens</span>
               </div>
@@ -69,7 +69,7 @@ export const Dashboard: React.FC = () => {
 
         {/* Core Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-          <div className="bg-white dark:bg-[#15172b] p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800/60 flex flex-col justify-between h-40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)]">
+          <div className="bg-white dark:bg-cw-surface-dark p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-cw-border-light dark:border-cw-border-dark/60 flex flex-col justify-between h-40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)]">
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Instâncias WhatsApp</h3>
             <div className="flex items-center justify-between mt-auto">
               <p className="text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">{metrics?.instances?.quepasa_active || 0}</p>
@@ -79,7 +79,7 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#15172b] p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800/60 flex flex-col justify-between h-40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)]">
+          <div className="bg-white dark:bg-cw-surface-dark p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-cw-border-light dark:border-cw-border-dark/60 flex flex-col justify-between h-40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)]">
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Caixas Chatwoot</h3>
             <div className="flex items-center justify-between mt-auto">
               <p className="text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">{metrics?.instances?.chatwoot_connections || 0}</p>
@@ -89,7 +89,7 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#15172b] p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800/60 flex flex-col justify-between h-40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)]">
+          <div className="bg-white dark:bg-cw-surface-dark p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-cw-border-light dark:border-cw-border-dark/60 flex flex-col justify-between h-40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)]">
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Sessões de Bot Ativas</h3>
             <div className="flex items-center justify-between mt-auto">
               <p className="text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">{metrics?.active_bots || 0}</p>
@@ -99,7 +99,7 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#15172b] p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-gray-800/60 flex flex-col justify-between h-40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)]">
+          <div className="bg-white dark:bg-cw-surface-dark p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none border border-cw-border-light dark:border-cw-border-dark/60 flex flex-col justify-between h-40 transition-transform duration-300 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)]">
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Eventos Recentes</h3>
             <div className="flex items-center justify-between mt-auto">
               <p className="text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">{metrics?.recent_events_count || 0}</p>
@@ -113,8 +113,8 @@ export const Dashboard: React.FC = () => {
         {/* Data Lists */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-8 mt-4">
           {/* Top Sessions */}
-          <div className="bg-white dark:bg-[#15172b] border border-gray-100 dark:border-gray-800/60 rounded-3xl shadow-sm overflow-hidden flex flex-col">
-            <div className="px-6 py-5 border-b border-gray-50 dark:border-gray-800/40 flex items-center justify-between bg-transparent">
+          <div className="bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark/60 rounded-3xl shadow-sm overflow-hidden flex flex-col">
+            <div className="px-6 py-5 border-b border-gray-50 dark:border-cw-border-dark/40 flex items-center justify-between bg-transparent">
                <h3 className="text-base font-bold text-gray-900 dark:text-white tracking-tight">Principais Sessões</h3>
                <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
                  <TrendingUp className="w-4 h-4 text-blue-500" />
@@ -126,7 +126,7 @@ export const Dashboard: React.FC = () => {
               ) : (
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+                    <tr className="border-b border-cw-border-light dark:border-cw-border-dark text-xs text-gray-500 dark:text-gray-400">
                        <th className="font-medium px-4 py-2">ID</th>
                        <th className="font-medium px-4 py-2 text-right">Eventos</th>
                        <th className="font-medium px-4 py-2 w-24">Atividade</th>
@@ -134,7 +134,7 @@ export const Dashboard: React.FC = () => {
                   </thead>
                   <tbody>
                     {metrics.topSessions.map((session) => (
-                      <tr key={session.sessionId} className="border-b border-gray-50 dark:border-gray-800/40 hover:bg-slate-50 dark:hover:bg-gray-800/30 transition-colors last:border-0">
+                      <tr key={session.sessionId} className="border-b border-gray-50 dark:border-cw-border-dark/40 hover:bg-cw-bg-light dark:hover:bg-gray-800/30 transition-colors last:border-0">
                         <td className="px-6 py-4 text-sm font-mono text-gray-600 dark:text-gray-300 truncate max-w-[200px]">{session.sessionId}</td>
                         <td className="px-6 py-4 text-sm font-semibold text-gray-700 dark:text-gray-200 text-right">{session.eventCount}</td>
                         <td className="px-6 py-4">
@@ -151,8 +151,8 @@ export const Dashboard: React.FC = () => {
           </div>
 
           {/* Recent Activity */}
-          <div className="bg-white dark:bg-[#15172b] border border-gray-100 dark:border-gray-800/60 rounded-3xl shadow-sm overflow-hidden flex flex-col">
-            <div className="px-6 py-5 border-b border-gray-50 dark:border-gray-800/40 flex items-center justify-between bg-transparent">
+          <div className="bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark/60 rounded-3xl shadow-sm overflow-hidden flex flex-col">
+            <div className="px-6 py-5 border-b border-gray-50 dark:border-cw-border-dark/40 flex items-center justify-between bg-transparent">
                <h3 className="text-base font-bold text-gray-900 dark:text-white tracking-tight">Logs Recentes</h3>
                <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
                  <Activity className="w-4 h-4 text-emerald-500" />
@@ -166,7 +166,7 @@ export const Dashboard: React.FC = () => {
                   {metrics.recent_activity.map((activity) => {
                     const isIncoming = activity.event_type.includes('Entrada');
                     return (
-                      <li key={activity.id} className="flex items-start gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-gray-800/30 transition-colors">
+                      <li key={activity.id} className="flex items-start gap-4 px-6 py-4 hover:bg-cw-bg-light dark:hover:bg-gray-800/30 transition-colors">
                          <div className={`mt-1 flex-shrink-0 w-2 h-2 rounded-full ${isIncoming ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]'}`} />
                          <div className="flex-1 min-w-0">
                            <p className="text-sm text-gray-800 dark:text-gray-200">
@@ -175,7 +175,7 @@ export const Dashboard: React.FC = () => {
                            </p>
                            <p className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-1.5 truncate">{activity.session_name}</p>
                          </div>
-                         <div className="text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap bg-gray-50 dark:bg-gray-800/50 px-2 py-1 rounded-md">
+                         <div className="text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap bg-cw-bg-light dark:bg-gray-800/50 px-2 py-1 rounded-md">
                            {formatTimestamp(activity.timestamp).split(' ')[1]}
                          </div>
                       </li>

@@ -185,7 +185,7 @@ export const Conexoes: React.FC = () => {
         <Card>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-cw-bg-light">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Telefone Quepasa</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
@@ -204,7 +204,7 @@ export const Conexoes: React.FC = () => {
                   </tr>
                 ) : (
                   mappings.map((mapping) => (
-                    <tr key={mapping.id} className="hover:bg-gray-50">
+                    <tr key={mapping.id} className="hover:bg-cw-bg-light">
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">{mapping.phoneNumber}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{mapping.name || '-'}</td>
                       <td className="px-6 py-4 text-sm text-gray-600">{mapping.chatwootBaseUrl}</td>

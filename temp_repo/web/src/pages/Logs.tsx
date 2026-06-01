@@ -238,7 +238,7 @@ export const Logs: React.FC = () => {
                 <select
                   value={filters.session_name}
                   onChange={(e) => handleFilterChange('session_name', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                  className="w-full px-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
                 >
                   <option value="">Todas as Sessões</option>
                   {sessions.map((session: any) => (
@@ -256,7 +256,7 @@ export const Logs: React.FC = () => {
                 <select
                   value={filters.direction}
                   onChange={(e) => handleFilterChange('direction', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                  className="w-full px-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
                 >
                   <option value="">Todas as Direções</option>
                   <option value="in">Entrada</option>
@@ -271,7 +271,7 @@ export const Logs: React.FC = () => {
                 <select
                   value={filters.provider}
                   onChange={(e) => handleFilterChange('provider', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                  className="w-full px-4 py-2 border border-cw-border-light rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none"
                 >
                   <option value="">Todos os Provedores</option>
                   <option value="waha">Waha</option>
@@ -295,7 +295,7 @@ export const Logs: React.FC = () => {
 
           {/* Pagination */}
           {logs.length > 0 && (
-            <div className="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
+            <div className="mt-6 flex items-center justify-between border-t border-cw-border-light pt-4">
               <div className="text-sm text-gray-700">
                 Página {currentPage} ({logs.length} itens)
               </div>

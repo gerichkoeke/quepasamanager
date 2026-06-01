@@ -68,7 +68,7 @@ export const ProjetoDetalhes: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-6 border-b border-gray-200 dark:border-gray-800/60 overflow-x-auto">
+        <div className="flex items-center gap-6 border-b border-cw-border-light dark:border-cw-border-dark/60 overflow-x-auto">
           {TABS.map(tab => (
             <button 
               key={tab.id}
@@ -114,7 +114,7 @@ export const ProjetoDetalhes: React.FC = () => {
                       <span className="font-medium text-amber-500">0</span>
                     </div>
                   </div>
-                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                  <div className="mt-4 pt-4 border-t border-cw-border-light dark:border-cw-border-dark">
                     <div className="h-1.5 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mb-1">
                       <div className="h-full bg-gray-300 dark:bg-gray-700" style={{ width: '0%' }}></div>
                     </div>
@@ -188,13 +188,13 @@ export const ProjetoDetalhes: React.FC = () => {
               </div>
               
               <div className="space-y-4">
-                <div className="bg-gray-50 dark:bg-[#15172b] p-4 rounded-xl border border-gray-200 dark:border-gray-800">
+                <div className="bg-cw-bg-light dark:bg-cw-surface-dark p-4 rounded-xl border border-cw-border-light dark:border-cw-border-dark">
                   <div className="flex items-center gap-2 mb-3 text-sm font-medium text-gray-500">
                     <FileEdit className="w-4 h-4" />
                     Sem Marco
                   </div>
-                  <div className="bg-white dark:bg-[#1C1E2C] border border-gray-200 dark:border-gray-800 rounded-lg flex items-center p-4 hover:border-primary/50 transition-colors cursor-pointer">
-                    <input type="checkbox" className="w-4 h-4 rounded text-primary bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-700 outline-none" />
+                  <div className="bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg flex items-center p-4 hover:border-primary/50 transition-colors cursor-pointer">
+                    <input type="checkbox" className="w-4 h-4 rounded text-primary bg-gray-100 border-cw-border-light dark:bg-gray-800 dark:border-cw-border-dark outline-none" />
                     <span className="ml-3 text-sm text-gray-900 dark:text-gray-200">Teste</span>
                   </div>
                 </div>
@@ -218,7 +218,7 @@ export const ProjetoDetalhes: React.FC = () => {
           {activeTab === 'conversas' && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">Conversas Vinculadas</h2>
-              <div className="bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl p-8 text-center text-sm text-gray-500">
+              <div className="bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl p-8 text-center text-sm text-gray-500">
                 Nenhuma conversa vinculada a este projeto.
               </div>
             </div>
@@ -274,7 +274,7 @@ export const ProjetoDetalhes: React.FC = () => {
           {activeTab === 'atividades' && (
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">Timeline de Atividades</h2>
-              <div className="bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl p-4 flex gap-4 items-center">
+              <div className="bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl p-4 flex gap-4 items-center">
                 <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
                   <Activity className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 </div>
@@ -291,14 +291,14 @@ export const ProjetoDetalhes: React.FC = () => {
         {/* Modals Mock (Simplified) */}
         {showTaskModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-[#1C1E2C] rounded-2xl w-full max-w-md shadow-xl border border-gray-200 dark:border-gray-800 p-6">
+            <div className="bg-white dark:bg-cw-surface-dark rounded-2xl w-full max-w-md shadow-xl border border-cw-border-light dark:border-cw-border-dark p-6">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Nova Tarefa</h3>
               <div className="space-y-4">
-                <input type="text" placeholder="Título *" className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" />
-                <textarea placeholder="Descrição" rows={3} className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm resize-none"></textarea>
-                <select className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"><option>Pendente</option></select>
-                <select className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"><option>Sem Prioridade</option></select>
-                <select className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"><option>Sem Marco</option></select>
+                <input type="text" placeholder="Título *" className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" />
+                <textarea placeholder="Descrição" rows={3} className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm resize-none"></textarea>
+                <select className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"><option>Pendente</option></select>
+                <select className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"><option>Sem Prioridade</option></select>
+                <select className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"><option>Sem Marco</option></select>
                 
                 <div className="flex justify-end gap-3 pt-4">
                   <Button variant="primary" onClick={() => setShowTaskModal(false)}>Criar</Button>
@@ -311,12 +311,12 @@ export const ProjetoDetalhes: React.FC = () => {
 
         {showMilestoneModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-[#1C1E2C] rounded-2xl w-full max-w-md shadow-xl border border-gray-200 dark:border-gray-800 p-6">
+            <div className="bg-white dark:bg-cw-surface-dark rounded-2xl w-full max-w-md shadow-xl border border-cw-border-light dark:border-cw-border-dark p-6">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Novo Marco</h3>
               <div className="space-y-4">
-                <input type="text" placeholder="Nome *" className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" />
-                <textarea placeholder="Descrição" rows={3} className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm resize-none"></textarea>
-                <input type="date" className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" />
+                <input type="text" placeholder="Nome *" className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" />
+                <textarea placeholder="Descrição" rows={3} className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm resize-none"></textarea>
+                <input type="date" className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" />
                 
                 <div className="flex justify-end gap-3 pt-4">
                   <Button variant="primary" onClick={() => setShowMilestoneModal(false)}>Criar</Button>
@@ -329,11 +329,11 @@ export const ProjetoDetalhes: React.FC = () => {
 
         {showDiscussionModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-[#1C1E2C] rounded-2xl w-full max-w-md shadow-xl border border-gray-200 dark:border-gray-800 p-6">
+            <div className="bg-white dark:bg-cw-surface-dark rounded-2xl w-full max-w-md shadow-xl border border-cw-border-light dark:border-cw-border-dark p-6">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Nova Discussão</h3>
               <div className="space-y-4">
-                <input type="text" placeholder="Assunto *" className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" />
-                <textarea placeholder="Descrição" rows={3} className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm resize-none"></textarea>
+                <input type="text" placeholder="Assunto *" className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" />
+                <textarea placeholder="Descrição" rows={3} className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm resize-none"></textarea>
                 
                 <div className="flex justify-end gap-3 pt-4">
                   <Button variant="primary" onClick={() => setShowDiscussionModal(false)}>Criar</Button>

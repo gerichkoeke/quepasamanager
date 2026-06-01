@@ -73,7 +73,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ sessionId, onClose }) 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-cw-border-light">
           <h2 className="text-xl font-semibold text-gray-900">Escanear QR Code</h2>
           <button
             onClick={onClose}
@@ -84,7 +84,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ sessionId, onClose }) 
         </div>
 
         <div className="p-6">
-          <div className="bg-gray-50 rounded-lg p-4 mb-4">
+          <div className="bg-cw-bg-light rounded-lg p-4 mb-4">
             <p className="text-sm text-gray-600 text-center mb-2">
               Sessão: <span className="font-medium text-gray-900">{sessionId}</span>
             </p>
@@ -114,7 +114,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ sessionId, onClose }) 
             )}
           </div>
 
-          <div className="flex items-center justify-center bg-white border-2 border-gray-200 rounded-lg p-8 min-h-[300px]">
+          <div className="flex items-center justify-center bg-white border-2 border-cw-border-light rounded-lg p-8 min-h-[300px]">
             {isLoading && (
               <div className="text-center">
                 <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>

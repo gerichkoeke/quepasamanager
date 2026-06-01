@@ -92,7 +92,7 @@ export const QuepasaQRCodeModal: React.FC<QuepasaQRCodeModalProps> = ({ mappingI
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-cw-border-light">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-semibold text-gray-900">Conectar Quepasa</h2>
             <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
@@ -108,7 +108,7 @@ export const QuepasaQRCodeModal: React.FC<QuepasaQRCodeModalProps> = ({ mappingI
         </div>
 
         <div className="p-6">
-          <div className="bg-gray-50 rounded-lg p-4 mb-4">
+          <div className="bg-cw-bg-light rounded-lg p-4 mb-4">
             {status && (
               <div className="flex items-center justify-center gap-2 mb-2">
                 <span
@@ -134,7 +134,7 @@ export const QuepasaQRCodeModal: React.FC<QuepasaQRCodeModalProps> = ({ mappingI
             )}
           </div>
 
-          <div className="flex items-center justify-center bg-white border-2 border-gray-200 rounded-lg p-8 min-h-[300px]">
+          <div className="flex items-center justify-center bg-white border-2 border-cw-border-light rounded-lg p-8 min-h-[300px]">
             {isLoading && (
               <div className="text-center">
                 <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>

@@ -38,7 +38,7 @@ export function Table<T extends Record<string, any>>({
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+        <thead className="bg-cw-bg-light">
           <tr>
             {columns.map((column, index) => (
               <th
@@ -52,7 +52,7 @@ export function Table<T extends Record<string, any>>({
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {data.map((row, rowIndex) => (
-            <tr key={rowIndex} className="hover:bg-gray-50 transition-colors">
+            <tr key={rowIndex} className="hover:bg-cw-bg-light transition-colors">
               {columns.map((column, colIndex) => {
                 const value =
                   typeof column.accessor === 'function'

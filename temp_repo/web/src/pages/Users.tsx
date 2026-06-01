@@ -177,7 +177,7 @@ export const UsersPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+                <tr className="border-b border-cw-border-light dark:border-cw-border-dark text-xs text-gray-500 dark:text-gray-400">
                   <th className="font-medium px-4 py-3">Usuário</th>
                   <th className="font-medium px-4 py-3">Módulos de Acesso</th>
                   <th className="font-medium px-4 py-3">MFA</th>
@@ -186,7 +186,7 @@ export const UsersPage: React.FC = () => {
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.id} className="border-b border-gray-50 dark:border-gray-800/40 hover:bg-slate-50 dark:hover:bg-gray-800/30 transition-colors last:border-0">
+                  <tr key={user.id} className="border-b border-gray-50 dark:border-cw-border-dark/40 hover:bg-cw-bg-light dark:hover:bg-gray-800/30 transition-colors last:border-0">
                     <td className="px-4 py-3 font-semibold text-gray-800 dark:text-gray-200">
                       {user.username}
                     </td>
@@ -256,7 +256,7 @@ export const UsersPage: React.FC = () => {
                     </label>
                     <input
                       type="text"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
+                      className="w-full px-4 py-2 border border-cw-border-light dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       required
@@ -268,7 +268,7 @@ export const UsersPage: React.FC = () => {
                     </label>
                     <input
                       type="password"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
+                      className="w-full px-4 py-2 border border-cw-border-light dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required={!editingUserId}
@@ -277,18 +277,18 @@ export const UsersPage: React.FC = () => {
                   </div>
                   
                   <div>
-                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 mt-4 border-t dark:border-gray-700 pt-4">
+                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 mt-4 border-t dark:border-cw-border-dark pt-4">
                         Módulos de Acesso permitidos
                      </label>
                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {AVAILABLE_MODULES.map(mod => (
-                           <label key={mod.id} className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200 cursor-pointer p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                           <label key={mod.id} className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-200 cursor-pointer p-2 rounded hover:bg-cw-bg-light dark:hover:bg-gray-700/50">
                              <input 
                                type="checkbox" 
                                checked={selectedModules.includes('all') ? true : selectedModules.includes(mod.id)}
                                disabled={selectedModules.includes('all') && mod.id !== 'all'}
                                onChange={() => handleToggleModule(mod.id)}
-                               className="rounded border-gray-300 text-primary focus:ring-primary"
+                               className="rounded border-cw-border-light text-primary focus:ring-primary"
                              />
                              {mod.name}
                            </label>
@@ -296,7 +296,7 @@ export const UsersPage: React.FC = () => {
                      </div>
                   </div>
 
-                  <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-cw-border-light dark:border-cw-border-dark">
                     <Button type="button" variant="ghost" onClick={handleCloseModal}>
                       Cancelar
                     </Button>
@@ -332,7 +332,7 @@ export const UsersPage: React.FC = () => {
                      <input
                        type="text"
                        placeholder="000000"
-                       className="w-full px-4 py-2 text-center tracking-widest text-lg border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-transparent"
+                       className="w-full px-4 py-2 text-center tracking-widest text-lg border border-cw-border-light dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-transparent"
                        value={mfaCodeInput}
                        onChange={(e) => setMfaCodeInput(e.target.value.replace(/\D/g, '').slice(0,6))}
                      />

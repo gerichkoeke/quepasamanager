@@ -65,13 +65,13 @@ export const Kanban: React.FC = () => {
 
   return (
     <Layout>
-      <div className={`flex flex-col h-full bg-gray-50 dark:bg-[#15172b] overflow-hidden animate-in fade-in duration-300 ${!isEmbedded ? 'rounded-2xl border border-gray-200 dark:border-gray-800' : ''}`}>
+      <div className={`flex flex-col h-full bg-cw-bg-light dark:bg-cw-surface-dark overflow-hidden animate-in fade-in duration-300 ${!isEmbedded ? 'rounded-2xl border border-cw-border-light dark:border-cw-border-dark' : ''}`}>
         
         {/* Header */}
-        <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1C1E2C]">
+        <div className="flex items-center justify-between p-3 border-b border-cw-border-light dark:border-cw-border-dark bg-white dark:bg-cw-surface-dark">
           <div className="flex items-center gap-3">
             {/* Tabs */}
-            <div className="flex items-center bg-gray-100 dark:bg-[#15172b] p-1 rounded-lg">
+            <div className="flex items-center bg-gray-100 dark:bg-cw-surface-dark p-1 rounded-lg">
               <button 
                 onClick={() => setActiveTab('kanban')}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${activeTab === 'kanban' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
@@ -89,17 +89,17 @@ export const Kanban: React.FC = () => {
             {/* View specific selects */}
             {viewState === 'board' && (
               <>
-                <select className="bg-gray-100 dark:bg-[#15172b] border border-transparent focus:border-primary px-3 py-2 rounded-lg text-sm font-medium outline-none text-gray-700 dark:text-gray-300">
+                <select className="bg-gray-100 dark:bg-cw-surface-dark border border-transparent focus:border-primary px-3 py-2 rounded-lg text-sm font-medium outline-none text-gray-700 dark:text-gray-300">
                   {funnels.map(f => (
                     <option key={f.id}>{f.name}</option>
                   ))}
                 </select>
 
-                <select className="bg-gray-100 dark:bg-[#15172b] border border-transparent focus:border-primary px-3 py-2 rounded-lg text-sm font-medium outline-none text-gray-700 dark:text-gray-300">
+                <select className="bg-gray-100 dark:bg-cw-surface-dark border border-transparent focus:border-primary px-3 py-2 rounded-lg text-sm font-medium outline-none text-gray-700 dark:text-gray-300">
                   <option>Todas as Caixas</option>
                 </select>
                 
-                <button className="p-2 bg-gray-100 dark:bg-[#15172b] rounded-lg text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                <button className="p-2 bg-gray-100 dark:bg-cw-surface-dark rounded-lg text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
                   <CalendarIcon className="w-4 h-4" />
                 </button>
               </>
@@ -120,15 +120,15 @@ export const Kanban: React.FC = () => {
                 
                 {/* New Card Dropdown Menu */}
                 {showNewCardMenu && (
-                  <div className="absolute top-10 right-0 w-64 bg-white dark:bg-[#1C1E2C] border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl z-50 p-2">
-                    <button onClick={() => { setShowAvulsoModal(true); setShowNewCardMenu(false); }} className="w-full flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-[#15172b] rounded-lg text-left transition-colors">
+                  <div className="absolute top-10 right-0 w-64 bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl shadow-xl z-50 p-2">
+                    <button onClick={() => { setShowAvulsoModal(true); setShowNewCardMenu(false); }} className="w-full flex items-start gap-3 p-3 hover:bg-cw-bg-light dark:hover:bg-cw-surface-light dark:bg-cw-surface-dark rounded-lg text-left transition-colors">
                       <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg"><CheckSquare className="w-4 h-4 text-gray-600 dark:text-gray-300" /></div>
                       <div>
                         <div className="font-semibold text-sm text-gray-900 dark:text-white">Card Avulso</div>
                         <div className="text-xs text-gray-500">Sem vínculo com contato</div>
                       </div>
                     </button>
-                    <button onClick={() => { setShowContatoModal(true); setShowNewCardMenu(false); }} className="w-full flex items-start gap-3 p-3 hover:bg-gray-50 dark:hover:bg-[#15172b] rounded-lg text-left transition-colors mt-1">
+                    <button onClick={() => { setShowContatoModal(true); setShowNewCardMenu(false); }} className="w-full flex items-start gap-3 p-3 hover:bg-cw-bg-light dark:hover:bg-cw-surface-light dark:bg-cw-surface-dark rounded-lg text-left transition-colors mt-1">
                       <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg"><Users className="w-4 h-4 text-blue-600 dark:text-blue-400" /></div>
                       <div>
                         <div className="font-semibold text-sm text-gray-900 dark:text-white">Card com Contato</div>
@@ -154,27 +154,27 @@ export const Kanban: React.FC = () => {
               
               {/* Right config menu */}
               {showRightMenu && (
-                <div className="absolute top-10 right-0 w-56 bg-white dark:bg-[#1C1E2C] border border-gray-200 dark:border-gray-800 rounded-xl shadow-xl z-50 p-2 py-2">
+                <div className="absolute top-10 right-0 w-56 bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl shadow-xl z-50 p-2 py-2">
                   <div className="text-xs font-semibold text-gray-400 px-3 pb-2 pt-1 uppercase tracking-wider">Ações</div>
-                  <button onClick={() => setShowRightMenu(false)} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 transition-colors">
+                  <button onClick={() => setShowRightMenu(false)} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-cw-bg-light dark:hover:bg-gray-800 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 transition-colors">
                     <RefreshCw className="w-4 h-4" /> Atualizar dados
                   </button>
-                  <button onClick={() => setShowRightMenu(false)} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 transition-colors">
+                  <button onClick={() => setShowRightMenu(false)} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-cw-bg-light dark:hover:bg-gray-800 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 transition-colors">
                     <CheckSquare className="w-4 h-4" /> Ações em Massa
                   </button>
-                  <button onClick={() => setShowRightMenu(false)} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 transition-colors">
+                  <button onClick={() => setShowRightMenu(false)} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-cw-bg-light dark:hover:bg-gray-800 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 transition-colors">
                     <Filter className="w-4 h-4" /> Filtros
                   </button>
                   
                   <div className="h-px bg-gray-200 dark:bg-gray-800 my-2"></div>
                   
-                  <button onClick={() => { toggleSettings(); setShowRightMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 transition-colors">
+                  <button onClick={() => { toggleSettings(); setShowRightMenu(false); }} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-cw-bg-light dark:hover:bg-gray-800 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 transition-colors">
                     <Settings className="w-4 h-4" /> Gerenciar Funis
                   </button>
-                  <button onClick={() => setShowRightMenu(false)} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 transition-colors">
+                  <button onClick={() => setShowRightMenu(false)} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-cw-bg-light dark:hover:bg-gray-800 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 transition-colors">
                     <Settings className="w-4 h-4" /> Config Globais
                   </button>
-                  <button onClick={openWebhooks} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 transition-colors">
+                  <button onClick={openWebhooks} className="w-full flex items-center gap-3 px-3 py-2 hover:bg-cw-bg-light dark:hover:bg-gray-800 rounded-lg text-left text-sm text-gray-700 dark:text-gray-200 transition-colors">
                     <Plug className="w-4 h-4" /> Webhooks / Chamados
                   </button>
                 </div>
@@ -209,16 +209,16 @@ export const Kanban: React.FC = () => {
         {/* Modals New Card */}
         {showAvulsoModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <form onSubmit={handleCreateAvulso} className="bg-white dark:bg-[#1C1E2C] rounded-2xl w-full max-w-sm shadow-xl border border-gray-200 dark:border-gray-800 p-6">
+            <form onSubmit={handleCreateAvulso} className="bg-white dark:bg-cw-surface-dark rounded-2xl w-full max-w-sm shadow-xl border border-cw-border-light dark:border-cw-border-dark p-6">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Criar Card Avulso</h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Título *</label>
-                  <input type="text" placeholder="teste" className="w-full px-4 py-2 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-lg outline-none focus:border-primary text-sm dark:text-white" required />
+                  <input type="text" placeholder="teste" className="w-full px-4 py-2 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg outline-none focus:border-primary text-sm dark:text-white" required />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Coluna *</label>
-                  <select className="w-full px-4 py-2 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-lg outline-none focus:border-primary text-sm dark:text-white" required>
+                  <select className="w-full px-4 py-2 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg outline-none focus:border-primary text-sm dark:text-white" required>
                     <option value="">Selecione uma etapa</option>
                     <option value="1">Aberto</option>
                   </select>
@@ -234,10 +234,10 @@ export const Kanban: React.FC = () => {
 
         {showContatoModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <form onSubmit={handleCreateAvulso} className="bg-white dark:bg-[#1C1E2C] rounded-2xl w-full max-w-sm shadow-xl border border-gray-200 dark:border-gray-800 p-6">
+            <form onSubmit={handleCreateAvulso} className="bg-white dark:bg-cw-surface-dark rounded-2xl w-full max-w-sm shadow-xl border border-cw-border-light dark:border-cw-border-dark p-6">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Card com Contato</h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-[#15172b] rounded-lg border border-gray-200 dark:border-gray-800">
+                <div className="flex items-center justify-between p-3 bg-cw-bg-light dark:bg-cw-surface-dark rounded-lg border border-cw-border-light dark:border-cw-border-dark">
                   <div>
                     <div className="font-semibold text-sm text-gray-900 dark:text-white">Criar novo contato</div>
                     <div className="text-xs text-gray-500">Cadastra o contato no sistema</div>
@@ -247,23 +247,23 @@ export const Kanban: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Nome *</label>
-                  <input type="text" placeholder="Nome completo" className="w-full px-4 py-2 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-lg outline-none focus:border-primary text-sm dark:text-white" required />
+                  <input type="text" placeholder="Nome completo" className="w-full px-4 py-2 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg outline-none focus:border-primary text-sm dark:text-white" required />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Telefone</label>
-                  <input type="text" placeholder="+55 11 99999-9999" className="w-full px-4 py-2 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-lg outline-none focus:border-primary text-sm dark:text-white" />
+                  <input type="text" placeholder="+55 11 99999-9999" className="w-full px-4 py-2 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg outline-none focus:border-primary text-sm dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">E-mail</label>
-                  <input type="email" placeholder="email@exemplo.com" className="w-full px-4 py-2 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-lg outline-none focus:border-primary text-sm dark:text-white" />
+                  <input type="email" placeholder="email@exemplo.com" className="w-full px-4 py-2 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg outline-none focus:border-primary text-sm dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Título do card <span className="font-normal text-gray-500 text-xs">(opcional)</span></label>
-                  <input type="text" placeholder="Nome do card (opcional)" className="w-full px-4 py-2 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-lg outline-none focus:border-primary text-sm dark:text-white" />
+                  <input type="text" placeholder="Nome do card (opcional)" className="w-full px-4 py-2 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg outline-none focus:border-primary text-sm dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Etapa *</label>
-                  <select className="w-full px-4 py-2 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-lg outline-none focus:border-primary text-sm dark:text-white" required>
+                  <select className="w-full px-4 py-2 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg outline-none focus:border-primary text-sm dark:text-white" required>
                     <option value="">Selecione uma etapa</option>
                     <option value="1">Aberto</option>
                   </select>
@@ -290,20 +290,20 @@ const KanbanBoard = () => {
   return (
     <>
       {columns.map(col => (
-        <div key={col} className="min-w-[300px] w-[300px] max-w-[300px] flex flex-col h-full bg-gray-100/50 dark:bg-[#1C1E2C]/50 rounded-xl p-3 border border-gray-200 dark:border-gray-800">
+        <div key={col} className="min-w-[300px] w-[300px] max-w-[300px] flex flex-col h-full bg-gray-100/50 dark:bg-cw-surface-dark/50 rounded-xl p-3 border border-cw-border-light dark:border-cw-border-dark">
           <div className="flex justify-between items-center mb-3 px-1">
             <h3 className="font-semibold text-gray-700 dark:text-gray-200">{col}</h3>
             <span className="text-xs bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full font-medium">0</span>
           </div>
           <div className="flex-1 overflow-y-auto">
             {/* List empty for now, waiting for implementation */}
-            <div className="text-center p-4 mt-8 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-gray-400 text-sm">
+            <div className="text-center p-4 mt-8 border-2 border-dashed border-cw-border-light dark:border-cw-border-dark rounded-xl text-gray-400 text-sm">
               Arrastar cards aqui
             </div>
           </div>
         </div>
       ))}
-      <div className="min-w-[300px] w-[300px] max-w-[300px] flex gap-2 p-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-[#1C1E2C]/50 rounded-xl transition-colors shrink-0">
+      <div className="min-w-[300px] w-[300px] max-w-[300px] flex gap-2 p-3 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-cw-surface-light dark:bg-cw-surface-dark/50 rounded-xl transition-colors shrink-0">
         <Plus className="w-5 h-5" />
         <span className="font-medium text-sm">Adicionar Etapa</span>
       </div>
@@ -313,14 +313,14 @@ const KanbanBoard = () => {
 
 const AgendaView = () => {
   return (
-    <div className="h-full p-6 flex flex-col bg-white dark:bg-[#15172b]">
+    <div className="h-full p-6 flex flex-col bg-white dark:bg-cw-surface-dark">
       <div className="flex items-center gap-4 mb-6">
         <h2 className="text-xl font-bold dark:text-white">Junho 2026</h2>
         <span className="text-sm px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full font-medium dark:text-gray-300">Hoje</span>
       </div>
-      <div className="flex-1 min-h-0 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden flex flex-col">
+      <div className="flex-1 min-h-0 border border-cw-border-light dark:border-cw-border-dark rounded-xl overflow-hidden flex flex-col">
          {/* Calendar Headers */}
-         <div className="grid grid-cols-7 border-b border-gray-200 dark:border-gray-800 text-center py-3 bg-gray-50 dark:bg-[#1C1E2C] text-sm font-semibold text-gray-500">
+         <div className="grid grid-cols-7 border-b border-cw-border-light dark:border-cw-border-dark text-center py-3 bg-cw-bg-light dark:bg-cw-surface-dark text-sm font-semibold text-gray-500">
             <div>Dom</div><div>Seg</div><div>Ter</div><div>Qua</div><div>Qui</div><div>Sex</div><div>Sáb</div>
          </div>
          {/* Calendar Grid (Mock) */}
@@ -330,7 +330,7 @@ const AgendaView = () => {
               const num = i - 0; // Starts from arbitrary offset
               const isToday = i === 1; 
               return (
-                <div key={i} className={`border-r border-b border-gray-200 dark:border-gray-800 p-2 ${isToday ? 'bg-primary/10' : 'bg-white dark:bg-[#15172b]'}`}>
+                <div key={i} className={`border-r border-b border-cw-border-light dark:border-cw-border-dark p-2 ${isToday ? 'bg-primary/10' : 'bg-white dark:bg-cw-surface-dark'}`}>
                   <span className={`text-xs font-semibold rounded-full w-6 h-6 flex items-center justify-center ${isToday ? 'bg-primary text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                     {num > 0 && num <= 30 ? num : ''}
                   </span>
@@ -403,9 +403,9 @@ const SettingsView = ({ funnels, onClose, setFunnels }: { funnels: Funnel[], onC
 
       <div className="space-y-4">
         {funnels.map(funnel => (
-          <div key={funnel.id} className="bg-white dark:bg-[#1C1E2C] border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden transition-all">
+          <div key={funnel.id} className="bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl overflow-hidden transition-all">
             <div 
-              className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+              className="flex items-center justify-between p-4 cursor-pointer hover:bg-cw-bg-light dark:hover:bg-white/5 transition-colors"
               onClick={(e) => handleToggleExpand(funnel.id, e)}
             >
               <div className="flex items-center gap-4">
@@ -426,13 +426,13 @@ const SettingsView = ({ funnels, onClose, setFunnels }: { funnels: Funnel[], onC
             </div>
             
             {expandedFunnels.includes(funnel.id) && (
-              <div className="border-t border-gray-100 dark:border-gray-800 p-6 bg-gray-50/50 dark:bg-black/10 space-y-4">
+              <div className="border-t border-cw-border-light dark:border-cw-border-dark p-6 bg-cw-bg-light/50 dark:bg-black/10 space-y-4">
                 
                 {funnel.steps === 0 ? (
                   <div className="text-center p-6 text-sm text-gray-500">Nenhuma etapa encontrada.</div>
                 ) : (
-                  <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-[#1C1E2C]">
-                    <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-800">
+                  <div className="border border-cw-border-light dark:border-cw-border-dark rounded-xl overflow-hidden bg-white dark:bg-cw-surface-dark">
+                    <div className="flex items-center justify-between p-3 border-b border-cw-border-light dark:border-cw-border-dark">
                       <div className="flex items-center gap-2">
                         <MoreVertical className="w-4 h-4 text-gray-400" />
                         <span className="font-semibold dark:text-white text-sm">Etapa Inicial</span>
@@ -467,7 +467,7 @@ const SettingsView = ({ funnels, onClose, setFunnels }: { funnels: Funnel[], onC
                   <Plus className="w-4 h-4" /> Adicionar etapa
                 </div>
 
-                <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-[#1C1E2C]">
+                <div className="border border-cw-border-light dark:border-cw-border-dark rounded-xl overflow-hidden bg-white dark:bg-cw-surface-dark">
                   <div className="flex items-center justify-between p-4 cursor-pointer">
                     <div className="flex items-center gap-3 font-semibold dark:text-white text-sm">
                       <KanbanIcon className="w-4 h-4 text-purple-500" /> Templates de Itens (0)
@@ -498,7 +498,7 @@ const WebhooksView = ({ onClose }: { onClose: () => void }) => {
         <h2 className="text-2xl font-bold dark:text-white">Webhooks e Integrações</h2>
       </div>
 
-      <div className="bg-white dark:bg-[#1C1E2C] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+      <div className="bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl p-6">
         <div className="flex items-center gap-3 mb-2">
           <RefreshCw className="w-6 h-6 text-primary" />
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">Sincronização de Chamados</h3>
@@ -514,7 +514,7 @@ const WebhooksView = ({ onClose }: { onClose: () => void }) => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-[#1C1E2C] border border-gray-200 dark:border-gray-800 rounded-xl p-6">
+      <div className="bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
@@ -530,7 +530,7 @@ const WebhooksView = ({ onClose }: { onClose: () => void }) => {
           </Button>
         </div>
         
-        <div className="text-center p-8 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl text-gray-400 text-sm">
+        <div className="text-center p-8 border-2 border-dashed border-cw-border-light dark:border-cw-border-dark rounded-xl text-gray-400 text-sm">
           Nenhum webhook configurado.
         </div>
       </div>

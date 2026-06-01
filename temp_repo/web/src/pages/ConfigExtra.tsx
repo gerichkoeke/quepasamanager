@@ -111,7 +111,7 @@ export const ConfigExtra: React.FC = () => {
 
     const sidebarWidth = getSidebarWidth();
     const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
-    const bg = theme === 'dark' ? '#0f172a' : '#fefefe';
+    const bg = theme === 'dark' ? '#111214' : '#f4f6f8';
     
     panel.style.cssText = \`position:fixed;top:0;right:0;bottom:0;left:\${sidebarWidth}px;background:\${bg};z-index:998;display:block;box-shadow: -4px 0 15px rgba(0,0,0,0.05);\`;
     
@@ -142,7 +142,7 @@ export const ConfigExtra: React.FC = () => {
         const iframe = document.getElementById('quepasa-hub-iframe');
         
         if (panel) {
-          const bg = theme === 'dark' ? '#0f172a' : '#fefefe';
+          const bg = theme === 'dark' ? '#111214' : '#f4f6f8';
           panel.style.background = bg;
           if (iframe) iframe.style.background = bg;
         }
@@ -246,7 +246,7 @@ export const ConfigExtra: React.FC = () => {
         
         <div className="pb-4">
           <div className="flex items-center gap-3">
-             <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-gray-200 dark:border-gray-700">
+             <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-cw-border-light dark:border-cw-border-dark">
                <SettingsIcon className="w-5 h-5 text-gray-500" />
              </div>
              <div>
@@ -256,7 +256,7 @@ export const ConfigExtra: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-6 border-b border-gray-200 dark:border-gray-800/60 pb-0 overflow-x-auto">
+        <div className="flex items-center gap-6 border-b border-cw-border-light dark:border-cw-border-dark/60 pb-0 overflow-x-auto">
           <button onClick={() => setActiveTab('permissoes')} className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === 'permissoes' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Permissões por Empresa</button>
           <button onClick={() => setActiveTab('tokens')} className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === 'tokens' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>API Tokens</button>
           <button onClick={() => setActiveTab('docs')} className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === 'docs' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Documentação API</button>
@@ -267,14 +267,14 @@ export const ConfigExtra: React.FC = () => {
 
         {activeTab === 'permissoes' && (
           <div className="space-y-4 pt-4">
-             <div className="bg-white dark:bg-[#15172b] rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
-                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
+             <div className="bg-white dark:bg-cw-surface-dark rounded-xl border border-cw-border-light dark:border-cw-border-dark overflow-hidden shadow-sm">
+                <div className="px-6 py-4 border-b border-cw-border-light dark:border-cw-border-dark">
                     <h2 className="text-base font-bold text-gray-900 dark:text-white">Permissões por Usuário</h2>
                     <p className="text-sm text-gray-500">Controle quais funcionalidades cada usuário / empresa pode acessar.</p>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
-                        <thead className="bg-[#1a1d36] text-gray-300 border-b border-gray-800">
+                        <thead className="bg-cw-surface-light dark:bg-cw-surface-dark text-gray-300 border-b border-gray-800">
                            <tr>
                               <th className="px-6 py-4 font-semibold w-12"><input type="checkbox" className="rounded bg-transparent border-gray-600" /></th>
                               <th className="px-6 py-4 font-semibold">Empresa / Acesso</th>
@@ -341,7 +341,7 @@ export const ConfigExtra: React.FC = () => {
                 <Button variant="primary" onClick={() => toast.success('Aguardando conexão com banco de dados de tokens')}><Plus className="w-4 h-4 mr-2" /> Novo Token</Button>
              </div>
              
-             <div className="py-24 text-center border border-dashed border-gray-300 dark:border-gray-800 rounded-xl bg-white dark:bg-[#15172b]">
+             <div className="py-24 text-center border border-dashed border-cw-border-light dark:border-cw-border-dark rounded-xl bg-white dark:bg-cw-surface-dark">
                 <Key className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Nenhum token criado</h3>
                 <p className="text-gray-500 text-sm">Crie seu primeiro token de API para começar a integrar seus sistemas.</p>
@@ -355,7 +355,7 @@ export const ConfigExtra: React.FC = () => {
              <Card title="Documentação Básica">
                 <p className="text-sm text-gray-500 mb-6">Utilize os tokens gerados na aba anterior para autenticar as requisições com o header Authorization.</p>
                 
-                <div className="bg-slate-100 dark:bg-[#0b0f19] p-4 rounded-xl border border-slate-200 dark:border-gray-800 text-sm font-mono text-gray-700 dark:text-gray-300 overflow-x-auto">
+                <div className="bg-slate-100 dark:bg-cw-bg-dark p-4 rounded-xl border border-slate-200 dark:border-cw-border-dark text-sm font-mono text-gray-700 dark:text-gray-300 overflow-x-auto">
                    <p className="text-emerald-500 mb-2">Exemplo de autenticação via CURL:</p>
                    curl -X GET \<br/>
                    &nbsp;&nbsp;https://hub.exemplo.com/api/v1/sessions \<br/>
@@ -389,7 +389,7 @@ export const ConfigExtra: React.FC = () => {
         {/* Setup Tab */}
         {activeTab === 'setup' && (
           <div className="space-y-6 pt-4">
-            <div className="flex gap-6 text-sm font-semibold border-b border-gray-200 dark:border-gray-800 pb-0">
+            <div className="flex gap-6 text-sm font-semibold border-b border-cw-border-light dark:border-cw-border-dark pb-0">
                <button onClick={() => setSetupSubTab('quepasa')} className={`pb-3 border-b-2 transition-colors ${setupSubTab === 'quepasa' ? 'border-primary text-primary' : 'border-transparent text-gray-500'}`}>Quepasa</button>
                <button onClick={() => setSetupSubTab('oficial')} className={`pb-3 border-b-2 transition-colors ${setupSubTab === 'oficial' ? 'border-primary text-primary' : 'border-transparent text-gray-500'}`}>API Oficial (Cloud API)</button>
             </div>
@@ -402,17 +402,17 @@ export const ConfigExtra: React.FC = () => {
                      
                      <div>
                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">URL Base</label>
-                       <input type="text" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 bg-transparent rounded-lg outline-none dark:text-white focus:border-primary" 
+                       <input type="text" className="w-full px-4 py-2 border border-cw-border-light dark:border-cw-border-dark bg-transparent rounded-lg outline-none dark:text-white focus:border-primary" 
                          value={settings?.quepasa_url || ''} onChange={e => setSettings({...settings, quepasa_url: e.target.value})} placeholder="http://localhost:3000" />
                      </div>
                      <div>
                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Usuário</label>
-                       <input type="text" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 bg-transparent rounded-lg outline-none dark:text-white focus:border-primary" 
+                       <input type="text" className="w-full px-4 py-2 border border-cw-border-light dark:border-cw-border-dark bg-transparent rounded-lg outline-none dark:text-white focus:border-primary" 
                          value={settings?.quepasa_user || ''} onChange={e => setSettings({...settings, quepasa_user: e.target.value})} placeholder="admin" />
                      </div>
                      <div>
                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Senha</label>
-                       <input type="password" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 bg-transparent rounded-lg outline-none dark:text-white focus:border-primary" 
+                       <input type="password" className="w-full px-4 py-2 border border-cw-border-light dark:border-cw-border-dark bg-transparent rounded-lg outline-none dark:text-white focus:border-primary" 
                          value={settings?.quepasa_password || ''} onChange={e => setSettings({...settings, quepasa_password: e.target.value})} placeholder="••••••••" />
                      </div>
                      
@@ -432,12 +432,12 @@ export const ConfigExtra: React.FC = () => {
                      
                      <div>
                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">Graph API URL</label>
-                       <input type="text" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 bg-transparent rounded-lg outline-none dark:text-white focus:border-primary" 
+                       <input type="text" className="w-full px-4 py-2 border border-cw-border-light dark:border-cw-border-dark bg-transparent rounded-lg outline-none dark:text-white focus:border-primary" 
                          value={settings?.official_url || ''} onChange={e => setSettings({...settings, official_url: e.target.value})} placeholder="https://graph.facebook.com/v19.0" />
                      </div>
                      <div>
                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-1">System User Access Token</label>
-                       <input type="password" className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 bg-transparent rounded-lg outline-none dark:text-white focus:border-primary" 
+                       <input type="password" className="w-full px-4 py-2 border border-cw-border-light dark:border-cw-border-dark bg-transparent rounded-lg outline-none dark:text-white focus:border-primary" 
                          value={settings?.official_token || ''} onChange={e => setSettings({...settings, official_token: e.target.value})} placeholder="EAA..." />
                      </div>
                      
@@ -460,19 +460,19 @@ export const ConfigExtra: React.FC = () => {
                   
                   <div>
                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Nome do App</label>
-                     <input type="text" className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#111322] rounded-xl outline-none dark:text-white focus:border-primary text-sm shadow-sm" 
+                     <input type="text" className="w-full px-4 py-3 border border-cw-border-light dark:border-cw-border-dark bg-white dark:bg-cw-bg-dark rounded-xl outline-none dark:text-white focus:border-primary text-sm shadow-sm" 
                        placeholder="Ex: Minha Empresa" />
                   </div>
                   <div>
                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Logo (URL)</label>
-                     <input type="text" className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#111322] rounded-xl outline-none dark:text-white focus:border-primary text-sm shadow-sm" 
+                     <input type="text" className="w-full px-4 py-3 border border-cw-border-light dark:border-cw-border-dark bg-white dark:bg-cw-bg-dark rounded-xl outline-none dark:text-white focus:border-primary text-sm shadow-sm" 
                        placeholder="https://..." />
                   </div>
                   <div>
                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Cor do Tema</label>
                      <div className="flex gap-2">
-                        <div className="w-12 h-12 rounded-lg bg-[#4F46E5] border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-center text-white"><Sliders className="w-4 h-4"/></div>
-                        <input type="text" className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-[#111322] rounded-xl outline-none dark:text-white focus:border-primary text-sm font-mono shadow-sm" 
+                        <div className="w-12 h-12 rounded-lg bg-[#4F46E5] border border-cw-border-light dark:border-cw-border-dark shadow-sm flex items-center justify-center text-white"><Sliders className="w-4 h-4"/></div>
+                        <input type="text" className="w-full px-4 py-3 border border-cw-border-light dark:border-cw-border-dark bg-cw-bg-light dark:bg-cw-bg-dark rounded-xl outline-none dark:text-white focus:border-primary text-sm font-mono shadow-sm" 
                           value="#4F46E5" readOnly />
                      </div>
                   </div>
@@ -492,8 +492,8 @@ export const ConfigExtra: React.FC = () => {
                    abrindo o Hub magicamente como um modal sobreposto, sem o usuário precisar sair do sistema.
                 </p>
                 <div className="relative group">
-                   <textarea className="w-full p-5 bg-slate-50 dark:bg-[#0B0F19] border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-mono text-indigo-700 dark:text-emerald-400 outline-none resize-none shadow-inner" rows={16} value={CHATWOOT_SCRIPT} readOnly spellCheck="false" />
-                   <button className="absolute top-4 right-4 p-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 shadow-sm transition-all opacity-0 group-hover:opacity-100 flex items-center gap-2" 
+                   <textarea className="w-full p-5 bg-cw-bg-light dark:bg-cw-bg-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl text-xs font-mono text-indigo-700 dark:text-emerald-400 outline-none resize-none shadow-inner" rows={16} value={CHATWOOT_SCRIPT} readOnly spellCheck="false" />
+                   <button className="absolute top-4 right-4 p-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 border border-cw-border-light dark:border-cw-border-dark shadow-sm transition-all opacity-0 group-hover:opacity-100 flex items-center gap-2" 
                      onClick={() => { navigator.clipboard.writeText(CHATWOOT_SCRIPT); toast.success('Script copiado com sucesso!'); }}>
                      <FileCode2 className="w-4 h-4" />
                      <span>Copiar Script</span>

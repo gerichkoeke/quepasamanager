@@ -44,11 +44,11 @@ export const ChatsInternos: React.FC = () => {
 
   return (
     <Layout>
-      <div className={`flex h-full bg-white dark:bg-[#15172b] overflow-hidden animate-in fade-in duration-300 ${!isEmbedded ? 'rounded-2xl border border-gray-200 dark:border-gray-800' : ''}`}>
+      <div className={`flex h-full bg-white dark:bg-cw-surface-dark overflow-hidden animate-in fade-in duration-300 ${!isEmbedded ? 'rounded-2xl border border-cw-border-light dark:border-cw-border-dark' : ''}`}>
         
         {/* Sidebar */}
-        <div className="w-72 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-gray-50/50 dark:bg-transparent">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+        <div className="w-72 border-r border-cw-border-light dark:border-cw-border-dark flex flex-col bg-cw-bg-light/50 dark:bg-transparent">
+          <div className="p-4 border-b border-cw-border-light dark:border-cw-border-dark flex justify-between items-center">
             <div>
               <h2 className="font-bold text-gray-900 dark:text-white">Chats Internos</h2>
               <p className="text-xs text-gray-500">{chats.length} chat{chats.length !== 1 && 's'}</p>
@@ -73,7 +73,7 @@ export const ChatsInternos: React.FC = () => {
                 <input 
                   type="text" 
                   placeholder="Pesquisar..." 
-                  className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#1C1E2C] border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white outline-none focus:border-primary transition-colors"
+                  className="w-full pl-9 pr-4 py-2 bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg text-sm text-gray-900 dark:text-white outline-none focus:border-primary transition-colors"
                 />
              </div>
           </div>
@@ -110,7 +110,7 @@ export const ChatsInternos: React.FC = () => {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col bg-white dark:bg-[#15172b]">
+        <div className="flex-1 flex flex-col bg-white dark:bg-cw-surface-dark">
           {!activeChat ? (
             <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
               <MessageSquare className="w-16 h-16 text-gray-200 dark:text-gray-800 mb-4" />
@@ -120,7 +120,7 @@ export const ChatsInternos: React.FC = () => {
           ) : (
             <>
               {/* Chat Header */}
-              <div className="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 bg-white/50 dark:bg-[#15172b]/50 backdrop-blur-sm z-10 relative">
+              <div className="h-16 border-b border-cw-border-light dark:border-cw-border-dark flex items-center justify-between px-6 bg-white/50 dark:bg-cw-surface-dark/50 backdrop-blur-sm z-10 relative">
                  <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-sm">
                       {chats.find(c => c.id === activeChat)?.name.substring(0, 2).toUpperCase()}
@@ -171,8 +171,8 @@ export const ChatsInternos: React.FC = () => {
               </div>
 
               {/* Message Input */}
-              <div className="p-4 bg-white dark:bg-[#15172b]">
-                 <div className="flex items-center gap-2 bg-gray-50 dark:bg-[#1C1E2C] border border-gray-200 dark:border-gray-800 rounded-xl p-2 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+              <div className="p-4 bg-white dark:bg-cw-surface-dark">
+                 <div className="flex items-center gap-2 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl p-2 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
                     <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                        <Plus className="w-5 h-5" />
                     </button>
@@ -193,8 +193,8 @@ export const ChatsInternos: React.FC = () => {
         {/* Modal Novo Chat */}
         {showNewChatModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-[#1C1E2C] rounded-2xl w-full max-w-sm shadow-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-              <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800/60">
+            <div className="bg-white dark:bg-cw-surface-dark rounded-2xl w-full max-w-sm shadow-xl border border-cw-border-light dark:border-cw-border-dark overflow-hidden">
+              <div className="flex justify-between items-center p-5 border-b border-cw-border-light dark:border-cw-border-dark/60">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Criar Novo Chat</h3>
                 <button onClick={() => setShowNewChatModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                   <X className="w-5 h-5" />
@@ -209,17 +209,17 @@ export const ChatsInternos: React.FC = () => {
                     value={newChatName}
                     onChange={e => setNewChatName(e.target.value)}
                     placeholder="Ex: Equipe de Vendas"
-                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"
+                    className="w-full px-4 py-2.5 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"
                     autoFocus
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Membros</label>
-                  <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50 dark:bg-[#15172b]">
+                  <div className="border border-cw-border-light dark:border-cw-border-dark rounded-xl overflow-hidden bg-cw-bg-light dark:bg-cw-surface-dark">
                     {['ACloud', 'Alan Silva', 'Gabriel Erich Koeke', 'Leonardo Rosa'].map(member => (
-                       <label key={member} className="flex items-center gap-3 p-3 border-b border-gray-200 dark:border-gray-800 last:border-0 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors">
-                          <input type="checkbox" className="w-4 h-4 rounded text-primary border-gray-300 dark:border-gray-600 bg-transparent focus:ring-0" />
+                       <label key={member} className="flex items-center gap-3 p-3 border-b border-cw-border-light dark:border-cw-border-dark last:border-0 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors">
+                          <input type="checkbox" className="w-4 h-4 rounded text-primary border-cw-border-light dark:border-gray-600 bg-transparent focus:ring-0" />
                           <span className="text-sm text-gray-700 dark:text-gray-300">{member}</span>
                        </label>
                     ))}

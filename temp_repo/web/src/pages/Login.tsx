@@ -205,7 +205,7 @@ export const Login: React.FC = () => {
                        value={username}
                        onChange={(e) => setUsername(e.target.value)}
                        placeholder="Seu usuário"
-                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
+                       className="w-full px-4 py-2 border border-cw-border-light dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
                        required
                        disabled={isLocalLoading}
                      />
@@ -222,7 +222,7 @@ export const Login: React.FC = () => {
                        value={password}
                        onChange={(e) => setPassword(e.target.value)}
                        placeholder="Sua senha"
-                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
+                       className="w-full px-4 py-2 border border-cw-border-light dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
                        required
                        disabled={isLocalLoading}
                      />
@@ -245,7 +245,7 @@ export const Login: React.FC = () => {
                     onChange={(e) => setMfaCode(e.target.value)}
                     placeholder="000000"
                     maxLength={6}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white text-center tracking-widest text-lg font-mono font-bold"
+                    className="w-full px-4 py-2 border border-cw-border-light dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white text-center tracking-widest text-lg font-mono font-bold"
                     required
                     disabled={isLocalLoading}
                   />
@@ -280,7 +280,7 @@ export const Login: React.FC = () => {
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="Digite seu token"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-2 border border-cw-border-light dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-colors dark:bg-gray-700 dark:text-white"
                 required
                 disabled={isLoading}
               />

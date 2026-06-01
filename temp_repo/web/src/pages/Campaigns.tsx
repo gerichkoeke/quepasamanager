@@ -125,7 +125,7 @@ export const Campaigns: React.FC = () => {
                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Disparador em Massa</h1>
               </div>
               <div className="flex items-center gap-3 mt-4 md:mt-0">
-                 <Button variant="secondary" onClick={() => {}} className="bg-transparent border-gray-200 hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800">
+                 <Button variant="secondary" onClick={() => {}} className="bg-transparent border-cw-border-light hover:bg-gray-100 dark:border-cw-border-dark dark:hover:bg-gray-800">
                    <Ban className="w-4 h-4 mr-2" />
                    Blacklist
                  </Button>
@@ -136,7 +136,7 @@ export const Campaigns: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-6 border-b border-gray-200 dark:border-gray-800/60 pb-2">
+            <div className="flex items-center gap-6 border-b border-cw-border-light dark:border-cw-border-dark/60 pb-2">
               <button 
                 onClick={() => setActiveTab('disparos')}
                 className={`pb-2 text-sm font-semibold transition-colors border-b-2 ${activeTab === 'disparos' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
@@ -154,7 +154,7 @@ export const Campaigns: React.FC = () => {
             {/* LISTAGEM DISPAROS */}
             {activeTab === 'disparos' && (
               <div className="space-y-6 mt-6">
-                 <div className="flex justify-between items-center bg-[#15172b] p-2 rounded-xl border border-gray-800/60">
+                 <div className="flex justify-between items-center bg-cw-surface-light dark:bg-cw-surface-dark p-2 rounded-xl border border-gray-800/60">
                     <input 
                       type="text" 
                       placeholder="Buscar por nome..." 
@@ -184,7 +184,7 @@ export const Campaigns: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-gray-400 mb-1">Provedor</label>
-                      <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-transparent dark:text-white text-sm">
+                      <select className="w-full px-4 py-2 border border-cw-border-light dark:border-cw-border-dark rounded-lg focus:ring-2 focus:ring-primary outline-none bg-transparent dark:text-white text-sm">
                         <option value="">Selecionar...</option>
                         <option value="quepasa">Quepasa</option>
                         <option value="official">API Oficial</option>
@@ -192,7 +192,7 @@ export const Campaigns: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-gray-400 mb-1">Conexão (instância)</label>
-                      <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-primary outline-none bg-transparent dark:text-white text-sm">
+                      <select className="w-full px-4 py-2 border border-cw-border-light dark:border-cw-border-dark rounded-lg focus:ring-2 focus:ring-primary outline-none bg-transparent dark:text-white text-sm">
                         <option>Selecionar...</option>
                       </select>
                     </div>
@@ -226,7 +226,7 @@ export const Campaigns: React.FC = () => {
         {/* WIZARD NOVO DISPARO */}
         {phase === 'wizard' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between bg-white dark:bg-[#15172b] p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800/60">
+            <div className="flex items-center justify-between bg-white dark:bg-cw-surface-dark p-4 rounded-2xl shadow-sm border border-cw-border-light dark:border-cw-border-dark/60">
                <div className="flex items-center gap-4 text-sm font-semibold">
                  <button onClick={() => setPhase('list')} className="text-gray-400 hover:text-white flex items-center pr-4 border-r border-gray-700">
                    <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
@@ -260,7 +260,7 @@ export const Campaigns: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nome do disparo <span className="text-red-500">*</span></label>
                     <input 
                       type="text" 
-                      className="w-full px-4 py-3 bg-white dark:bg-[#111322] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:border-primary transition-colors text-black dark:text-white"
+                      className="w-full px-4 py-3 bg-white dark:bg-cw-bg-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:border-primary transition-colors text-black dark:text-white"
                       placeholder="Ex: Promoção de Março"
                       value={formData.name}
                       onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -270,7 +270,7 @@ export const Campaigns: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Descrição</label>
                     <input 
                       type="text" 
-                      className="w-full px-4 py-3 bg-white dark:bg-[#111322] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:border-primary transition-colors text-black dark:text-white"
+                      className="w-full px-4 py-3 bg-white dark:bg-cw-bg-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:border-primary transition-colors text-black dark:text-white"
                       placeholder="Opcional"
                       value={formData.description}
                       onChange={e => setFormData({ ...formData, description: e.target.value })}
@@ -280,28 +280,28 @@ export const Campaigns: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">De onde vêm os contatos? <span className="text-red-500">*</span></label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                       <button className={`p-4 rounded-xl border text-left flex flex-col gap-2 transition-all ${formData.source === 'csv' ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#15172b] hover:border-gray-400'}`} onClick={() => setFormData({ ...formData, source: 'csv' })}>
+                       <button className={`p-4 rounded-xl border text-left flex flex-col gap-2 transition-all ${formData.source === 'csv' ? 'border-primary bg-primary/5' : 'border-cw-border-light dark:border-cw-border-dark bg-white dark:bg-cw-surface-dark hover:border-gray-400'}`} onClick={() => setFormData({ ...formData, source: 'csv' })}>
                           <FileSpreadsheet className={`w-5 h-5 ${formData.source === 'csv' ? 'text-primary' : 'text-gray-400'}`} />
                           <div>
                             <p className="font-bold text-sm text-gray-900 dark:text-white">Arquivo CSV</p>
                             <p className="text-xs text-gray-500 mt-1">Suba uma lista de contatos</p>
                           </div>
                        </button>
-                       <button className={`p-4 rounded-xl border text-left flex flex-col gap-2 transition-all ${formData.source === 'sanitizacao' ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#15172b] hover:border-gray-400'}`} onClick={() => setFormData({ ...formData, source: 'sanitizacao' })}>
+                       <button className={`p-4 rounded-xl border text-left flex flex-col gap-2 transition-all ${formData.source === 'sanitizacao' ? 'border-primary bg-primary/5' : 'border-cw-border-light dark:border-cw-border-dark bg-white dark:bg-cw-surface-dark hover:border-gray-400'}`} onClick={() => setFormData({ ...formData, source: 'sanitizacao' })}>
                           <CheckCircle2 className={`w-5 h-5 ${formData.source === 'sanitizacao' ? 'text-primary' : 'text-gray-400'}`} />
                           <div>
                             <p className="font-bold text-sm text-gray-900 dark:text-white">Sanitização</p>
                             <p className="text-xs text-gray-500 mt-1">Usar lista já verificada</p>
                           </div>
                        </button>
-                       <button className={`p-4 rounded-xl border text-left flex flex-col gap-2 transition-all ${formData.source === 'tags' ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#15172b] hover:border-gray-400'}`} onClick={() => setFormData({ ...formData, source: 'tags' })}>
+                       <button className={`p-4 rounded-xl border text-left flex flex-col gap-2 transition-all ${formData.source === 'tags' ? 'border-primary bg-primary/5' : 'border-cw-border-light dark:border-cw-border-dark bg-white dark:bg-cw-surface-dark hover:border-gray-400'}`} onClick={() => setFormData({ ...formData, source: 'tags' })}>
                           <Tag className={`w-5 h-5 ${formData.source === 'tags' ? 'text-primary' : 'text-gray-400'}`} />
                           <div>
                             <p className="font-bold text-sm text-gray-900 dark:text-white">Tags de Tickets</p>
                             <p className="text-xs text-gray-500 mt-1">Contatos por etiqueta</p>
                           </div>
                        </button>
-                       <button className={`p-4 rounded-xl border text-left flex flex-col gap-2 transition-all ${formData.source === 'kanban' ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#15172b] hover:border-gray-400'}`} onClick={() => setFormData({ ...formData, source: 'kanban' })}>
+                       <button className={`p-4 rounded-xl border text-left flex flex-col gap-2 transition-all ${formData.source === 'kanban' ? 'border-primary bg-primary/5' : 'border-cw-border-light dark:border-cw-border-dark bg-white dark:bg-cw-surface-dark hover:border-gray-400'}`} onClick={() => setFormData({ ...formData, source: 'kanban' })}>
                           <Trello className={`w-5 h-5 ${formData.source === 'kanban' ? 'text-primary' : 'text-gray-400'}`} />
                           <div>
                             <p className="font-bold text-sm text-gray-900 dark:text-white">Kanban</p>
@@ -312,13 +312,13 @@ export const Campaigns: React.FC = () => {
                   </div>
 
                   {formData.source === 'csv' && (
-                    <div className="p-6 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <div className="p-6 border-2 border-dashed border-cw-border-light dark:border-cw-border-dark rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-cw-bg-light dark:hover:bg-gray-800/50 transition-colors">
                        <UploadCloud className="w-8 h-8 text-gray-400 mb-3" />
                        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Arraste o CSV ou clique para selecionar</p>
                        <p className="text-xs text-gray-500 mt-2">Você também pode colar números diretamente</p>
                        <textarea 
                           placeholder="Ou cole os números aqui..."
-                          className="mt-4 w-full max-w-sm px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg outline-none bg-transparent text-xs"
+                          className="mt-4 w-full max-w-sm px-4 py-2 border border-cw-border-light dark:border-cw-border-dark rounded-lg outline-none bg-transparent text-xs"
                           rows={3}
                           onBlur={(e) => {
                              if(e.target.value.trim()) parseCsvContacts(e.target.value);
@@ -335,7 +335,7 @@ export const Campaigns: React.FC = () => {
                   )}
 
                   {formData.contacts.length > 0 && (
-                    <div className="bg-white dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl p-4 overflow-hidden">
+                    <div className="bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl p-4 overflow-hidden">
                        <p className="text-xs text-gray-500 font-semibold mb-3">Prévia (5 primeiros):</p>
                        <ul className="text-xs text-gray-400 font-mono space-y-1">
                           {formData.contacts.slice(0, 5).map(c => (
@@ -361,7 +361,7 @@ export const Campaigns: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Caixas de envio <span className="text-red-500">*</span></label>
                     <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
                        {instances.map(instance => (
-                         <label key={instance.id} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${formData.selectedInstances.includes(instance.id) ? 'border-primary bg-primary/5' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#15172b] hover:border-gray-400'}`}>
+                         <label key={instance.id} className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-colors ${formData.selectedInstances.includes(instance.id) ? 'border-primary bg-primary/5' : 'border-cw-border-light dark:border-cw-border-dark bg-white dark:bg-cw-surface-dark hover:border-gray-400'}`}>
                            <input type="checkbox" className="w-4 h-4 text-primary bg-black border-gray-600 rounded focus:ring-primary focus:ring-2" 
                               checked={formData.selectedInstances.includes(instance.id)}
                               onChange={(e) => {
@@ -381,21 +381,21 @@ export const Campaigns: React.FC = () => {
 
                   <div>
                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Modo de rotação</label>
-                     <div className="flex bg-gray-100 dark:bg-[#111322] p-1 rounded-xl w-fit">
-                        <button className={`px-6 py-2 text-sm font-semibold rounded-lg transition-colors ${formData.rotationMode === 'round_robin' ? 'bg-white dark:bg-[#1a1d36] text-primary shadow-sm' : 'text-gray-500'}`} onClick={() => setFormData({ ...formData, rotationMode: 'round_robin' })}>Round Robin</button>
-                        <button className={`px-6 py-2 text-sm font-semibold rounded-lg transition-colors ${formData.rotationMode === 'aleatorio' ? 'bg-white dark:bg-[#1a1d36] text-primary shadow-sm' : 'text-gray-500'}`} onClick={() => setFormData({ ...formData, rotationMode: 'aleatorio' })}>Aleatório</button>
-                        <button className={`px-6 py-2 text-sm font-semibold rounded-lg transition-colors ${formData.rotationMode === 'peso' ? 'bg-white dark:bg-[#1a1d36] text-primary shadow-sm' : 'text-gray-500'}`} onClick={() => setFormData({ ...formData, rotationMode: 'peso' })}>Por peso</button>
+                     <div className="flex bg-gray-100 dark:bg-cw-bg-dark p-1 rounded-xl w-fit">
+                        <button className={`px-6 py-2 text-sm font-semibold rounded-lg transition-colors ${formData.rotationMode === 'round_robin' ? 'bg-white dark:bg-cw-surface-dark text-primary shadow-sm' : 'text-gray-500'}`} onClick={() => setFormData({ ...formData, rotationMode: 'round_robin' })}>Round Robin</button>
+                        <button className={`px-6 py-2 text-sm font-semibold rounded-lg transition-colors ${formData.rotationMode === 'aleatorio' ? 'bg-white dark:bg-cw-surface-dark text-primary shadow-sm' : 'text-gray-500'}`} onClick={() => setFormData({ ...formData, rotationMode: 'aleatorio' })}>Aleatório</button>
+                        <button className={`px-6 py-2 text-sm font-semibold rounded-lg transition-colors ${formData.rotationMode === 'peso' ? 'bg-white dark:bg-cw-surface-dark text-primary shadow-sm' : 'text-gray-500'}`} onClick={() => setFormData({ ...formData, rotationMode: 'peso' })}>Por peso</button>
                      </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                      <div>
                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Delay mínimo (seg)</label>
-                       <input type="number" className="w-full px-4 py-2 bg-white dark:bg-[#111322] border border-gray-200 dark:border-gray-800 rounded-lg outline-none text-black dark:text-white" value={formData.minDelay} onChange={e => setFormData({ ...formData, minDelay: Number(e.target.value) })} />
+                       <input type="number" className="w-full px-4 py-2 bg-white dark:bg-cw-bg-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg outline-none text-black dark:text-white" value={formData.minDelay} onChange={e => setFormData({ ...formData, minDelay: Number(e.target.value) })} />
                      </div>
                      <div>
                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Delay máximo (seg)</label>
-                       <input type="number" className="w-full px-4 py-2 bg-white dark:bg-[#111322] border border-gray-200 dark:border-gray-800 rounded-lg outline-none text-black dark:text-white" value={formData.maxDelay} onChange={e => setFormData({ ...formData, maxDelay: Number(e.target.value) })} />
+                       <input type="number" className="w-full px-4 py-2 bg-white dark:bg-cw-bg-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg outline-none text-black dark:text-white" value={formData.maxDelay} onChange={e => setFormData({ ...formData, maxDelay: Number(e.target.value) })} />
                      </div>
                   </div>
 
@@ -417,10 +417,10 @@ export const Campaigns: React.FC = () => {
                      </label>
                   </div>
 
-                  <div className="pt-6 border-t border-gray-200 dark:border-gray-800">
+                  <div className="pt-6 border-t border-cw-border-light dark:border-cw-border-dark">
                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Início do disparo</label>
                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <button className={`p-4 rounded-xl border text-center flex flex-col items-center gap-2 transition-all ${formData.startMode === 'imediato' ? 'border-emerald-500 bg-emerald-500/5' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#15172b] hover:border-gray-400'}`} onClick={() => setFormData({ ...formData, startMode: 'imediato' })}>
+                        <button className={`p-4 rounded-xl border text-center flex flex-col items-center gap-2 transition-all ${formData.startMode === 'imediato' ? 'border-emerald-500 bg-emerald-500/5' : 'border-cw-border-light dark:border-cw-border-dark bg-white dark:bg-cw-surface-dark hover:border-gray-400'}`} onClick={() => setFormData({ ...formData, startMode: 'imediato' })}>
                            <Play className={`w-5 h-5 ${formData.startMode === 'imediato' ? 'text-emerald-500' : 'text-gray-400'}`} />
                            <div>
                              <p className={`font-bold text-sm ${formData.startMode === 'imediato' ? 'text-emerald-500' : 'text-gray-900 dark:text-white'}`}>Início imediato</p>
@@ -442,16 +442,16 @@ export const Campaigns: React.FC = () => {
 
               {wizardStep === 3 && (
                 <div className="space-y-6">
-                  <div className="bg-white dark:bg-[#15172b] p-6 rounded-2xl border border-gray-200 dark:border-gray-800">
+                  <div className="bg-white dark:bg-cw-surface-dark p-6 rounded-2xl border border-cw-border-light dark:border-cw-border-dark">
                      <div className="flex justify-between items-center mb-4">
                         <p className="text-sm font-bold text-gray-900 dark:text-white">Mensagens do disparo</p>
                         <button className="text-xs font-semibold text-primary hover:underline">+ Adicionar mensagem</button>
                      </div>
                      
-                     <div className="p-4 bg-gray-50 dark:bg-[#111322] rounded-xl border border-gray-200 dark:border-gray-800">
+                     <div className="p-4 bg-cw-bg-light dark:bg-cw-bg-dark rounded-xl border border-cw-border-light dark:border-cw-border-dark">
                         <div className="mb-4">
                            <label className="block text-xs font-semibold text-gray-500 mb-1">Tipo</label>
-                           <select className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#15172b] text-sm text-black dark:text-white rounded-lg outline-none focus:border-primary"
+                           <select className="w-full px-3 py-2 border border-cw-border-light dark:border-cw-border-dark bg-white dark:bg-cw-surface-dark text-sm text-black dark:text-white rounded-lg outline-none focus:border-primary"
                              value={formData.messageType}
                              onChange={e => setFormData({ ...formData, messageType: e.target.value })}
                            >
@@ -463,7 +463,7 @@ export const Campaigns: React.FC = () => {
                            </select>
                         </div>
                         <textarea 
-                           className="w-full p-3 bg-white dark:bg-[#15172b] border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-black dark:text-white outline-none focus:border-primary min-h-[120px]"
+                           className="w-full p-3 bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg text-sm text-black dark:text-white outline-none focus:border-primary min-h-[120px]"
                            placeholder="Sua mensagem aqui..."
                            value={formData.messageContent}
                            onChange={e => setFormData({ ...formData, messageContent: e.target.value })}
@@ -487,7 +487,7 @@ export const Campaigns: React.FC = () => {
 
               {wizardStep === 4 && (
                 <div className="space-y-6">
-                  <div className="bg-white dark:bg-[#15172b] p-6 rounded-2xl border border-gray-200 dark:border-gray-800">
+                  <div className="bg-white dark:bg-cw-surface-dark p-6 rounded-2xl border border-cw-border-light dark:border-cw-border-dark">
                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">{formData.name}</h3>
                      <p className="text-sm text-gray-500 mb-6">{formData.description}</p>
                      
@@ -554,27 +554,27 @@ export const Campaigns: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-               <div className="bg-[#15172b] p-4 rounded-xl border border-gray-800">
+               <div className="bg-cw-surface-light dark:bg-cw-surface-dark p-4 rounded-xl border border-gray-800">
                  <p className="text-xs text-gray-500 font-semibold mb-1">Total</p>
                  <p className="text-2xl font-bold text-white">{formData.contacts.length}</p>
                </div>
-               <div className="bg-[#15172b] p-4 rounded-xl border border-gray-800">
+               <div className="bg-cw-surface-light dark:bg-cw-surface-dark p-4 rounded-xl border border-gray-800">
                  <p className="text-xs text-gray-500 font-semibold mb-1">Enviados</p>
                  <p className="text-2xl font-bold text-emerald-500">0</p>
                </div>
-               <div className="bg-[#15172b] p-4 rounded-xl border border-gray-800">
+               <div className="bg-cw-surface-light dark:bg-cw-surface-dark p-4 rounded-xl border border-gray-800">
                  <p className="text-xs text-gray-500 font-semibold mb-1">Falhos</p>
                  <p className="text-2xl font-bold text-red-500">0</p>
                </div>
-               <div className="bg-[#15172b] p-4 rounded-xl border border-gray-800">
+               <div className="bg-cw-surface-light dark:bg-cw-surface-dark p-4 rounded-xl border border-gray-800">
                  <p className="text-xs text-gray-500 font-semibold mb-1">Tx. Entrega</p>
                  <p className="text-2xl font-bold text-amber-500">0%</p>
                </div>
-               <div className="bg-[#15172b] p-4 rounded-xl border border-gray-800">
+               <div className="bg-cw-surface-light dark:bg-cw-surface-dark p-4 rounded-xl border border-gray-800">
                  <p className="text-xs text-gray-500 font-semibold mb-1">Entregues</p>
                  <p className="text-2xl font-bold text-blue-500">0</p>
                </div>
-               <div className="bg-[#15172b] p-4 rounded-xl border border-gray-800">
+               <div className="bg-cw-surface-light dark:bg-cw-surface-dark p-4 rounded-xl border border-gray-800">
                  <p className="text-xs text-gray-500 font-semibold mb-1">Respostas</p>
                  <p className="text-2xl font-bold text-white">0</p>
                </div>
@@ -601,7 +601,7 @@ export const Campaigns: React.FC = () => {
                </div>
             </Card>
 
-            <div className="bg-[#15172b] rounded-2xl border border-gray-800 p-6">
+            <div className="bg-cw-surface-light dark:bg-cw-surface-dark rounded-2xl border border-gray-800 p-6">
                <div className="mb-4">
                   <h3 className="text-sm font-bold text-white mb-2">Progresso do disparo</h3>
                   <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -617,7 +617,7 @@ export const Campaigns: React.FC = () => {
                <div className="mt-8 overflow-hidden rounded-xl border border-gray-800">
                   <table className="w-full text-left text-sm">
                     <thead>
-                      <tr className="bg-[#1a1d36] text-gray-400 text-xs border-b border-gray-800">
+                      <tr className="bg-cw-surface-light dark:bg-cw-surface-dark text-gray-400 text-xs border-b border-gray-800">
                         <th className="px-4 py-3 font-semibold">Telefone</th>
                         <th className="px-4 py-3 font-semibold">Nome</th>
                         <th className="px-4 py-3 font-semibold">Status</th>

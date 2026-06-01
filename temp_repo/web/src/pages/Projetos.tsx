@@ -89,14 +89,14 @@ export const Projetos: React.FC = () => {
       <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in duration-300">
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 dark:border-gray-800/60 pb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-cw-border-light dark:border-cw-border-dark/60 pb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Projetos</h1>
             <p className="text-sm text-gray-500">{stats.todos} projeto(s) no total</p>
           </div>
           
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center bg-white dark:bg-[#15172b] rounded-lg border border-gray-200 dark:border-gray-700 p-1">
+            <div className="flex items-center bg-white dark:bg-cw-surface-dark rounded-lg border border-cw-border-light dark:border-cw-border-dark p-1">
                <button 
                  onClick={() => setViewMode('grid')}
                  className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
@@ -118,7 +118,7 @@ export const Projetos: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-6 border-b border-gray-200 dark:border-gray-800/60 pb-0 overflow-x-auto">
+        <div className="flex items-center gap-6 border-b border-cw-border-light dark:border-cw-border-dark/60 pb-0 overflow-x-auto">
           <button 
             onClick={() => setActiveTab('todos')} 
             className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === 'todos' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
@@ -175,7 +175,7 @@ export const Projetos: React.FC = () => {
                 {project.description && (
                   <p className="text-sm text-gray-500 mb-4 line-clamp-2">{project.description}</p>
                 )}
-                <div className="text-xs text-gray-400 pt-4 border-t border-gray-100 dark:border-gray-800">
+                <div className="text-xs text-gray-400 pt-4 border-t border-cw-border-light dark:border-cw-border-dark">
                   Prazo: {project.deadline ? new Date(project.deadline).toLocaleDateString() : 'Não definido'}
                 </div>
               </Card>
@@ -186,11 +186,11 @@ export const Projetos: React.FC = () => {
         {/* Modal Novo Projeto */}
         {showModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-[#1C1E2C] rounded-2xl w-full max-w-2xl shadow-xl border border-gray-200 dark:border-gray-800 flex flex-col max-h-[90vh]">
+            <div className="bg-white dark:bg-cw-surface-dark rounded-2xl w-full max-w-2xl shadow-xl border border-cw-border-light dark:border-cw-border-dark flex flex-col max-h-[90vh]">
               {/* Modal Header */}
-              <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-800/60">
+              <div className="flex justify-between items-center p-6 border-b border-cw-border-light dark:border-cw-border-dark/60">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                  <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center border border-cw-border-light dark:border-cw-border-dark">
                     <ClipboardList className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                   </div>
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white">Novo Projeto</h2>
@@ -215,7 +215,7 @@ export const Projetos: React.FC = () => {
                       value={newProject.name}
                       onChange={(e) => setNewProject({...newProject, name: e.target.value})}
                       placeholder="Ex: Desenvolvimento de Site"
-                      className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
+                      className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
                       required
                     />
                   </div>
@@ -229,7 +229,7 @@ export const Projetos: React.FC = () => {
                       onChange={(e) => setNewProject({...newProject, description: e.target.value})}
                       placeholder="Descreva o projeto..."
                       rows={3}
-                      className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm resize-none"
+                      className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm resize-none"
                     />
                   </div>
 
@@ -241,7 +241,7 @@ export const Projetos: React.FC = () => {
                       <select
                         value={newProject.status}
                         onChange={(e) => setNewProject({...newProject, status: e.target.value})}
-                        className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
+                        className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
                       >
                         <option value="Ativo">Ativo</option>
                         <option value="Concluído">Concluído</option>
@@ -257,7 +257,7 @@ export const Projetos: React.FC = () => {
                         type="date"
                         value={newProject.deadline}
                         onChange={(e) => setNewProject({...newProject, deadline: e.target.value})}
-                        className="w-full px-4 py-3 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
+                        className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white transition-all text-sm"
                       />
                     </div>
                   </div>
@@ -286,7 +286,7 @@ export const Projetos: React.FC = () => {
               </div>
 
               {/* Modal Footer */}
-              <div className="flex justify-end gap-3 p-6 border-t border-gray-100 dark:border-gray-800/60 bg-gray-50 dark:bg-transparent rounded-b-2xl">
+              <div className="flex justify-end gap-3 p-6 border-t border-cw-border-light dark:border-cw-border-dark/60 bg-cw-bg-light dark:bg-transparent rounded-b-2xl">
                 <Button 
                   variant="secondary" 
                   onClick={() => setShowModal(false)}

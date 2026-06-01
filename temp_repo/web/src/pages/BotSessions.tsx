@@ -60,11 +60,11 @@ export const BotSessions: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-cw-border-light overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-medium">
+                <tr className="bg-cw-bg-light border-b border-cw-border-light text-xs uppercase tracking-wider text-gray-500 font-medium">
                   <th className="p-4">Tipo</th>
                   <th className="p-4">Número (Usuário)</th>
                   <th className="p-4">Conexão ID</th>
@@ -82,7 +82,7 @@ export const BotSessions: React.FC = () => {
                   </tr>
                 ) : (
                   sessions.map((session) => (
-                    <tr key={session.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={session.id} className="hover:bg-cw-bg-light transition-colors">
                       <td className="p-4 font-medium text-gray-500">
                          {session.botType === 'typebot' ? 'Typebot' : 'Nativo'}
                       </td>
