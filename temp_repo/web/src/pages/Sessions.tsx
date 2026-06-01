@@ -411,7 +411,7 @@ export const Sessions: React.FC = () => {
 
   const handleShareSession = async (sessionName: string) => {
     // Find active mapping for this session
-    let sessionMapping = mappings.find(
+    const sessionMapping = mappings.find(
       (m) => m.session_name === sessionName && m.active && m.public_url
     );
 
