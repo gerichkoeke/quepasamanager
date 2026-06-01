@@ -27,7 +27,7 @@ router.get('/users', authMiddleware, async (req, res, next) => {
     });
     
     // Also attach the 'admin' if requested, but let's just return db users
-    res.json(users.map(u => ({ ...u, modules: JSON.parse(u.modules) })));
+    res.json(users.map((u: any) => ({ ...u, modules: JSON.parse(u.modules) })));
   } catch (error) {
     next(error);
   }
@@ -62,7 +62,7 @@ router.post('/users', authMiddleware, async (req, res, next) => {
     res.json({ ...user, modules: JSON.parse(user.modules) });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid data', details: error.errors });
+      return res.status(400).json({ error: 'Invalid data', details: (error as any).errors });
     }
     next(error);
   }
@@ -91,7 +91,7 @@ router.put('/users/:id', authMiddleware, async (req, res, next) => {
     res.json({ ...user, modules: JSON.parse(user.modules) });
   } catch (error) {
      if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid data', details: error.errors });
+      return res.status(400).json({ error: 'Invalid data', details: (error as any).errors });
     }
     next(error);
   }

@@ -87,7 +87,7 @@ export const UsersPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(\`Tem certeza que deseja excluir o usuário \${name}?\`)) return;
+    if (!window.confirm(`Tem certeza que deseja excluir o usuário ${name}?`)) return;
     try {
       await api.deleteUser(id);
       toast.success('Usuário excluído');
@@ -156,36 +156,38 @@ export const UsersPage: React.FC = () => {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
               Usuários
             </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Gerencie quem tem acesso ao painel e quais módulos podem acessar.
             </p>
           </div>
-          <Button variant="primary" onClick={() => handleOpenModal()}>
-            <Plus className="w-5 h-5 mr-2" />
-            Novo Usuário
-          </Button>
+          <div className="mt-4 md:mt-0">
+            <Button variant="primary" onClick={() => handleOpenModal()}>
+              <Plus className="w-5 h-5 mr-2" />
+              Novo Usuário
+            </Button>
+          </div>
         </div>
 
         <Card>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-800 dark:text-gray-300">
-                <tr>
-                  <th className="px-4 py-3">Usuário</th>
-                  <th className="px-4 py-3">Módulos de Acesso</th>
-                  <th className="px-4 py-3">MFA</th>
-                  <th className="px-4 py-3 text-right">Ações</th>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+                  <th className="font-medium px-4 py-3">Usuário</th>
+                  <th className="font-medium px-4 py-3">Módulos de Acesso</th>
+                  <th className="font-medium px-4 py-3">MFA</th>
+                  <th className="font-medium px-4 py-3 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                  <tr key={user.id} className="border-b border-gray-50 dark:border-gray-800/40 hover:bg-slate-50 dark:hover:bg-gray-800/30 transition-colors last:border-0">
+                    <td className="px-4 py-3 font-semibold text-gray-800 dark:text-gray-200">
                       {user.username}
                     </td>
                     <td className="px-4 py-3 text-gray-500 dark:text-gray-400">

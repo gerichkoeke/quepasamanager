@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { Play, Pause, Trash2, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { Layout } from '../components/Layout';
+import { Button } from '../components/Button';
 
 export const BotSessions: React.FC = () => {
   const [sessions, setSessions] = useState<any[]>([]);
@@ -39,18 +40,24 @@ export const BotSessions: React.FC = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Sessões Bot</h1>
-            <p className="text-gray-600 mt-1">Acompanhe e gerencie o estado dos usuários no bot nativo e typebot</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+              Sessões do Bot
+            </h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Acompanhe e gerencie o estado dos usuários no bot nativo e typebot
+            </p>
           </div>
-          <button
-            onClick={() => loadSessions()}
-            className="px-4 py-2 bg-white border rounded-lg shadow-sm hover:bg-gray-50 flex items-center justify-center gap-2 font-medium w-full sm:w-auto"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            Atualizar
-          </button>
+          <div className="mt-4 md:mt-0">
+            <Button
+              variant="secondary"
+              onClick={() => loadSessions()}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+          </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">

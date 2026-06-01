@@ -1037,13 +1037,17 @@ export const Sessions: React.FC = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Conexões</h1>
-            <p className="text-gray-600 mt-1">Gerencie suas conexões Waha e Quepasa</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+              Conexões
+            </h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Gerencie suas conexões Waha, Quepasa e Chatwoot
+            </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mt-4 md:mt-0">
             <Button
               variant="primary"
               onClick={() => {
