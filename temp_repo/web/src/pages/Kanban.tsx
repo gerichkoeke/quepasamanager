@@ -38,8 +38,8 @@ export const Kanban: React.FC = () => {
   const [showAvulsoModal, setShowAvulsoModal] = useState(false);
   const [showContatoModal, setShowContatoModal] = useState(false);
   
-  // Fake Funnels
-  const [funnels] = useState<Funnel[]>([
+  // Funnels State
+  const [funnels, setFunnels] = useState<Funnel[]>([
     { id: '1', name: 'Status Tickets', color: 'bg-indigo-500', isPublic: true, steps: 3 },
     { id: '2', name: 'Novo', color: 'bg-blue-500', isPublic: true, steps: 0 },
     { id: '3', name: 'Novo Teste', color: 'bg-amber-500', isPublic: true, steps: 1 },
@@ -194,7 +194,7 @@ export const Kanban: React.FC = () => {
             )
           ) : viewState === 'settings_funnels' ? (
             <div className="h-full overflow-y-auto p-6">
-              <SettingsView funnels={funnels} onClose={() => setViewState('board')} />
+              <SettingsView funnels={funnels} onClose={() => setViewState('board')} setFunnels={setFunnels} />
             </div>
           ) : (
             <div className="h-full overflow-y-auto p-6">
@@ -341,7 +341,42 @@ const AgendaView = () => {
   );
 };
 
-const SettingsView = ({ funnels, onClose }: { funnels: Funnel[], onClose: () => void }) => {
+const SettingsView = ({ funnels, onClose, setFunnels }: { funnels: Funnel[], onClose: () => void, setFunnels: React.Dispatch<React.SetStateAction<Funnel[]>> }) => {
+  const [expandedFunnels, setExpandedFunnels] = useState<string[]>([]);
+  
+  const handleToggleExpand = (id: string, e: React.MouseEvent) => {
+    // Evita expandir se clicar nos botões de ação
+    if ((e.target as HTMLElement).closest('.actions-container')) return;
+    setExpandedFunnels(prev => prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]);
+  };
+
+  const handleCreate = () => {
+    const newFunnel = {
+      id: Date.now().toString(),
+      name: 'Novo Funil',
+      color: 'bg-blue-500',
+      isPublic: false,
+      steps: 0
+    };
+    setFunnels(prev => [...prev, newFunnel]);
+    toast.success('Funil criado');
+  };
+
+  const handleDelete = (id: string) => {
+    setFunnels(prev => prev.filter(f => f.id !== id));
+    toast.success('Funil excluído');
+  };
+
+  const handleDuplicate = (funnel: Funnel) => {
+    const duplicated = {
+        ...funnel,
+        id: Date.now().toString(),
+        name: funnel.name + ' (Cópia)'
+    };
+    setFunnels(prev => [...prev, duplicated]);
+    toast.success('Funil duplicado');
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -351,7 +386,7 @@ const SettingsView = ({ funnels, onClose }: { funnels: Funnel[], onClose: () => 
           </button>
           <h2 className="text-2xl font-bold dark:text-white">Gerenciar Funis</h2>
         </div>
-        <Button variant="primary">
+        <Button variant="primary" onClick={handleCreate}>
           <Plus className="w-4 h-4 mr-2" /> Criar Novo Funil
         </Button>
       </div>
@@ -359,9 +394,12 @@ const SettingsView = ({ funnels, onClose }: { funnels: Funnel[], onClose: () => 
       <div className="space-y-4">
         {funnels.map(funnel => (
           <div key={funnel.id} className="bg-white dark:bg-[#1C1E2C] border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden transition-all">
-            <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+            <div 
+              className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+              onClick={(e) => handleToggleExpand(funnel.id, e)}
+            >
               <div className="flex items-center gap-4">
-                <ChevronDown className="w-5 h-5 text-gray-400" />
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${expandedFunnels.includes(funnel.id) ? 'rotate-180' : ''}`} />
                 <div className={`w-3 h-3 rounded-full ${funnel.color}`}></div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">{funnel.name}</h3>
                 <span className="text-xs text-gray-500">({funnel.steps} etapas)</span>
@@ -369,60 +407,53 @@ const SettingsView = ({ funnels, onClose }: { funnels: Funnel[], onClose: () => 
                   <span className="text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-0.5 rounded font-medium">Público</span>
                 )}
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 actions-container">
                 <input type="checkbox" className="toggle toggle-primary" defaultChecked />
-                <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><Edit2 className="w-4 h-4" /></button>
-                <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><Copy className="w-4 h-4" /></button>
-                <button className="p-2 text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => toast.success('Edição em breve')} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                <button onClick={() => handleDuplicate(funnel)} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><Copy className="w-4 h-4" /></button>
+                <button onClick={() => handleDelete(funnel.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
             
-            {/* Detail expansion mock for 'Novo Teste' (id=3 for instance) - Hardcoding open style for visualization match */}
-            {funnel.id === '3' && (
+            {expandedFunnels.includes(funnel.id) && (
               <div className="border-t border-gray-100 dark:border-gray-800 p-6 bg-gray-50/50 dark:bg-black/10 space-y-4">
                 
-                <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-[#1C1E2C]">
-                  <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-800">
-                    <div className="flex items-center gap-2">
-                      <MoreVertical className="w-4 h-4 text-gray-400" />
-                      <span className="font-semibold dark:text-white text-sm">teste1</span>
-                    </div>
-                    <div className="flex gap-2">
-                       <button className="p-1 text-gray-400 hover:text-gray-200"><Edit2 className="w-3.5 h-3.5" /></button>
-                       <button className="p-1 text-red-500/70 hover:text-red-500"><X className="w-4 h-4" /></button>
-                    </div>
-                  </div>
-                  <div className="p-4 space-y-4">
-                    <label className="flex items-start gap-3">
-                      <input type="checkbox" className="mt-1" />
-                      <div className="text-sm dark:text-gray-300">Novos tickets caem aqui</div>
-                    </label>
-                    <div className="pl-7 space-y-1">
-                      <div className="text-xs text-gray-500 flex items-center gap-2"><span className="text-purple-400">→</span> Transferir ao chegar:</div>
-                      <span className="inline-flex items-center gap-2 text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-2 py-1 rounded">
-                        Status Tickets → Aberto
-                        <X className="w-3 h-3 hover:text-purple-900 dark:hover:text-purple-100 cursor-pointer" />
-                      </span>
-                    </div>
-
-                    <label className="flex items-center gap-3">
-                      <input type="checkbox" />
-                      <div className="text-sm dark:text-gray-300">Enviar mensagem automática</div>
-                    </label>
-
-                    <div>
-                      <div className="text-sm font-medium dark:text-gray-300 mb-1 flex items-center gap-2">
-                        <span className="text-blue-500">⚡</span> Flow Sequência ao entrar:
+                {funnel.steps === 0 ? (
+                  <div className="text-center p-6 text-sm text-gray-500">Nenhuma etapa encontrada.</div>
+                ) : (
+                  <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-white dark:bg-[#1C1E2C]">
+                    <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-800">
+                      <div className="flex items-center gap-2">
+                        <MoreVertical className="w-4 h-4 text-gray-400" />
+                        <span className="font-semibold dark:text-white text-sm">Etapa Inicial</span>
                       </div>
-                      <select className="w-full bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 p-2 rounded-lg outline-none text-sm text-gray-500">
-                        <option>Nenhuma sequência</option>
-                      </select>
-                      <div className="text-xs text-gray-500 pt-1">Nenhuma sequência criada. Crie em Chatbot Flows.</div>
+                      <div className="flex gap-2">
+                         <button className="p-1 text-gray-400 hover:text-gray-200"><Edit2 className="w-3.5 h-3.5" /></button>
+                         <button className="p-1 text-red-500/70 hover:text-red-500"><X className="w-4 h-4" /></button>
+                      </div>
+                    </div>
+                    <div className="p-4 space-y-4">
+                      <label className="flex items-start gap-3">
+                        <input type="checkbox" className="mt-1" />
+                        <div className="text-sm dark:text-gray-300">Novos tickets caem aqui</div>
+                      </label>
+                      
+                      <label className="flex items-center gap-3">
+                        <input type="checkbox" />
+                        <div className="text-sm dark:text-gray-300">Enviar mensagem automática</div>
+                      </label>
                     </div>
                   </div>
-                </div>
+                )}
 
-                <div className="text-primary font-medium text-sm flex items-center gap-1 cursor-pointer hover:underline">
+                <div 
+                  className="text-primary font-medium text-sm flex items-center gap-1 cursor-pointer hover:underline"
+                  onClick={() => {
+                    const newFunnels = funnels.map(f => f.id === funnel.id ? { ...f, steps: f.steps + 1 } : f);
+                    setFunnels(newFunnels);
+                    toast.success('Etapa adicionada');
+                  }}
+                >
                   <Plus className="w-4 h-4" /> Adicionar etapa
                 </div>
 

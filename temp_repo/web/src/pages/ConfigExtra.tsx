@@ -113,13 +113,17 @@ export const ConfigExtra: React.FC = () => {
     const sidebar = document.querySelector('.primary-menu') || document.querySelector('aside');
     if(!sidebar || document.getElementById('hub-menu-conexoes')) return;
 
+    const kanbanBtn = createMenuButton('hub-menu-kanban', 'Kanban', '📊', () => openHubModal('/kanban'));
+    const projetosBtn = createMenuButton('hub-menu-projetos', 'Projetos', '📁', () => openHubModal('/projetos'));
+    const chatsBtn = createMenuButton('hub-menu-chats', 'Chats Int.', '💬', () => openHubModal('/chats'));
     const conexoesBtn = createMenuButton('hub-menu-conexoes', 'Conexões', '🔗', () => openHubModal('/conexoes'));
     const disparadorBtn = createMenuButton('hub-menu-disparador', 'Disparador', '🚀', () => openHubModal('/campaigns'));
-    const projetosBtn = createMenuButton('hub-menu-projetos', 'Projetos', '📁', () => openHubModal('/projetos'));
 
+    sidebar.appendChild(kanbanBtn);
+    sidebar.appendChild(projetosBtn);
+    sidebar.appendChild(chatsBtn);
     sidebar.appendChild(conexoesBtn);
     sidebar.appendChild(disparadorBtn);
-    sidebar.appendChild(projetosBtn);
   }
 
   setInterval(injectMenu, 3000); // Poll for SPA routing
