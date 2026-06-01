@@ -9,14 +9,14 @@ interface CardProps {
 
 export const Card: React.FC<CardProps> = ({ children, className = '', title, actions }) => {
   return (
-    <div className={`bg-white rounded-lg shadow-md overflow-hidden ${className}`}>
+    <div className={`bg-white dark:bg-[#15172b] dark:border dark:border-gray-800 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none overflow-hidden transition-all duration-300 ${className}`}>
       {(title || actions) && (
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          {title && <h3 className="text-lg font-semibold text-gray-900">{title}</h3>}
-          {actions && <div className="flex items-center gap-2">{actions}</div>}
+        <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800/60 flex items-center justify-between">
+          {title && <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">{title}</h3>}
+          {actions && <div className="flex items-center gap-3">{actions}</div>}
         </div>
       )}
-      <div className="p-6">{children}</div>
+      <div className="p-6 sm:p-8">{children}</div>
     </div>
   );
 };

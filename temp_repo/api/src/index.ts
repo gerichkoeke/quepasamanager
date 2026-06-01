@@ -20,6 +20,7 @@ import logsRoutes from './routes/logs.routes';
 import mediaRoutes from './routes/media.routes';
 import typebotIntegrationRoutes from './routes/typebot-integration.routes';
 import authRoutes from './routes/auth.routes';
+import usersRoutes from './routes/users.routes';
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use(
 // Note: Traefik strips /api prefix, so routes are registered without it
 app.use('/', healthRoutes);
 app.use('/', authRoutes);
+app.use('/', usersRoutes);
 app.use('/', mediaRoutes); // Serve converted audio files (public)
 app.use('/', settingsRoutes);
 app.use('/', mappingsRoutes);

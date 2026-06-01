@@ -210,6 +210,42 @@ class ApiClient {
     return response.data;
   }
 
+  // Users CRUD
+  async getUsers(): Promise<any[]> {
+    const response = await this.client.get('/users');
+    return response.data;
+  }
+
+  async createUser(data: any): Promise<any> {
+    const response = await this.client.post('/users', data);
+    return response.data;
+  }
+
+  async updateUser(id: string, data: any): Promise<any> {
+    const response = await this.client.put(`/users/${id}`, data);
+    return response.data;
+  }
+
+  async deleteUser(id: string): Promise<any> {
+    const response = await this.client.delete(`/users/${id}`);
+    return response.data;
+  }
+
+  async generateUserMfa(id: string): Promise<any> {
+    const response = await this.client.post(`/users/${id}/mfa/generate`);
+    return response.data;
+  }
+
+  async enableUserMfa(id: string, params: { token: string }): Promise<any> {
+    const response = await this.client.post(`/users/${id}/mfa/enable`, params);
+    return response.data;
+  }
+
+  async disableUserMfa(id: string): Promise<any> {
+    const response = await this.client.post(`/users/${id}/mfa/disable`);
+    return response.data;
+  }
+
   async deleteMapping(id: number): Promise<void> {
     await this.client.delete(`/mappings/${id}`);
   }

@@ -217,3 +217,16 @@ model MessageMapping {
   @@index([conversationId])
   @@map("message_mappings")
 }
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  mfaEnabled Boolean  @default(false) @map("mfa_enabled")
+  mfaSecret  String?  @map("mfa_secret")
+  modules    String   @default("[\"all\"]") // Store as stringified JSON array
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("users")
+}

@@ -11,6 +11,7 @@ import { Integrations } from './pages/Integrations';
 import { Campaigns } from './pages/Campaigns';
 import { SSOIntegrations } from './pages/SSOIntegrations';
 import Connect from './pages/Connect';
+import { UsersPage } from './pages/Users';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -146,6 +147,14 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <SSOIntegrations />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute>
+            <UsersPage />
           </ProtectedRoute>
         }
       />

@@ -19,60 +19,77 @@ const loginSchema = z.object({
 router.post('/auth/local', async (req, res, next) => {
   try {
     const { username, password, mfaCode } = loginSchema.parse(req.body);
+    let isMatch = false;
+    let requireMfa = false;
+    let mfaSecret = null;
+    let tokenValue = config.adminToken;
+    let userId = 'admin';
+    let userModules = ['all'];
 
-    const userSetting = await prisma.appSetting.findUnique({
-      where: { key: 'admin_username' },
-    });
+    // First check user in new User model
+    const user = await prisma.user.findUnique({ where: { username } });
 
-    const passSetting = await prisma.appSetting.findUnique({
-      where: { key: 'admin_password' },
-    });
-    
-    // If no user is configured, fail (they must use token)
-    if (!userSetting || !userSetting.value || !passSetting || !passSetting.value) {
-      return res.status(401).json({ error: 'Usuário não configurado. Use o token.' });
+    if (user) {
+      isMatch = await bcrypt.compare(password, user.password);
+      if (isMatch) {
+        requireMfa = user.mfaEnabled;
+        mfaSecret = user.mfaSecret;
+        userId = user.id;
+        userModules = JSON.parse(user.modules || '["all"]');
+      }
+    } else {
+      // Fallback to legacy AppSettings admin user
+      const userSetting = await prisma.appSetting.findUnique({ where: { key: 'admin_username' } });
+      const passSetting = await prisma.appSetting.findUnique({ where: { key: 'admin_password' } });
+
+      // If no admin user is configured at all
+      if (!userSetting || !userSetting.value || !passSetting || !passSetting.value) {
+        return res.status(401).json({ error: 'Nenhum usuário configurado. Use o token.' });
+      }
+
+      if (username === userSetting.value) {
+        isMatch = await bcrypt.compare(password, passSetting.value);
+        if (isMatch) {
+          const mfaEnabledSetting = await prisma.appSetting.findUnique({ where: { key: 'admin_mfa_enabled' } });
+          requireMfa = mfaEnabledSetting?.value === 'true';
+          const mfaSecretSetting = await prisma.appSetting.findUnique({ where: { key: 'admin_mfa_secret' } });
+          mfaSecret = mfaSecretSetting?.value || null;
+        }
+      }
     }
 
-    if (username !== userSetting.value) {
-      return res.status(401).json({ error: 'Credenciais inválidas' });
-    }
-
-    // Verify password
-    const isMatch = await bcrypt.compare(password, passSetting.value);
     if (!isMatch) {
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
-    // Check MFA if enabled
-    const mfaEnabledSetting = await prisma.appSetting.findUnique({
-      where: { key: 'admin_mfa_enabled' },
-    });
-    
-    if (mfaEnabledSetting && mfaEnabledSetting.value === 'true') {
-      const mfaSecretSetting = await prisma.appSetting.findUnique({
-        where: { key: 'admin_mfa_secret' },
-      });
-
+    if (requireMfa) {
       if (!mfaCode) {
         return res.status(401).json({ error: 'Código MFA obrigatório', requireMfa: true });
       }
-
-      if (mfaSecretSetting && mfaSecretSetting.value) {
+      if (mfaSecret) {
         const isValidMfa = speakeasy.totp.verify({
           token: mfaCode,
-          secret: mfaSecretSetting.value,
+          secret: mfaSecret,
           encoding: 'base32',
         });
-
         if (!isValidMfa) {
           return res.status(401).json({ error: 'Código MFA inválido' });
         }
       }
     }
 
-    // Success - return the token
+    if (user) {
+      // Generate JWT for db user
+      const jwt = require('jsonwebtoken');
+      tokenValue = jwt.sign(
+        { id: userId, username, role: 'user', modules: userModules },
+        config.adminToken,
+        { expiresIn: '7d' }
+      );
+    }
+
     logger.info({ username }, 'User logged in via local auth');
-    res.json({ token: config.adminToken, success: true });
+    res.json({ token: tokenValue, success: true });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Dados inválidos', details: (error as any).errors });
