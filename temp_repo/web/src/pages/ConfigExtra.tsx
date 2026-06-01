@@ -165,6 +165,7 @@ export const ConfigExtra: React.FC = () => {
                               <th className="px-6 py-4 font-semibold w-12"><input type="checkbox" className="rounded bg-transparent border-gray-600" /></th>
                               <th className="px-6 py-4 font-semibold">Empresa / Acesso</th>
                               <th className="px-6 py-4 font-semibold text-center whitespace-nowrap">Dashboard</th>
+                              <th className="px-4 py-4 font-semibold text-center whitespace-nowrap">Kanban</th>
                               <th className="px-4 py-4 font-semibold text-center whitespace-nowrap">Projetos</th>
                               <th className="px-4 py-4 font-semibold text-center whitespace-nowrap">Chats Int.</th>
                               <th className="px-4 py-4 font-semibold text-center whitespace-nowrap">Conexões</th>
@@ -184,6 +185,9 @@ export const ConfigExtra: React.FC = () => {
                                  
                                  <td className="px-4 py-4">
                                     <div className="flex justify-center"><ToggleSwitch checked={u.modules?.includes('painel')} onChange={(v) => handleToggleModule(u.id, 'painel', v)} /></div>
+                                 </td>
+                                 <td className="px-4 py-4">
+                                    <div className="flex justify-center"><ToggleSwitch checked={u.modules?.includes('kanban')} onChange={(v) => handleToggleModule(u.id, 'kanban', v)} /></div>
                                  </td>
                                  <td className="px-4 py-4">
                                     <div className="flex justify-center"><ToggleSwitch checked={u.modules?.includes('projetos')} onChange={(v) => handleToggleModule(u.id, 'projetos', v)} /></div>

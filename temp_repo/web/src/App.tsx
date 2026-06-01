@@ -9,6 +9,7 @@ import { BotSessions } from './pages/BotSessions';
 import { Projetos } from './pages/Projetos';
 import { ProjetoDetalhes } from './pages/ProjetoDetalhes';
 import { ChatsInternos } from './pages/ChatsInternos';
+import { Kanban } from './pages/Kanban';
 import { Integrations } from './pages/Integrations';
 import { Campaigns } from './pages/Campaigns';
 import { Conexoes } from './pages/Conexoes';
@@ -126,6 +127,14 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <ChatsInternos />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/kanban"
+        element={
+          <ProtectedRoute>
+            <Kanban />
           </ProtectedRoute>
         }
       />

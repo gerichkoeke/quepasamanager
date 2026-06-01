@@ -16,7 +16,8 @@ import {
   Shield,
   Users,
   FolderOpen,
-  MessageCircle
+  MessageCircle,
+  KanbanIcon as Kanban
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../contexts/ThemeContext';
@@ -27,6 +28,7 @@ interface LayoutProps {
 
 const allNavigation = [
   { name: 'Painel', href: '/', icon: LayoutDashboard, module: 'painel' },
+  { name: 'Kanban', href: '/kanban', icon: Kanban, module: 'kanban' },
   { name: 'Projetos', href: '/projetos', icon: FolderOpen, module: 'projetos' },
   { name: 'Chats Internos', href: '/chats', icon: MessageCircle, module: 'chats_internos' },
   { name: 'Conexões', href: '/conexoes', icon: MessageSquare, module: 'instancias' },
