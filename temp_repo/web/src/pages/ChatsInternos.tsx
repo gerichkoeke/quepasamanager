@@ -42,7 +42,7 @@ export const ChatsInternos: React.FC = () => {
 
   return (
     <Layout>
-      <div className="flex h-[calc(100vh-6rem)] bg-white dark:bg-[#15172b] rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-in fade-in duration-300">
+      <div className="flex h-full bg-white dark:bg-[#15172b] rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-in fade-in duration-300">
         
         {/* Sidebar */}
         <div className="w-72 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-gray-50/50 dark:bg-transparent">

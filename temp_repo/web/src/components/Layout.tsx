@@ -48,6 +48,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { isDarkMode, toggleDarkMode, companyName, logoUrl } = useTheme();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
+  const urlParams = new URLSearchParams(location.search);
+  const isEmbedded = urlParams.get('embedded') === '1';
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -63,9 +66,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F19] transition-colors font-sans">
+    <div className={`min-h-screen bg-slate-50 dark:bg-[#0B0F19] transition-colors font-sans ${isEmbedded ? 'embedded' : ''}`}>
       {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
+      {!isEmbedded && sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
           onClick={() => setSidebarOpen(false)}
@@ -73,11 +76,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
       )}
 
       {/* Sidebar */}
-      <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-[#15172b] border-r border-gray-100 dark:border-gray-800/60 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } shadow-lg lg:shadow-none`}
-      >
+      {!isEmbedded && (
+        <div
+          className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-[#15172b] border-r border-gray-100 dark:border-gray-800/60 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          } shadow-lg lg:shadow-none`}
+        >
         <div className="flex flex-col h-full bg-slate-50/30 dark:bg-transparent">
           {/* Logo */}
           <div className="flex items-center justify-between px-6 py-6 border-b border-gray-100 dark:border-gray-800/60">
@@ -163,13 +167,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main content */}
-      <div className="lg:pl-64 flex flex-col h-screen">
+      <div className={`${!isEmbedded ? 'lg:pl-64' : ''} flex flex-col h-screen`}>
         {/* Top bar (Mobile) */}
-        <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 lg:hidden">
-          <div className="flex items-center justify-between px-4 py-3">
+        {!isEmbedded && (
+          <div className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 lg:hidden">
+            <div className="flex items-center justify-between px-4 py-3">
             <div className="flex items-center gap-2">
               {logoUrl ? (
                 <img src={logoUrl} alt={companyName} className="h-8 max-w-[180px] object-contain" />
@@ -185,9 +190,10 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             </button>
           </div>
         </div>
+        )}
 
         {/* Page content */}
-        <main className="p-6 flex-1 overflow-y-auto dark:text-white">{children}</main>
+        <main className={`${isEmbedded ? 'p-0' : 'p-6'} flex-1 overflow-y-auto dark:text-white`}>{children}</main>
       </div>
     </div>
   );

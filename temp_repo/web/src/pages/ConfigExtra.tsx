@@ -110,10 +110,15 @@ export const ConfigExtra: React.FC = () => {
     }
 
     const sidebarWidth = getSidebarWidth();
+    const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+    const bg = theme === 'dark' ? '#0f172a' : '#fefefe';
     
-    panel.style.cssText = \`position:fixed;top:0;right:0;bottom:0;left:\${sidebarWidth}px;background:#fefefe;z-index:998;display:block;box-shadow: -4px 0 15px rgba(0,0,0,0.05);\`;
+    panel.style.cssText = \`position:fixed;top:0;right:0;bottom:0;left:\${sidebarWidth}px;background:\${bg};z-index:998;display:block;box-shadow: -4px 0 15px rgba(0,0,0,0.05);\`;
     
-    iframe.src = HUB_URL + path;
+    if (iframe) iframe.style.background = bg;
+    
+    const finalPath = path + (path.includes('?') ? '&' : '?') + 'embedded=1&theme=' + theme;
+    iframe.src = HUB_URL + finalPath;
   }
 
   function closeHubModal() {
