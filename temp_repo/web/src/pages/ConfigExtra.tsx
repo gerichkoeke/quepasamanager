@@ -75,33 +75,67 @@ export const ConfigExtra: React.FC = () => {
 (function() {
   const HUB_URL = '${currentHost}';
   
-  function openHubModal(path) {
-    const existing = document.getElementById('quepasa-hub-modal');
-    if (existing) existing.remove();
+  function getSidebarWidth() {
+    const aside = document.querySelector('aside.bg-n-solid-2, aside[class*="bg-n-solid"], aside.border-r, aside');
+    if (aside) {
+      return aside.getBoundingClientRect().right;
+    }
+    const primaryMenu = document.querySelector('.primary-menu');
+    if (primaryMenu) {
+      return primaryMenu.getBoundingClientRect().right;
+    }
+    return 64; // Default chatwoot left nav width
+  }
 
-    const d = document.createElement('div');
-    d.id = 'quepasa-hub-modal';
-    d.style.cssText = 'position:fixed;top:0;left:64px;width:calc(100vw - 64px);height:100vh;background:rgba(0,0,0,0.5);z-index:999999;display:flex;justify-content:center;align-items:center;';
+  function openHubModal(path) {
+    let panel = document.getElementById('quepasa-hub-panel');
+    let iframe;
     
-    // Fallback if left nav is wider or different
-    if (window.innerWidth < 768) {
-       d.style.left = '0';
-       d.style.width = '100vw';
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'quepasa-hub-panel';
+      
+      iframe = document.createElement('iframe');
+      iframe.id = 'quepasa-hub-iframe';
+      iframe.style.cssText = 'width:100%;height:100%;border:none;display:block;background:#fff;';
+      
+      // Close/Back button similar to native feeling or just overlay
+      // But actually, chatwoot routes change could close the panel
+      // Let's add a subtle close button or depend on menu click
+      
+      panel.appendChild(iframe);
+      document.body.appendChild(panel);
+    } else {
+      iframe = document.getElementById('quepasa-hub-iframe');
     }
 
-    const iframe = document.createElement('iframe');
+    const sidebarWidth = getSidebarWidth();
+    
+    panel.style.cssText = \`position:fixed;top:0;right:0;bottom:0;left:\${sidebarWidth}px;background:#fefefe;z-index:998;display:block;box-shadow: -4px 0 15px rgba(0,0,0,0.05);\`;
+    
     iframe.src = HUB_URL + path;
-    iframe.style.cssText = 'width:95%;height:95%;border:none;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.5);background:#fff;';
-    
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = '✖ Fechar';
-    closeBtn.style.cssText = 'position:absolute;top:20px;right:20px;background:#ef4444;color:#fff;border:none;padding:12px 20px;border-radius:8px;font-weight:bold;cursor:pointer;box-shadow:0 4px 6px rgba(0,0,0,0.1);z-index:9999999;';
-    closeBtn.onclick = () => d.remove();
-    
-    d.appendChild(iframe);
-    d.appendChild(closeBtn);
-    document.body.appendChild(d);
   }
+
+  function closeHubModal() {
+    const panel = document.getElementById('quepasa-hub-panel');
+    if (panel) panel.style.display = 'none';
+    
+    // Remove active styles from our menus
+    const mainNav = document.querySelector('aside nav ul.list-none, aside nav > ul, nav.grid ul');
+    if (mainNav) {
+      const allItems = mainNav.querySelectorAll('div[id^="hub-menu-"]');
+      allItems.forEach(i => i.classList.remove('bg-n-alpha-2', 'text-n-slate-12'));
+    }
+  }
+
+  let lastUrl = location.href;
+  function closeOnNavigation() {
+    if (location.href !== lastUrl) {
+      lastUrl = location.href;
+      closeHubModal();
+    }
+  }
+  setInterval(closeOnNavigation, 500);
 
   function injectMenu() {
     if (document.getElementById('hub-menu-kanban')) return;
