@@ -1230,11 +1230,11 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
     });
 
     // Handle conversation resolved event
-    if (payload.event === 'conversation_status_changed') {
+    if (payload.event === 'conversation_status_changed' || payload.event === 'conversation_updated') {
       logger.info({ event: payload.event, rootStatus: payload.status, convStatus: payload.conversation?.status }, 'Checking Chatwoot conversation status (token webhook)');
     }
     
-    if (payload.event === 'conversation_status_changed' && (payload.status === 'resolved' || (payload.conversation && payload.conversation.status === 'resolved'))) {
+    if ((payload.event === 'conversation_status_changed' || payload.event === 'conversation_updated') && (payload.status === 'resolved' || (payload.conversation && payload.conversation.status === 'resolved'))) {
       logger.info({ conversationId: payload.conversation?.id }, 'Conversation resolved in Chatwoot');
       
       const quepasaMapping = await prisma.quepasaMapping.findFirst({
@@ -1708,11 +1708,11 @@ router.post('/webhooks/chatwoot', async (req, res, next) => {
     });
 
     // Handle conversation resolved event
-    if (payload.event === 'conversation_status_changed') {
+    if (payload.event === 'conversation_status_changed' || payload.event === 'conversation_updated') {
       logger.info({ event: payload.event, rootStatus: payload.status, convStatus: payload.conversation?.status }, 'Checking Chatwoot conversation status (legacy webhook)');
     }
     
-    if (payload.event === 'conversation_status_changed' && (payload.status === 'resolved' || (payload.conversation && payload.conversation.status === 'resolved'))) {
+    if ((payload.event === 'conversation_status_changed' || payload.event === 'conversation_updated') && (payload.status === 'resolved' || (payload.conversation && payload.conversation.status === 'resolved'))) {
       logger.info({ conversationId: payload.conversation?.id, inboxId }, 'Conversation resolved in Chatwoot (legacy webhook)');
       
       const quepasaMapping = await prisma.quepasaMapping.findFirst({

@@ -15,7 +15,6 @@ import mappingsRoutes from './routes/mappings.routes';
 import quepasaRoutes from './routes/quepasa.routes';
 import quepasaWebhookRoutes from './routes/quepasa-webhook.routes';
 import quepasaMappingsRoutes from './routes/quepasa-mappings.routes';
-import twilioMappingsRoutes from './routes/twilio-mappings.routes';
 import metricsRoutes from './routes/metrics.routes';
 import logsRoutes from './routes/logs.routes';
 import mediaRoutes from './routes/media.routes';
@@ -57,7 +56,6 @@ app.use('/', mappingsRoutes);
 app.use('/', quepasaRoutes); // Quepasa connection and QR code routes
 app.use('/', quepasaWebhookRoutes); // Quepasa-Chatwoot integration webhooks
 app.use('/', quepasaMappingsRoutes); // Quepasa mappings CRUD
-app.use('/', twilioMappingsRoutes); // Twilio mappings CRUD
 app.use('/', metricsRoutes);
 app.use('/', logsRoutes);
 app.use('/', typebotIntegrationRoutes);

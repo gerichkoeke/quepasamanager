@@ -49,7 +49,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const urlParams = new URLSearchParams(location.search);
-  const isEmbedded = urlParams.get('embedded') === '1';
+  
+  // Persist embedded state
+  if (urlParams.get('embedded') === '1') {
+    localStorage.setItem('quepasa_embedded', '1');
+  }
+  const isEmbedded = urlParams.get('embedded') === '1' || localStorage.getItem('quepasa_embedded') === '1';
 
   const handleLogout = () => {
     logout();
