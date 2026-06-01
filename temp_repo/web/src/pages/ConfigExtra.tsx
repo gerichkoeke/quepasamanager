@@ -115,9 +115,11 @@ export const ConfigExtra: React.FC = () => {
 
     const conexoesBtn = createMenuButton('hub-menu-conexoes', 'Conexões', '🔗', () => openHubModal('/conexoes'));
     const disparadorBtn = createMenuButton('hub-menu-disparador', 'Disparador', '🚀', () => openHubModal('/campaigns'));
+    const projetosBtn = createMenuButton('hub-menu-projetos', 'Projetos', '📁', () => openHubModal('/projetos'));
 
     sidebar.appendChild(conexoesBtn);
     sidebar.appendChild(disparadorBtn);
+    sidebar.appendChild(projetosBtn);
   }
 
   setInterval(injectMenu, 3000); // Poll for SPA routing
@@ -163,6 +165,7 @@ export const ConfigExtra: React.FC = () => {
                               <th className="px-6 py-4 font-semibold w-12"><input type="checkbox" className="rounded bg-transparent border-gray-600" /></th>
                               <th className="px-6 py-4 font-semibold">Empresa / Acesso</th>
                               <th className="px-6 py-4 font-semibold text-center whitespace-nowrap">Dashboard</th>
+                              <th className="px-4 py-4 font-semibold text-center whitespace-nowrap">Projetos</th>
                               <th className="px-4 py-4 font-semibold text-center whitespace-nowrap">Conexões</th>
                               <th className="px-4 py-4 font-semibold text-center whitespace-nowrap">Disparador</th>
                               <th className="px-4 py-4 font-semibold text-center whitespace-nowrap">Sessões Bot</th>
@@ -180,6 +183,9 @@ export const ConfigExtra: React.FC = () => {
                                  
                                  <td className="px-4 py-4">
                                     <div className="flex justify-center"><ToggleSwitch checked={u.modules?.includes('painel')} onChange={(v) => handleToggleModule(u.id, 'painel', v)} /></div>
+                                 </td>
+                                 <td className="px-4 py-4">
+                                    <div className="flex justify-center"><ToggleSwitch checked={u.modules?.includes('projetos')} onChange={(v) => handleToggleModule(u.id, 'projetos', v)} /></div>
                                  </td>
                                  <td className="px-4 py-4">
                                     <div className="flex justify-center"><ToggleSwitch checked={u.modules?.includes('instancias')} onChange={(v) => handleToggleModule(u.id, 'instancias', v)} /></div>

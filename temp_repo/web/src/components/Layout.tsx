@@ -15,6 +15,7 @@ import {
   Send,
   Shield,
   Users,
+  FolderOpen
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../contexts/ThemeContext';
@@ -25,6 +26,7 @@ interface LayoutProps {
 
 const allNavigation = [
   { name: 'Painel', href: '/', icon: LayoutDashboard, module: 'painel' },
+  { name: 'Projetos', href: '/projetos', icon: FolderOpen, module: 'projetos' },
   { name: 'Conexões', href: '/conexoes', icon: MessageSquare, module: 'instancias' },
   { name: 'Disparador', href: '/campaigns', icon: Send, module: 'disparador' },
   { name: 'Sessões Bot', href: '/bot-sessions', icon: Bot, module: 'sessoes_bot' },

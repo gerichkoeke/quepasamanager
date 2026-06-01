@@ -6,6 +6,7 @@ import { Dashboard } from './pages/Dashboard';
 import { ConfigExtra } from './pages/ConfigExtra';
 import { Logs } from './pages/Logs';
 import { BotSessions } from './pages/BotSessions';
+import { Projetos } from './pages/Projetos';
 import { Integrations } from './pages/Integrations';
 import { Campaigns } from './pages/Campaigns';
 import { Conexoes } from './pages/Conexoes';
@@ -99,6 +100,14 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <Conexoes />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projetos"
+        element={
+          <ProtectedRoute>
+            <Projetos />
           </ProtectedRoute>
         }
       />
