@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/prisma-client';
+import { prisma } from '../db/client';
 import axios from 'axios';
 import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // Get all mappings
 router.get('/twilio-mappings', authMiddleware, async (req, res) => {
@@ -14,7 +13,7 @@ router.get('/twilio-mappings', authMiddleware, async (req, res) => {
     });
     
     // Hide api token
-    const safeMappings = mappings.map(m => {
+    const safeMappings = mappings.map((m: any) => {
       const { chatwootApiToken, authToken, ...rest } = m;
       return {
         ...rest,
