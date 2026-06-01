@@ -7,6 +7,8 @@ import { ConfigExtra } from './pages/ConfigExtra';
 import { Logs } from './pages/Logs';
 import { BotSessions } from './pages/BotSessions';
 import { Projetos } from './pages/Projetos';
+import { ProjetoDetalhes } from './pages/ProjetoDetalhes';
+import { ChatsInternos } from './pages/ChatsInternos';
 import { Integrations } from './pages/Integrations';
 import { Campaigns } from './pages/Campaigns';
 import { Conexoes } from './pages/Conexoes';
@@ -108,6 +110,22 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <Projetos />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projetos/:id"
+        element={
+          <ProtectedRoute>
+            <ProjetoDetalhes />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/chats"
+        element={
+          <ProtectedRoute>
+            <ChatsInternos />
           </ProtectedRoute>
         }
       />

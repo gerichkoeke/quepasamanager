@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -27,6 +28,7 @@ const PREDEFINED_COLORS = [
 ];
 
 export const Projetos: React.FC = () => {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [activeTab, setActiveTab] = useState('todos');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -153,7 +155,7 @@ export const Projetos: React.FC = () => {
         ) : (
           <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
             {filteredProjects.map((project) => (
-              <Card key={project.id} className="hover:shadow-md transition-shadow cursor-pointer">
+              <Card key={project.id} onClick={() => navigate(`/projetos/${project.id}`)} className="hover:shadow-md transition-shadow cursor-pointer">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div 

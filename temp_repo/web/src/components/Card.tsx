@@ -5,11 +5,12 @@ interface CardProps {
   className?: string;
   title?: React.ReactNode;
   actions?: React.ReactNode;
+  onClick?: () => void;
 }
 
-export const Card: React.FC<CardProps> = ({ children, className = '', title, actions }) => {
+export const Card: React.FC<CardProps> = ({ children, className = '', title, actions, onClick }) => {
   return (
-    <div className={`bg-white dark:bg-[#15172b] dark:border dark:border-gray-800 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none overflow-hidden transition-all duration-300 ${className}`}>
+    <div onClick={onClick} className={`bg-white dark:bg-[#15172b] dark:border dark:border-gray-800 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none overflow-hidden transition-all duration-300 ${className}`}>
       {(title || actions) && (
         <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800/60 flex items-center justify-between">
           {title && <h3 className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">{title}</h3>}

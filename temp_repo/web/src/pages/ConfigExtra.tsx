@@ -166,6 +166,7 @@ export const ConfigExtra: React.FC = () => {
                               <th className="px-6 py-4 font-semibold">Empresa / Acesso</th>
                               <th className="px-6 py-4 font-semibold text-center whitespace-nowrap">Dashboard</th>
                               <th className="px-4 py-4 font-semibold text-center whitespace-nowrap">Projetos</th>
+                              <th className="px-4 py-4 font-semibold text-center whitespace-nowrap">Chats Int.</th>
                               <th className="px-4 py-4 font-semibold text-center whitespace-nowrap">Conexões</th>
                               <th className="px-4 py-4 font-semibold text-center whitespace-nowrap">Disparador</th>
                               <th className="px-4 py-4 font-semibold text-center whitespace-nowrap">Sessões Bot</th>
@@ -186,6 +187,9 @@ export const ConfigExtra: React.FC = () => {
                                  </td>
                                  <td className="px-4 py-4">
                                     <div className="flex justify-center"><ToggleSwitch checked={u.modules?.includes('projetos')} onChange={(v) => handleToggleModule(u.id, 'projetos', v)} /></div>
+                                 </td>
+                                 <td className="px-4 py-4">
+                                    <div className="flex justify-center"><ToggleSwitch checked={u.modules?.includes('chats_internos')} onChange={(v) => handleToggleModule(u.id, 'chats_internos', v)} /></div>
                                  </td>
                                  <td className="px-4 py-4">
                                     <div className="flex justify-center"><ToggleSwitch checked={u.modules?.includes('instancias')} onChange={(v) => handleToggleModule(u.id, 'instancias', v)} /></div>

@@ -1,0 +1,238 @@
+import React, { useState } from 'react';
+import { Layout } from '../components/Layout';
+import { Button } from '../components/Button';
+import { Plus, Volume2, Video, Search, MessageSquare, Phone, MoreVertical, X } from 'lucide-react';
+import toast from 'react-hot-toast';
+
+interface ChatMessage {
+  id: string;
+  sender: string;
+  content: string;
+  time: string;
+  isMe: boolean;
+}
+
+export const ChatsInternos: React.FC = () => {
+  const [chats, setChats] = useState<{id: string, name: string}[]>([]);
+  const [activeChat, setActiveChat] = useState<string | null>(null);
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [newChatName, setNewChatName] = useState('');
+  
+  // Fake messages
+  const messages: ChatMessage[] = [
+    { id: '1', sender: 'ACloud', content: 'Olá, pessoal. Vamos iniciar o projeto', time: '14:30', isMe: false },
+    { id: '2', sender: 'Você', content: 'Podemos fazer uma call para alinhar?', time: '14:35', isMe: true }
+  ];
+
+  const handleCreateChat = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newChatName) return;
+    const newChat = { id: Math.random().toString(), name: newChatName };
+    setChats([...chats, newChat]);
+    setNewChatName('');
+    setShowNewChatModal(false);
+    setActiveChat(newChat.id);
+    toast.success('Chat criado com sucesso!');
+  };
+
+  const startVideoCall = () => {
+    // Jitsi Meet mockup logic or placeholder
+    toast.success('Iniciando sala de vídeo (Integração Jitsi/WebRTC)');
+  };
+
+  return (
+    <Layout>
+      <div className="flex h-[calc(100vh-6rem)] bg-white dark:bg-[#15172b] rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-in fade-in duration-300">
+        
+        {/* Sidebar */}
+        <div className="w-72 border-r border-gray-200 dark:border-gray-800 flex flex-col bg-gray-50/50 dark:bg-transparent">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+            <div>
+              <h2 className="font-bold text-gray-900 dark:text-white">Chats Internos</h2>
+              <p className="text-xs text-gray-500">{chats.length} chat{chats.length !== 1 && 's'}</p>
+            </div>
+            <div className="flex gap-1">
+              <button className="p-2 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                <Volume2 className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={() => setShowNewChatModal(true)}
+                className="p-2 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                title="Novo Chat"
+              >
+                <Plus className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+          
+          <div className="p-3">
+             <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input 
+                  type="text" 
+                  placeholder="Pesquisar..." 
+                  className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#1C1E2C] border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white outline-none focus:border-primary transition-colors"
+                />
+             </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            {chats.length === 0 ? (
+              <div className="text-center text-xs text-gray-500 p-4">
+                Nenhum chat criado. Clique em + para criar.
+              </div>
+            ) : (
+              chats.map(chat => (
+                <button
+                  key={chat.id}
+                  onClick={() => setActiveChat(chat.id)}
+                  className={`w-full text-left p-3 rounded-xl flex items-center gap-3 transition-colors ${
+                    activeChat === chat.id 
+                      ? 'bg-primary/10 text-primary dark:bg-primary/20' 
+                      : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm ${
+                    activeChat === chat.id ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                  }`}>
+                    {chat.name.substring(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm line-clamp-1">{chat.name}</div>
+                    <div className="text-xs opacity-70">Canal de equipe</div>
+                  </div>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col bg-white dark:bg-[#15172b]">
+          {!activeChat ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
+              <MessageSquare className="w-16 h-16 text-gray-200 dark:text-gray-800 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Chats Internos</h3>
+              <p className="text-sm mt-1">Selecione um chat para começar</p>
+            </div>
+          ) : (
+            <>
+              {/* Chat Header */}
+              <div className="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 bg-white/50 dark:bg-[#15172b]/50 backdrop-blur-sm z-10 relative">
+                 <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-sm">
+                      {chats.find(c => c.id === activeChat)?.name.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-gray-900 dark:text-white leading-tight">
+                        {chats.find(c => c.id === activeChat)?.name}
+                      </h3>
+                      <span className="text-xs text-emerald-500 font-medium">Online</span>
+                    </div>
+                 </div>
+                 
+                 <div className="flex items-center gap-2">
+                    <button onClick={startVideoCall} className="p-2 text-gray-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors group relative" title="Iniciar Videochamada (Estilo Discord)">
+                      <Video className="w-5 h-5" />
+                      <span className="absolute -bottom-8 right-0 text-[10px] bg-gray-900 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity pointer-events-none">Video (Jitsi)</span>
+                    </button>
+                    <button className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                      <Phone className="w-5 h-5" />
+                    </button>
+                    <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                    <button className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                      <Search className="w-5 h-5" />
+                    </button>
+                    <button className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                      <MoreVertical className="w-5 h-5" />
+                    </button>
+                 </div>
+              </div>
+
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                 {messages.map(msg => (
+                   <div key={msg.id} className={`flex flex-col ${msg.isMe ? 'items-end' : 'items-start'}`}>
+                     <div className="flex items-baseline gap-2 mb-1 px-1">
+                        {!msg.isMe && <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{msg.sender}</span>}
+                        <span className="text-[10px] text-gray-400">{msg.time}</span>
+                     </div>
+                     <div className={`px-4 py-2.5 rounded-2xl max-w-[75%] text-sm ${
+                        msg.isMe 
+                          ? 'bg-primary text-white rounded-tr-sm' 
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-sm'
+                     }`}>
+                        {msg.content}
+                     </div>
+                   </div>
+                 ))}
+              </div>
+
+              {/* Message Input */}
+              <div className="p-4 bg-white dark:bg-[#15172b]">
+                 <div className="flex items-center gap-2 bg-gray-50 dark:bg-[#1C1E2C] border border-gray-200 dark:border-gray-800 rounded-xl p-2 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                    <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                       <Plus className="w-5 h-5" />
+                    </button>
+                    <input 
+                      type="text" 
+                      placeholder="Enviar mensagem..." 
+                      className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 dark:text-white placeholder:text-gray-400"
+                    />
+                    <Button variant="primary" className="!p-2 rounded-lg aspect-square flex items-center justify-center h-auto">
+                       <Volume2 className="w-4 h-4" /> {/* Botão de enviar em formato diferente */}
+                    </Button>
+                 </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Modal Novo Chat */}
+        {showNewChatModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-[#1C1E2C] rounded-2xl w-full max-w-sm shadow-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+              <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800/60">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Criar Novo Chat</h3>
+                <button onClick={() => setShowNewChatModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <form onSubmit={handleCreateChat} className="p-5 space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Nome do Chat</label>
+                  <input
+                    type="text"
+                    value={newChatName}
+                    onChange={e => setNewChatName(e.target.value)}
+                    placeholder="Ex: Equipe de Vendas"
+                    className="w-full px-4 py-2.5 bg-gray-50 dark:bg-[#15172b] border border-gray-200 dark:border-gray-800 rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"
+                    autoFocus
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Membros</label>
+                  <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden bg-gray-50 dark:bg-[#15172b]">
+                    {['ACloud', 'Alan Silva', 'Gabriel Erich Koeke', 'Leonardo Rosa'].map(member => (
+                       <label key={member} className="flex items-center gap-3 p-3 border-b border-gray-200 dark:border-gray-800 last:border-0 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors">
+                          <input type="checkbox" className="w-4 h-4 rounded text-primary border-gray-300 dark:border-gray-600 bg-transparent focus:ring-0" />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">{member}</span>
+                       </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <Button type="button" variant="secondary" onClick={() => setShowNewChatModal(false)}>Cancelar</Button>
+                  <Button type="submit" variant="primary">Criar Chat</Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
+    </Layout>
+  );
+};
