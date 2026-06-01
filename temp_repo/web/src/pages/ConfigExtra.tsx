@@ -133,6 +133,29 @@ export const ConfigExtra: React.FC = () => {
     }
   }
 
+  // Theme Sync Observer
+  const themeObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        const theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+        const panel = document.getElementById('quepasa-hub-panel');
+        const iframe = document.getElementById('quepasa-hub-iframe');
+        
+        if (panel) {
+          const bg = theme === 'dark' ? '#0f172a' : '#fefefe';
+          panel.style.background = bg;
+          if (iframe) iframe.style.background = bg;
+        }
+        
+        if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage({ action: 'setTheme', theme }, '*');
+        }
+      }
+    });
+  });
+  
+  themeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
   let lastUrl = location.href;
   function closeOnNavigation() {
     if (location.href !== lastUrl) {

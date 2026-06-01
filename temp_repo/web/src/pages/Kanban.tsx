@@ -61,9 +61,11 @@ export const Kanban: React.FC = () => {
     toast.success('Card criado (Mock)');
   };
 
+  const isEmbedded = new URLSearchParams(window.location.search).get('embedded') === '1';
+
   return (
     <Layout>
-      <div className="flex flex-col h-full bg-gray-50 dark:bg-[#15172b] rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-in fade-in duration-300">
+      <div className={`flex flex-col h-full bg-gray-50 dark:bg-[#15172b] overflow-hidden animate-in fade-in duration-300 ${!isEmbedded ? 'rounded-2xl border border-gray-200 dark:border-gray-800' : ''}`}>
         
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1C1E2C]">
