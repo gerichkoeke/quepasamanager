@@ -75,18 +75,6 @@ export const ConfigExtra: React.FC = () => {
 (function() {
   const HUB_URL = '${currentHost}';
   
-  function createMenuButton(id, title, iconHtml, clickHandler) {
-    const btn = document.createElement('button');
-    btn.id = id;
-    btn.className = 'button transparent sidebar-item';
-    btn.innerHTML = \`<div class="wrap"><span class="icon">\${iconHtml}</span><span class="label">\${title}</span></div>\`;
-    btn.style.cssText = 'width:100%;text-align:left;height:40px;margin-bottom:2px;display:flex;align-items:center;padding:0 12px;color:inherit;border:none;background:transparent;cursor:pointer;opacity:0.8;transition:opacity 0.2s;';
-    btn.onmouseover = () => btn.style.opacity = '1';
-    btn.onmouseout = () => btn.style.opacity = '0.8';
-    btn.addEventListener('click', clickHandler);
-    return btn;
-  }
-
   function openHubModal(path) {
     const existing = document.getElementById('quepasa-hub-modal');
     if (existing) existing.remove();
@@ -116,45 +104,74 @@ export const ConfigExtra: React.FC = () => {
   }
 
   function injectMenu() {
-    // Tenta encontrar o contêiner do menu lateral do Chatwoot
-    const sidebars = [
-      document.querySelector('.primary-menu'), 
-      document.querySelector('aside.sidebar'),
-      document.querySelector('.app-wrapper aside'),
-      document.querySelector('.left-sidebar'),
-      document.querySelector('.app-sidebar')
-    ];
-    
-    let sidebarDiv = null;
-    for (const sb of sidebars) {
-       if (sb) {
-          sidebarDiv = sb;
-          break;
-       }
+    if (document.getElementById('hub-menu-kanban')) return;
+
+    const mainNav = document.querySelector('aside nav ul.list-none, aside nav > ul, nav.grid ul');
+    if (!mainNav) return;
+
+    const allLi = mainNav.querySelectorAll(':scope > li');
+    if (allLi.length === 0) return;
+
+    let refLi = null;
+    let refLink = null;
+    for (let i = 0; i < allLi.length; i++) {
+      const text = allLi[i].textContent.toLowerCase();
+      const titleEl = allLi[i].querySelector('[title]');
+      const titleText = titleEl ? titleEl.getAttribute('title').toLowerCase() : '';
+      const combined = text + ' ' + titleText;
+      if (combined.includes('relatório') || combined.includes('report') || combined.includes('campanha') || combined.includes('campaign') || combined.includes('configura')) {
+        refLi = allLi[i];
+        refLink = refLi.querySelector('a, div[role="button"], button');
+        break;
+      }
     }
-    
-    if(!sidebarDiv || document.getElementById('hub-menu-conexoes')) return;
 
-    // Em algumas versões do chatwoot, o menu fica dentro de uma div flex. Vamos buscar o scroll-wrap ou semelhante se existir.
-    let targetAppender = sidebarDiv.querySelector('.scroll-wrap') || sidebarDiv.querySelector('.menu-container') || sidebarDiv;
+    if (!refLi) {
+      refLi = allLi[allLi.length - 1];
+      refLink = refLi.querySelector('a, div[role="button"], button');
+    }
 
-    const divWrapper = document.createElement('div');
-    divWrapper.style.cssText = 'margin-top:20px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;gap:4px;';
-    divWrapper.id = 'hub-menu-conexoes'; // marker
+    if (!refLi || !refLink) return;
 
-    const kanbanBtn = createMenuButton('hub-menu-kanban', 'Kanban', '📊', () => openHubModal('/kanban'));
-    const projetosBtn = createMenuButton('hub-menu-projetos', 'Projetos', '📁', () => openHubModal('/projetos'));
-    const chatsBtn = createMenuButton('hub-menu-chats', 'Chats Int.', '💬', () => openHubModal('/chats'));
-    const conexoesBtn = createMenuButton('hub-menu-conexoes-btn', 'Conexões', '🔗', () => openHubModal('/conexoes'));
-    const disparadorBtn = createMenuButton('hub-menu-disparador', 'Disparador', '🚀', () => openHubModal('/campaigns'));
+    function addMenuItem(id, label, iconHtml, path) {
+      if (document.getElementById(id)) return;
+      const li = document.createElement('li');
+      li.className = refLi.className;
+      
+      const item = document.createElement('div');
+      item.id = id;
+      item.className = refLink.className;
+      item.setAttribute('role', 'button');
+      item.style.cursor = 'pointer';
+      item.title = label;
+      
+      item.innerHTML = \`<div class="relative flex items-center gap-2 cw-menu-inner">
+        <div class="flex items-center gap-1.5 flex-grow min-w-0">
+          <span class="menu-icon" style="width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:14px;">\${iconHtml}</span>
+          <span class="text-sm font-medium leading-5 truncate cw-menu-label">\${label}</span>
+        </div>
+      </div>\`;
+      
+      item.onclick = (e) => {
+        e.preventDefault();
+        
+        // Remove active from all items in this group
+        const allItems = mainNav.querySelectorAll('div[id^="hub-menu-"]');
+        allItems.forEach(i => i.classList.remove('bg-n-alpha-2', 'text-n-slate-12'));
+        item.classList.add('bg-n-alpha-2', 'text-n-slate-12');
+        
+        openHubModal(path);
+      };
+      
+      li.appendChild(item);
+      mainNav.insertBefore(li, refLi);
+    }
 
-    divWrapper.appendChild(kanbanBtn);
-    divWrapper.appendChild(projetosBtn);
-    divWrapper.appendChild(chatsBtn);
-    divWrapper.appendChild(conexoesBtn);
-    divWrapper.appendChild(disparadorBtn);
-    
-    targetAppender.appendChild(divWrapper);
+    addMenuItem('hub-menu-kanban', 'Kanban', '📊', '/kanban');
+    addMenuItem('hub-menu-projetos', 'Projetos', '📁', '/projetos');
+    addMenuItem('hub-menu-chats', 'Chats Int.', '💬', '/chats');
+    addMenuItem('hub-menu-conexoes', 'Conexões', '🔗', '/conexoes');
+    addMenuItem('hub-menu-disparador', 'Disparador', '🚀', '/campaigns');
   }
 
   setInterval(injectMenu, 3000);
