@@ -66,10 +66,10 @@ export const ConfigExtra: React.FC = () => {
 
   const currentHost = typeof window !== 'undefined' ? window.location.origin : 'https://hub.quepasa.example.com';
   
-  const CHATWOOT_SCRIPT = `
+  const CHATWOOT_SCRIPT = `<script>
 // ============================================================
 // QUEPASA HUB INTEGRATION MENU - SCRIPT CHATWOOT
-// Cole este script na configuração de App do seu Chatwoot Customizado.
+// Cole este script na configuração de Código Customizado (Custom Code) do seu Chatwoot.
 // ============================================================
 
 (function() {
@@ -80,27 +80,34 @@ export const ConfigExtra: React.FC = () => {
     btn.id = id;
     btn.className = 'button transparent sidebar-item';
     btn.innerHTML = \`<div class="wrap"><span class="icon">\${iconHtml}</span><span class="label">\${title}</span></div>\`;
-    btn.style.cssText = 'width:100%;text-align:left;height:40px;margin-bottom:2px;display:block;';
+    btn.style.cssText = 'width:100%;text-align:left;height:40px;margin-bottom:2px;display:flex;align-items:center;padding:0 12px;color:inherit;border:none;background:transparent;cursor:pointer;opacity:0.8;transition:opacity 0.2s;';
+    btn.onmouseover = () => btn.style.opacity = '1';
+    btn.onmouseout = () => btn.style.opacity = '0.8';
     btn.addEventListener('click', clickHandler);
     return btn;
   }
 
   function openHubModal(path) {
-    // Remove if exists
     const existing = document.getElementById('quepasa-hub-modal');
     if (existing) existing.remove();
 
     const d = document.createElement('div');
     d.id = 'quepasa-hub-modal';
-    d.style.cssText = 'position:fixed;top:0;left:64px;width:calc(100vw - 64px);height:100vh;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:center;align-items:center;';
+    d.style.cssText = 'position:fixed;top:0;left:64px;width:calc(100vw - 64px);height:100vh;background:rgba(0,0,0,0.5);z-index:999999;display:flex;justify-content:center;align-items:center;';
     
+    // Fallback if left nav is wider or different
+    if (window.innerWidth < 768) {
+       d.style.left = '0';
+       d.style.width = '100vw';
+    }
+
     const iframe = document.createElement('iframe');
     iframe.src = HUB_URL + path;
-    iframe.style.cssText = 'width:90%;height:90%;border:none;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.5);background:#fff;';
+    iframe.style.cssText = 'width:95%;height:95%;border:none;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.5);background:#fff;';
     
     const closeBtn = document.createElement('button');
     closeBtn.textContent = '✖ Fechar';
-    closeBtn.style.cssText = 'position:absolute;top:20px;right:20px;background:#ef4444;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;';
+    closeBtn.style.cssText = 'position:absolute;top:20px;right:20px;background:#ef4444;color:#fff;border:none;padding:12px 20px;border-radius:8px;font-weight:bold;cursor:pointer;box-shadow:0 4px 6px rgba(0,0,0,0.1);z-index:9999999;';
     closeBtn.onclick = () => d.remove();
     
     d.appendChild(iframe);
@@ -109,26 +116,50 @@ export const ConfigExtra: React.FC = () => {
   }
 
   function injectMenu() {
-    // Acha a sidebar do Chatwoot (pode variar baseada na versao)
-    const sidebar = document.querySelector('.primary-menu') || document.querySelector('aside');
-    if(!sidebar || document.getElementById('hub-menu-conexoes')) return;
+    // Tenta encontrar o contêiner do menu lateral do Chatwoot
+    const sidebars = [
+      document.querySelector('.primary-menu'), 
+      document.querySelector('aside.sidebar'),
+      document.querySelector('.app-wrapper aside'),
+      document.querySelector('.left-sidebar'),
+      document.querySelector('.app-sidebar')
+    ];
+    
+    let sidebarDiv = null;
+    for (const sb of sidebars) {
+       if (sb) {
+          sidebarDiv = sb;
+          break;
+       }
+    }
+    
+    if(!sidebarDiv || document.getElementById('hub-menu-conexoes')) return;
+
+    // Em algumas versões do chatwoot, o menu fica dentro de uma div flex. Vamos buscar o scroll-wrap ou semelhante se existir.
+    let targetAppender = sidebarDiv.querySelector('.scroll-wrap') || sidebarDiv.querySelector('.menu-container') || sidebarDiv;
+
+    const divWrapper = document.createElement('div');
+    divWrapper.style.cssText = 'margin-top:20px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;gap:4px;';
+    divWrapper.id = 'hub-menu-conexoes'; // marker
 
     const kanbanBtn = createMenuButton('hub-menu-kanban', 'Kanban', '📊', () => openHubModal('/kanban'));
     const projetosBtn = createMenuButton('hub-menu-projetos', 'Projetos', '📁', () => openHubModal('/projetos'));
     const chatsBtn = createMenuButton('hub-menu-chats', 'Chats Int.', '💬', () => openHubModal('/chats'));
-    const conexoesBtn = createMenuButton('hub-menu-conexoes', 'Conexões', '🔗', () => openHubModal('/conexoes'));
+    const conexoesBtn = createMenuButton('hub-menu-conexoes-btn', 'Conexões', '🔗', () => openHubModal('/conexoes'));
     const disparadorBtn = createMenuButton('hub-menu-disparador', 'Disparador', '🚀', () => openHubModal('/campaigns'));
 
-    sidebar.appendChild(kanbanBtn);
-    sidebar.appendChild(projetosBtn);
-    sidebar.appendChild(chatsBtn);
-    sidebar.appendChild(conexoesBtn);
-    sidebar.appendChild(disparadorBtn);
+    divWrapper.appendChild(kanbanBtn);
+    divWrapper.appendChild(projetosBtn);
+    divWrapper.appendChild(chatsBtn);
+    divWrapper.appendChild(conexoesBtn);
+    divWrapper.appendChild(disparadorBtn);
+    
+    targetAppender.appendChild(divWrapper);
   }
 
-  setInterval(injectMenu, 3000); // Poll for SPA routing
+  setInterval(injectMenu, 3000);
 })();
-`;
+</script>`;
 
   return (
     <Layout>

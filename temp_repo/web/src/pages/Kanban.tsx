@@ -377,6 +377,14 @@ const SettingsView = ({ funnels, onClose, setFunnels }: { funnels: Funnel[], onC
     toast.success('Funil duplicado');
   };
 
+  const handleEdit = (funnel: Funnel) => {
+    const newName = window.prompt('Editar nome do funil:', funnel.name);
+    if (newName && newName.trim() !== '') {
+      setFunnels(prev => prev.map(f => f.id === funnel.id ? { ...f, name: newName } : f));
+      toast.success('Funil atualizado');
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -409,7 +417,7 @@ const SettingsView = ({ funnels, onClose, setFunnels }: { funnels: Funnel[], onC
               </div>
               <div className="flex items-center gap-3 actions-container">
                 <input type="checkbox" className="toggle toggle-primary" defaultChecked />
-                <button onClick={() => toast.success('Edição em breve')} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                <button onClick={() => handleEdit(funnel)} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><Edit2 className="w-4 h-4" /></button>
                 <button onClick={() => handleDuplicate(funnel)} className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><Copy className="w-4 h-4" /></button>
                 <button onClick={() => handleDelete(funnel.id)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
