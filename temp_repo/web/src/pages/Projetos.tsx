@@ -170,13 +170,18 @@ export const Projetos: React.FC = () => {
         </div>
 
         {/* Content */}
-        {filteredProjects.length === 0 ? (
+        {isLoading ? (
+          <div className="py-24 flex flex-col items-center justify-center text-center px-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">Carregando projetos...</h3>
+          </div>
+        ) : filteredProjects.length === 0 ? (
           <div className="py-24 flex flex-col items-center justify-center text-center px-4">
             <ClipboardList className="w-16 h-16 text-gray-300 dark:text-gray-700 mb-4" strokeWidth={1} />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">Nenhum projeto encontrado</h3>
             <p className="text-sm text-gray-500">Crie seu primeiro projeto para começar</p>
           </div>
         ) : (
+
           <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
             {filteredProjects.map((project) => (
               <Card key={project.id} onClick={() => navigate(`/projetos/${project.id}`)} className="hover:shadow-md transition-shadow cursor-pointer">

@@ -17,8 +17,20 @@ export const ProjetoDetalhes: React.FC = () => {
 
   const [project, setProject] = useState<any>(null);
   const [tasks, setTasks] = useState<{id: string, title: string, status: string}[]>([]);
+  
+  const [milestones, setMilestones] = useState<any[]>([]);
+  const [discussions, setDiscussions] = useState<any[]>([]);
+  const [members, setMembers] = useState<any[]>([]);
+  const [files, setFiles] = useState<any[]>([]);
+
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [editingTask, setEditingTask] = useState<any>(null);
+
+  const [newMilestoneName, setNewMilestoneName] = useState('');
+  const [newDiscussionTitle, setNewDiscussionTitle] = useState('');
+  const [activeDiscussionId, setActiveDiscussionId] = useState<string | null>(null);
+
+  const [newMemberEmail, setNewMemberEmail] = useState('');
 
   const loadData = async () => {
     if (!id) return;
@@ -26,6 +38,10 @@ export const ProjetoDetalhes: React.FC = () => {
       const p = await api.getProjectDetails(id);
       setProject(p);
       setTasks(p.tasks || []);
+      setMilestones(p.milestones || []);
+      setDiscussions(p.discussions || []);
+      setMembers(p.members || []);
+      setFiles(p.files || []);
     } catch (error) {
       toast.error('Erro ao carregar detalhes do projeto');
     }
@@ -81,6 +97,53 @@ export const ProjetoDetalhes: React.FC = () => {
       setEditingTask(null);
     } catch (error) {
       toast.error('Erro ao salvar tarefa');
+    }
+  };
+
+  const saveMilestone = async () => {
+    if (!newMilestoneName.trim()) return;
+    try {
+      const created = await api.createProjectMilestone(id as string, { name: newMilestoneName });
+      setMilestones([...milestones, created]);
+      setShowMilestoneModal(false);
+      setNewMilestoneName('');
+      toast.success('Marco criado');
+    } catch (error) {
+      toast.error('Erro ao criar marco');
+    }
+  };
+  
+  const deleteMilestone = async (milestoneId: string) => {
+    try {
+      await api.deleteProjectMilestone(id as string, milestoneId);
+      setMilestones(milestones.filter(m => m.id !== milestoneId));
+      toast.success('Marco excluído');
+    } catch (error) {
+      toast.error('Erro ao excluir marco');
+    }
+  };
+
+  const saveDiscussion = async () => {
+    if (!newDiscussionTitle.trim()) return;
+    try {
+      const created = await api.createProjectDiscussion(id as string, { title: newDiscussionTitle });
+      setDiscussions([...discussions, created]);
+      setShowDiscussionModal(false);
+      setNewDiscussionTitle('');
+      toast.success('Discussão criada');
+    } catch (error) {
+      toast.error('Erro ao criar discussão');
+    }
+  };
+  
+  const deleteDiscussion = async (discussionId: string) => {
+    try {
+      await api.deleteProjectDiscussion(id as string, discussionId);
+      setDiscussions(discussions.filter(d => d.id !== discussionId));
+      if (activeDiscussionId === discussionId) setActiveDiscussionId(null);
+      toast.success('Discussão excluída');
+    } catch (error) {
+      toast.error('Erro ao excluir discussão');
     }
   };
 
@@ -195,11 +258,7 @@ export const ProjetoDetalhes: React.FC = () => {
                   <div className="space-y-4 flex-1">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-500 text-sm">Total:</span>
-                      <span className="font-bold text-xl text-gray-900 dark:text-white">0</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500 text-sm">Concluídos:</span>
-                      <span className="font-medium text-emerald-500">0</span>
+                      <span className="font-bold text-xl text-gray-900 dark:text-white">{project.milestones?.length || 0}</span>
                     </div>
                   </div>
                 </Card>
@@ -222,7 +281,7 @@ export const ProjetoDetalhes: React.FC = () => {
                   <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-6">Equipe</h3>
                   <div className="flex justify-between items-center flex-1">
                     <span className="text-gray-500 text-sm">Total:</span>
-                    <span className="font-bold text-2xl text-gray-900 dark:text-white">0</span>
+                    <span className="font-bold text-2xl text-gray-900 dark:text-white">{project.members?.length || 0}</span>
                   </div>
                 </Card>
 
@@ -230,7 +289,7 @@ export const ProjetoDetalhes: React.FC = () => {
                   <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-6">Arquivos</h3>
                   <div className="flex justify-between items-center flex-1">
                     <span className="text-gray-500 text-sm">Total:</span>
-                    <span className="font-bold text-2xl text-gray-900 dark:text-white">0</span>
+                    <span className="font-bold text-2xl text-gray-900 dark:text-white">{project.files?.length || 0}</span>
                   </div>
                 </Card>
 
@@ -238,7 +297,7 @@ export const ProjetoDetalhes: React.FC = () => {
                   <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-6">Discussões</h3>
                   <div className="flex justify-between items-center flex-1">
                     <span className="text-gray-500 text-sm">Total:</span>
-                    <span className="font-bold text-2xl text-gray-900 dark:text-white">0</span>
+                    <span className="font-bold text-2xl text-gray-900 dark:text-white">{project.discussions?.length || 0}</span>
                   </div>
                 </Card>
               </div>
@@ -306,6 +365,23 @@ export const ProjetoDetalhes: React.FC = () => {
                   Novo Marco
                 </Button>
               </div>
+              <div className="space-y-4">
+                {milestones.length === 0 ? (
+                  <div className="text-center py-12 text-sm text-gray-500">Nenhum marco criado ainda.</div>
+                ) : (
+                  milestones.map(m => (
+                    <Card key={m.id} className="flex justify-between items-center bg-white dark:bg-cw-surface-dark p-4 rounded-lg">
+                      <div>
+                        <h4 className="font-medium text-gray-900 dark:text-gray-100">{m.name}</h4>
+                        {m.description && <p className="text-sm text-gray-500">{m.description}</p>}
+                      </div>
+                      <button onClick={() => deleteMilestone(m.id)} className="text-red-500 hover:text-red-600 transition-colors">
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </Card>
+                  ))
+                )}
+              </div>
             </div>
           )}
 
@@ -328,8 +404,16 @@ export const ProjetoDetalhes: React.FC = () => {
                   Upload
                 </Button>
               </div>
-              <div className="py-12 text-center text-sm text-gray-500">
-                Nenhum arquivo enviado ainda.
+              <div className="space-y-4">
+                {files.length === 0 ? (
+                  <div className="text-center py-12 text-sm text-gray-500">Nenhum arquivo enviado ainda.</div>
+                ) : (
+                  files.map(f => (
+                    <Card key={f.id} className="flex justify-between items-center bg-white dark:bg-cw-surface-dark p-4 rounded-lg">
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100">{f.name}</h4>
+                    </Card>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -343,8 +427,19 @@ export const ProjetoDetalhes: React.FC = () => {
                   Nova
                 </Button>
               </div>
-              <div className="py-12 text-center text-sm text-gray-500">
-                Selecione uma discussão
+              <div className="space-y-4">
+                {discussions.length === 0 ? (
+                  <div className="text-center py-12 text-sm text-gray-500">Nenhuma discussão criada ainda.</div>
+                ) : (
+                  discussions.map(d => (
+                    <Card key={d.id} className="flex justify-between items-center bg-white dark:bg-cw-surface-dark p-4 rounded-lg">
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100">{d.title}</h4>
+                      <button onClick={() => deleteDiscussion(d.id)} className="text-red-500 hover:text-red-600 transition-colors">
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </Card>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -359,8 +454,16 @@ export const ProjetoDetalhes: React.FC = () => {
                   Adicionar Membro
                 </Button>
               </div>
-              <div className="py-12 text-center text-sm text-gray-500">
-                Nenhum membro adicionado ainda.
+              <div className="space-y-4">
+                {members.length === 0 ? (
+                  <div className="text-center py-12 text-sm text-gray-500">Nenhum membro adicionado ainda.</div>
+                ) : (
+                  members.map(m => (
+                    <Card key={m.id} className="flex justify-between items-center bg-white dark:bg-cw-surface-dark p-4 rounded-lg">
+                      <h4 className="font-medium text-gray-900 dark:text-gray-100">{m.name || m.email}</h4>
+                    </Card>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -421,13 +524,18 @@ export const ProjetoDetalhes: React.FC = () => {
             <div className="bg-white dark:bg-cw-surface-dark rounded-2xl w-full max-w-md shadow-xl border border-cw-border-light dark:border-cw-border-dark p-6">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Novo Marco</h3>
               <div className="space-y-4">
-                <input type="text" placeholder="Nome *" className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" />
-                <textarea placeholder="Descrição" rows={3} className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm resize-none"></textarea>
-                <input type="date" className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" />
+                <input 
+                  type="text" 
+                  value={newMilestoneName}
+                  onChange={e => setNewMilestoneName(e.target.value)}
+                  placeholder="Nome *" 
+                  className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" 
+                  autoFocus
+                />
                 
                 <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="primary" onClick={() => setShowMilestoneModal(false)}>Criar</Button>
                   <Button variant="secondary" onClick={() => setShowMilestoneModal(false)}>Cancelar</Button>
+                  <Button variant="primary" onClick={saveMilestone}>Criar</Button>
                 </div>
               </div>
             </div>
@@ -439,12 +547,18 @@ export const ProjetoDetalhes: React.FC = () => {
             <div className="bg-white dark:bg-cw-surface-dark rounded-2xl w-full max-w-md shadow-xl border border-cw-border-light dark:border-cw-border-dark p-6">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Nova Discussão</h3>
               <div className="space-y-4">
-                <input type="text" placeholder="Assunto *" className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" />
-                <textarea placeholder="Descrição" rows={3} className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm resize-none"></textarea>
+                <input 
+                  type="text" 
+                  value={newDiscussionTitle}
+                  onChange={e => setNewDiscussionTitle(e.target.value)}
+                  placeholder="Assunto *" 
+                  className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" 
+                  autoFocus
+                />
                 
                 <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="primary" onClick={() => setShowDiscussionModal(false)}>Criar</Button>
                   <Button variant="secondary" onClick={() => setShowDiscussionModal(false)}>Cancelar</Button>
+                  <Button variant="primary" onClick={saveDiscussion}>Criar</Button>
                 </div>
               </div>
             </div>
