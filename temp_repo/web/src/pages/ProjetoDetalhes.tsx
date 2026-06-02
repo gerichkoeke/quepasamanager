@@ -30,7 +30,6 @@ export const ProjetoDetalhes: React.FC = () => {
   const [newDiscussionTitle, setNewDiscussionTitle] = useState('');
   const [activeDiscussionId, setActiveDiscussionId] = useState<string | null>(null);
 
-  const [newMemberEmail, setNewMemberEmail] = useState('');
 
   const loadData = async () => {
     if (!id) return;
