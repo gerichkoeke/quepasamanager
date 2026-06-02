@@ -430,6 +430,115 @@ class ApiClient {
     const response = await this.client.post(`/twilio-mappings/${mappingId}/setup-integration`);
     return response.data;
   }
+  // API Projects endpoints
+  async getProjects(): Promise<any[]> {
+    const response = await this.client.get('/v1/projects');
+    return response.data;
+  }
+
+  async createProject(data: any): Promise<any> {
+    const response = await this.client.post('/v1/projects', data);
+    return response.data;
+  }
+
+  async getProjectDetails(id: string): Promise<any> {
+    const response = await this.client.get(`/v1/projects/${id}/details`);
+    return response.data;
+  }
+
+  async updateProject(id: string, data: any): Promise<any> {
+    const response = await this.client.put(`/v1/projects/${id}`, data);
+    return response.data;
+  }
+
+  async deleteProject(id: string): Promise<any> {
+    const response = await this.client.delete(`/v1/projects/${id}`);
+    return response.data;
+  }
+
+  // Project Tasks
+  async getProjectTasks(projectId: string): Promise<any> {
+    const response = await this.client.get(`/v1/projects/${projectId}/tasks`);
+    return response.data;
+  }
+
+  async createProjectTask(projectId: string, data: any): Promise<any> {
+    const response = await this.client.post(`/v1/projects/${projectId}/tasks`, data);
+    return response.data;
+  }
+
+  async updateProjectTask(projectId: string, taskId: string, data: any): Promise<any> {
+    const response = await this.client.put(`/v1/projects/${projectId}/tasks/${taskId}`, data);
+    return response.data;
+  }
+  
+  async updateProjectTaskStatus(projectId: string, taskId: string, status: string): Promise<any> {
+    const response = await this.client.patch(`/v1/projects/${projectId}/tasks/${taskId}/status`, { status });
+    return response.data;
+  }
+
+  async deleteProjectTask(projectId: string, taskId: string): Promise<any> {
+    const response = await this.client.delete(`/v1/projects/${projectId}/tasks/${taskId}`);
+    return response.data;
+  }
+  
+  // Project Milestones
+  async getProjectMilestones(projectId: string): Promise<any> {
+    const response = await this.client.get(`/v1/projects/${projectId}/milestones`);
+    return response.data;
+  }
+
+  async createProjectMilestone(projectId: string, data: any): Promise<any> {
+    const response = await this.client.post(`/v1/projects/${projectId}/milestones`, data);
+    return response.data;
+  }
+
+  async updateProjectMilestone(projectId: string, milestoneId: string, data: any): Promise<any> {
+    const response = await this.client.put(`/v1/projects/${projectId}/milestones/${milestoneId}`, data);
+    return response.data;
+  }
+
+  async deleteProjectMilestone(projectId: string, milestoneId: string): Promise<any> {
+    const response = await this.client.delete(`/v1/projects/${projectId}/milestones/${milestoneId}`);
+    return response.data;
+  }
+
+  // Project Members
+  async getProjectMembers(projectId: string): Promise<any> {
+    const response = await this.client.get(`/v1/projects/${projectId}/members`);
+    return response.data;
+  }
+
+  async createProjectMember(projectId: string, data: any): Promise<any> {
+    const response = await this.client.post(`/v1/projects/${projectId}/members`, data);
+    return response.data;
+  }
+
+  async deleteProjectMember(projectId: string, memberId: string): Promise<any> {
+    const response = await this.client.delete(`/v1/projects/${projectId}/members/${memberId}`);
+    return response.data;
+  }
+
+  // Project Discussions
+  async getProjectDiscussions(projectId: string): Promise<any> {
+    const response = await this.client.get(`/v1/projects/${projectId}/discussions`);
+    return response.data;
+  }
+
+  async createProjectDiscussion(projectId: string, data: any): Promise<any> {
+    const response = await this.client.post(`/v1/projects/${projectId}/discussions`, data);
+    return response.data;
+  }
+
+  async deleteProjectDiscussion(projectId: string, discussionId: string): Promise<any> {
+    const response = await this.client.delete(`/v1/projects/${projectId}/discussions/${discussionId}`);
+    return response.data;
+  }
+
+  async createProjectDiscussionComment(projectId: string, discussionId: string, data: any): Promise<any> {
+    const response = await this.client.post(`/v1/projects/${projectId}/discussions/${discussionId}/comments`, data);
+    return response.data;
+  }
 }
 
 export const api = new ApiClient();

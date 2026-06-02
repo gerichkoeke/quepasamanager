@@ -249,3 +249,105 @@ model User {
 
   @@map("users")
 }
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  status      String   @default("ativo") // ativo, concluido, cancelado
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  tasks       ProjectTask[]
+  milestones  ProjectMilestone[]
+  members     ProjectMember[]
+  files       ProjectFile[]
+  discussions ProjectDiscussion[]
+
+  @@map("projects")
+}
+
+model ProjectTask {
+  id          String   @id @default(uuid())
+  projectId   String   @map("project_id")
+  milestoneId String?  @map("milestone_id")
+  title       String
+  description String?
+  status      String   @default("pendente") // pendente, em_andamento, concluida
+  priority    String?  @default("normal")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone   ProjectMilestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+
+  @@map("project_tasks")
+}
+
+model ProjectMilestone {
+  id          String   @id @default(uuid())
+  projectId   String   @map("project_id")
+  name        String
+  description String?
+  dueDate     DateTime? @map("due_date")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks       ProjectTask[]
+
+  @@map("project_milestones")
+}
+
+model ProjectMember {
+  id          String   @id @default(uuid())
+  projectId   String   @map("project_id")
+  name        String
+  email       String
+  role        String   @default("Membro")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_members")
+}
+
+model ProjectFile {
+  id          String   @id @default(uuid())
+  projectId   String   @map("project_id")
+  name        String
+  url         String
+  size        Int?
+  type        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_files")
+}
+
+model ProjectDiscussion {
+  id          String   @id @default(uuid())
+  projectId   String   @map("project_id")
+  title       String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  comments    ProjectDiscussionComment[]
+
+  @@map("project_discussions")
+}
+
+model ProjectDiscussionComment {
+  id           String   @id @default(uuid())
+  discussionId String   @map("discussion_id")
+  content      String
+  authorId     String?  @map("author_id")
+  authorName   String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  discussion   ProjectDiscussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+
+  @@map("project_discussion_comments")
+}

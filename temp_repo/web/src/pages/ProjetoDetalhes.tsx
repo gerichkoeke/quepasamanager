@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { ChevronLeft, BarChart2, FileEdit, Users, Activity } from 'lucide-react';
+import { ChevronLeft, BarChart2, FileEdit, Users, Activity, Trash2, Edit2 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { api } from '../services/api';
 
 export const ProjetoDetalhes: React.FC = () => {
   const { id } = useParams();
@@ -13,12 +15,78 @@ export const ProjetoDetalhes: React.FC = () => {
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [showDiscussionModal, setShowDiscussionModal] = useState(false);
 
-  // Mocks
-  const project = {
-    id: id,
-    name: 'Teste',
-    status: 'Ativo'
+  const [project, setProject] = useState<any>(null);
+  const [tasks, setTasks] = useState<{id: string, title: string, status: string}[]>([]);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [editingTask, setEditingTask] = useState<any>(null);
+
+  const loadData = async () => {
+    if (!id) return;
+    try {
+      const p = await api.getProjectDetails(id);
+      setProject(p);
+      setTasks(p.tasks || []);
+    } catch (error) {
+      toast.error('Erro ao carregar detalhes do projeto');
+    }
   };
+
+  useEffect(() => {
+    loadData();
+  }, [id]);
+
+  const toggleTaskStatus = async (taskId: string) => {
+    try {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+      const newStatus = task.status === 'concluida' ? 'pendente' : 'concluida';
+      await api.updateProjectTaskStatus(id as string, taskId, newStatus);
+      setTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+    } catch (error) {
+      toast.error('Erro ao atualizar tarefa');
+    }
+  };
+
+  const deleteTask = async (taskId: string) => {
+    try {
+      await api.deleteProjectTask(id as string, taskId);
+      setTasks(tasks.filter(t => t.id !== taskId));
+      toast.success('Tarefa excluída');
+    } catch (error) {
+      toast.error('Erro ao excluir tarefa');
+    }
+  };
+
+  const editTask = (task: any) => {
+    setEditingTask(task);
+    setNewTaskTitle(task.title);
+    setShowTaskModal(true);
+  };
+
+  const saveTask = async () => {
+    if (!newTaskTitle.trim()) return;
+    
+    try {
+      if (editingTask) {
+        const updated = await api.updateProjectTask(id as string, editingTask.id, { title: newTaskTitle, status: editingTask.status });
+        setTasks(tasks.map(t => t.id === editingTask.id ? updated : t));
+        toast.success('Tarefa atualizada');
+      } else {
+        const created = await api.createProjectTask(id as string, { title: newTaskTitle });
+        setTasks([...tasks, created]);
+        toast.success('Tarefa criada');
+      }
+      setShowTaskModal(false);
+      setNewTaskTitle('');
+      setEditingTask(null);
+    } catch (error) {
+      toast.error('Erro ao salvar tarefa');
+    }
+  };
+
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(t => t.status === 'concluida').length;
+  const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
 
   const TABS = [
     { id: 'visao_geral', label: 'Visão Geral' },
@@ -30,6 +98,10 @@ export const ProjetoDetalhes: React.FC = () => {
     { id: 'equipe', label: 'Equipe' },
     { id: 'atividades', label: 'Atividades' },
   ];
+
+  if (!project) {
+    return <Layout><div className="p-8 text-center text-gray-500">Carregando...</div></Layout>;
+  }
 
   return (
     <Layout>
@@ -59,10 +131,10 @@ export const ProjetoDetalhes: React.FC = () => {
           <div className="mt-2 mb-2">
             <div className="flex justify-between items-center text-sm mb-1 text-gray-600 dark:text-gray-400 font-medium">
               <span>Progresso das Tarefas</span>
-              <span>0%</span>
+              <span>{progressPercent}%</span>
             </div>
             <div className="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-              <div className="h-full bg-primary rounded-full" style={{ width: '0%' }}></div>
+              <div className="h-full bg-primary rounded-full transition-all duration-500 ease-in-out" style={{ width: `${progressPercent}%` }}></div>
             </div>
           </div>
         </div>
@@ -99,26 +171,22 @@ export const ProjetoDetalhes: React.FC = () => {
                   <div className="space-y-4 flex-1">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-500 text-sm">Total:</span>
-                      <span className="font-bold text-xl text-gray-900 dark:text-white">0</span>
+                      <span className="font-bold text-xl text-gray-900 dark:text-white">{totalTasks}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-500 text-sm">Concluídas:</span>
-                      <span className="font-medium text-emerald-500">0</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500 text-sm">Em Andamento:</span>
-                      <span className="font-medium text-blue-500">0</span>
+                      <span className="font-medium text-emerald-500">{completedTasks}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-500 text-sm">Pendentes:</span>
-                      <span className="font-medium text-amber-500">0</span>
+                      <span className="font-medium text-amber-500">{totalTasks - completedTasks}</span>
                     </div>
                   </div>
                   <div className="mt-4 pt-4 border-t border-cw-border-light dark:border-cw-border-dark">
                     <div className="h-1.5 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden mb-1">
-                      <div className="h-full bg-gray-300 dark:bg-gray-700" style={{ width: '0%' }}></div>
+                      <div className="h-full bg-gray-300 dark:bg-gray-700 transition-all duration-500 ease-in-out" style={{ width: `${progressPercent}%` }}></div>
                     </div>
-                    <div className="text-right text-xs text-gray-400">0%</div>
+                    <div className="text-right text-xs text-gray-400">{progressPercent}%</div>
                   </div>
                 </Card>
 
@@ -182,22 +250,49 @@ export const ProjetoDetalhes: React.FC = () => {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">Tarefas</h2>
-                <Button variant="primary" onClick={() => setShowTaskModal(true)}>
+                <Button variant="primary" onClick={() => {
+                  setEditingTask(null);
+                  setNewTaskTitle('');
+                  setShowTaskModal(true);
+                }}>
                   Nova Tarefa
                 </Button>
               </div>
               
               <div className="space-y-4">
-                <div className="bg-cw-bg-light dark:bg-cw-surface-dark p-4 rounded-xl border border-cw-border-light dark:border-cw-border-dark">
-                  <div className="flex items-center gap-2 mb-3 text-sm font-medium text-gray-500">
-                    <FileEdit className="w-4 h-4" />
-                    Sem Marco
+                {tasks.length === 0 ? (
+                  <div className="text-center py-12 text-sm text-gray-500">Nenhuma tarefa criada.</div>
+                ) : (
+                  <div className="bg-cw-bg-light dark:bg-cw-surface-dark p-4 rounded-xl border border-cw-border-light dark:border-cw-border-dark">
+                    <div className="flex items-center gap-2 mb-3 text-sm font-medium text-gray-500">
+                      <FileEdit className="w-4 h-4" />
+                      Sem Marco
+                    </div>
+                    <div className="space-y-2">
+                        {tasks.map(task => (
+                          <div key={task.id} className="bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg flex items-center p-4 hover:border-primary/50 transition-colors group">
+                            <input 
+                              type="checkbox" 
+                              checked={task.status === 'concluida'}
+                              onChange={() => toggleTaskStatus(task.id)}
+                              className="w-4 h-4 rounded text-primary bg-gray-100 border-cw-border-light dark:bg-gray-800 dark:border-cw-border-dark outline-none cursor-pointer flex-shrink-0" 
+                            />
+                            <span className={`ml-3 text-sm flex-1 ${task.status === 'concluida' ? 'line-through text-gray-400' : 'text-gray-900 dark:text-gray-200'}`}>
+                              {task.title}
+                            </span>
+                            <div className="flex flex-shrink-0 items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button onClick={() => editTask(task)} className="p-1.5 text-gray-400 hover:text-blue-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button onClick={() => deleteTask(task.id)} className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
                   </div>
-                  <div className="bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-lg flex items-center p-4 hover:border-primary/50 transition-colors cursor-pointer">
-                    <input type="checkbox" className="w-4 h-4 rounded text-primary bg-gray-100 border-cw-border-light dark:bg-gray-800 dark:border-cw-border-dark outline-none" />
-                    <span className="ml-3 text-sm text-gray-900 dark:text-gray-200">Teste</span>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -291,18 +386,30 @@ export const ProjetoDetalhes: React.FC = () => {
         {/* Modals Mock (Simplified) */}
         {showTaskModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-cw-surface-dark rounded-2xl w-full max-w-md shadow-xl border border-cw-border-light dark:border-cw-border-dark p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Nova Tarefa</h3>
+            <div className="bg-white dark:bg-cw-surface-dark rounded-2xl w-full max-w-md shadow-xl border border-cw-border-light dark:border-cw-border-dark p-6 relative overflow-hidden">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                {editingTask ? 'Editar Tarefa' : 'Nova Tarefa'}
+              </h3>
               <div className="space-y-4">
-                <input type="text" placeholder="Título *" className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" />
-                <textarea placeholder="Descrição" rows={3} className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm resize-none"></textarea>
-                <select className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"><option>Pendente</option></select>
+                <input 
+                  type="text" 
+                  value={newTaskTitle}
+                  onChange={e => setNewTaskTitle(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') saveTask();
+                  }}
+                  placeholder="Título da tarefa *" 
+                  className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm" 
+                  autoFocus
+                />
+                <textarea placeholder="Descrição (Opcional)" rows={3} className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm resize-none"></textarea>
+                <select className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"><option value="pendente">Pendente</option><option value="concluida">Concluída</option></select>
                 <select className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"><option>Sem Prioridade</option></select>
                 <select className="w-full px-4 py-3 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"><option>Sem Marco</option></select>
                 
-                <div className="flex justify-end gap-3 pt-4">
-                  <Button variant="primary" onClick={() => setShowTaskModal(false)}>Criar</Button>
+                <div className="flex justify-end gap-3 pt-4 border-t border-cw-border-light dark:border-cw-border-dark mt-6">
                   <Button variant="secondary" onClick={() => setShowTaskModal(false)}>Cancelar</Button>
+                  <Button variant="primary" onClick={saveTask}>Gravar</Button>
                 </div>
               </div>
             </div>

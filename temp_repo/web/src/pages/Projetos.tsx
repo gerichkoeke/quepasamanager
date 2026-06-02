@@ -1,18 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Plus, LayoutGrid, List, ClipboardList, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { api } from '../services/api';
 
 interface Project {
   id: string;
   name: string;
   description: string;
   status: string;
-  deadline: string;
-  color: string;
+  deadline?: string;
+  color?: string;
+  _count?: {
+    tasks: number;
+    milestones: number;
+    discussions: number;
+    files: number;
+    members: number;
+  };
 }
 
 const PREDEFINED_COLORS = [
@@ -33,51 +41,67 @@ export const Projetos: React.FC = () => {
   const [activeTab, setActiveTab] = useState('todos');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   const [newProject, setNewProject] = useState({
     name: '',
     description: '',
-    status: 'Ativo',
+    status: 'ativo',
     deadline: '',
     color: PREDEFINED_COLORS[0]
   });
+
+  const loadProjects = async () => {
+    try {
+      setIsLoading(true);
+      const data = await api.getProjects();
+      setProjects(data);
+    } catch (error) {
+      toast.error('Erro ao carregar projetos');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProjects();
+  }, []);
 
   const filteredProjects = projects.filter(p => {
     if (activeTab === 'todos') return true;
     return p.status.toLowerCase() === activeTab;
   });
 
-  const handleCreateProject = (e: React.FormEvent) => {
+  const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProject.name) {
       toast.error('O nome do projeto é obrigatório.');
       return;
     }
     
-    setProjects([
-      ...projects,
-      {
-        id: Math.random().toString(36).substring(7),
-        ...newProject
-      }
-    ]);
-    
-    setShowModal(false);
-    setNewProject({
-      name: '',
-      description: '',
-      status: 'Ativo',
-      deadline: '',
-      color: PREDEFINED_COLORS[0]
-    });
-    toast.success('Projeto criado com sucesso!');
+    try {
+      const created = await api.createProject(newProject);
+      setProjects([created, ...projects]);
+      setShowModal(false);
+      setNewProject({
+        name: '',
+        description: '',
+        status: 'ativo',
+        deadline: '',
+        color: PREDEFINED_COLORS[0]
+      });
+      toast.success('Projeto criado com sucesso!');
+      loadProjects();
+    } catch (error) {
+      toast.error('Erro ao criar projeto');
+    }
   };
 
   const getStats = () => {
     const todos = projects.length;
-    const ativos = projects.filter(p => p.status === 'Ativo').length;
-    const concluidos = projects.filter(p => p.status === 'Concluído').length;
-    const cancelados = projects.filter(p => p.status === 'Cancelado').length;
+    const ativos = projects.filter(p => p.status === 'ativo').length;
+    const concluidos = projects.filter(p => p.status === 'concluído' || p.status === 'concluido').length;
+    const cancelados = projects.filter(p => p.status === 'cancelado').length;
     
     return { todos, ativos, concluidos, cancelados };
   };
