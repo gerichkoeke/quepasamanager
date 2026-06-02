@@ -22,6 +22,7 @@ import typebotIntegrationRoutes from './routes/typebot-integration.routes';
 import authRoutes from './routes/auth.routes';
 import usersRoutes from './routes/users.routes';
 import projectsRoutes from './routes/projects.routes';
+import atendimentosRoutes from './routes/atendimentos.routes';
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.use('/', healthRoutes);
 app.use('/', authRoutes);
 app.use('/', usersRoutes);
 app.use('/api', projectsRoutes); // Mount at /api since frontend probably calls /api/v1/projects
+app.use('/api', atendimentosRoutes); // Fix Mount
 app.use('/', mediaRoutes); // Serve converted audio files (public)
 app.use('/', settingsRoutes);
 app.use('/', mappingsRoutes);

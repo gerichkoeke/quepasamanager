@@ -17,7 +17,8 @@ import {
   Users,
   FolderOpen,
   MessageCircle,
-  KanbanIcon as Kanban
+  KanbanIcon as Kanban,
+  CalendarRange
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../contexts/ThemeContext';
@@ -30,6 +31,7 @@ const allNavigation = [
   { name: 'Painel', href: '/', icon: LayoutDashboard, module: 'painel' },
   { name: 'Kanban', href: '/kanban', icon: Kanban, module: 'kanban' },
   { name: 'Projetos', href: '/projetos', icon: FolderOpen, module: 'projetos' },
+  { name: 'Atendimentos', href: '/atendimentos', icon: CalendarRange, module: 'atendimentos' },
   { name: 'Chats Internos', href: '/chats', icon: MessageCircle, module: 'chats_internos' },
   { name: 'Conexões', href: '/conexoes', icon: MessageSquare, module: 'instancias' },
   { name: 'Disparador', href: '/campaigns', icon: Send, module: 'disparador' },

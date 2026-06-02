@@ -539,6 +539,104 @@ class ApiClient {
     const response = await this.client.post(`/v1/projects/${projectId}/discussions/${discussionId}/comments`, data);
     return response.data;
   }
+
+  // ===================================
+  // Atendimentos APIs
+  // ===================================
+
+  // Patients (Clientes)
+  async getPatients(): Promise<any[]> {
+    const response = await this.client.get('/v1/appointments/patients');
+    return response.data;
+  }
+  async createPatient(data: any): Promise<any> {
+    const response = await this.client.post('/v1/appointments/patients', data);
+    return response.data;
+  }
+  async updatePatient(id: string, data: any): Promise<any> {
+    const response = await this.client.put(`/v1/appointments/patients/${id}`, data);
+    return response.data;
+  }
+  async deletePatient(id: string): Promise<any> {
+    const response = await this.client.delete(`/v1/appointments/patients/${id}`);
+    return response.data;
+  }
+
+  // Practitioners (Profissionais)
+  async getPractitioners(): Promise<any[]> {
+    const response = await this.client.get('/v1/appointments/practitioners');
+    return response.data;
+  }
+  async createPractitioner(data: any): Promise<any> {
+    const response = await this.client.post('/v1/appointments/practitioners', data);
+    return response.data;
+  }
+  async updatePractitioner(id: string, data: any): Promise<any> {
+    const response = await this.client.put(`/v1/appointments/practitioners/${id}`, data);
+    return response.data;
+  }
+  async deletePractitioner(id: string): Promise<any> {
+    const response = await this.client.delete(`/v1/appointments/practitioners/${id}`);
+    return response.data;
+  }
+
+  // Services (Serviços)
+  async getServices(): Promise<any[]> {
+    const response = await this.client.get('/v1/appointments/services');
+    return response.data;
+  }
+  async createService(data: any): Promise<any> {
+    const response = await this.client.post('/v1/appointments/services', data);
+    return response.data;
+  }
+  async updateService(id: string, data: any): Promise<any> {
+    const response = await this.client.put(`/v1/appointments/services/${id}`, data);
+    return response.data;
+  }
+  async deleteService(id: string): Promise<any> {
+    const response = await this.client.delete(`/v1/appointments/services/${id}`);
+    return response.data;
+  }
+
+  // Health Plans (Parceiros)
+  async getHealthPlans(): Promise<any[]> {
+    const response = await this.client.get('/v1/appointments/health-plans');
+    return response.data;
+  }
+  async createHealthPlan(data: any): Promise<any> {
+    const response = await this.client.post('/v1/appointments/health-plans', data);
+    return response.data;
+  }
+  async updateHealthPlan(id: string, data: any): Promise<any> {
+    const response = await this.client.put(`/v1/appointments/health-plans/${id}`, data);
+    return response.data;
+  }
+  async deleteHealthPlan(id: string): Promise<any> {
+    const response = await this.client.delete(`/v1/appointments/health-plans/${id}`);
+    return response.data;
+  }
+
+  // Appointments (Agenda)
+  async getAppointments(): Promise<any[]> {
+    const response = await this.client.get('/v1/appointments');
+    return response.data;
+  }
+  async createAppointment(data: any): Promise<any> {
+    const response = await this.client.post('/v1/appointments', data);
+    return response.data;
+  }
+  async updateAppointment(id: string, data: any): Promise<any> {
+    const response = await this.client.put(`/v1/appointments/${id}`, data);
+    return response.data;
+  }
+  async deleteAppointment(id: string): Promise<any> {
+    const response = await this.client.delete(`/v1/appointments/${id}`);
+    return response.data;
+  }
+  async getAppointmentsOverview(): Promise<any> {
+    const response = await this.client.get('/v1/appointments/reports/overview');
+    return response.data;
+  }
 }
 
 export const api = new ApiClient();

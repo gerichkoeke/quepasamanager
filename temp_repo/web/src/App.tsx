@@ -16,6 +16,7 @@ import { Conexoes } from './pages/Conexoes';
 import { SSOIntegrations } from './pages/SSOIntegrations';
 import Connect from './pages/Connect';
 import { UsersPage } from './pages/Users';
+import { Atendimentos } from './pages/Atendimentos';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -191,6 +192,14 @@ const App: React.FC = () => {
         element={
           <ProtectedRoute>
             <UsersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/atendimentos"
+        element={
+          <ProtectedRoute>
+            <Atendimentos />
           </ProtectedRoute>
         }
       />
