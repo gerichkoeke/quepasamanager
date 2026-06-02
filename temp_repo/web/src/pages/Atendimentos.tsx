@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Layout } from '../components/Layout';
-import { Calendar, Users, UserCog, ClipboardList, Handshake, BarChart2 } from 'lucide-react';
+import { Calendar, Users, UserCog, ClipboardList, Briefcase, BarChart2 } from 'lucide-react';
 import { AgendaTab } from './atendimentos/AgendaTab';
 import { ClientesTab } from './atendimentos/ClientesTab';
 import { ProfissionaisTab } from './atendimentos/ProfissionaisTab';
@@ -13,7 +13,7 @@ const TABS = [
   { id: 'clientes', label: 'Clientes', icon: Users },
   { id: 'profissionais', label: 'Profissionais', icon: UserCog },
   { id: 'servicos', label: 'Serviços', icon: ClipboardList },
-  { id: 'parceiros', label: 'Parceiros', icon: Handshake },
+  { id: 'parceiros', label: 'Parceiros', icon: Briefcase },
   { id: 'relatorios', label: 'Relatórios', icon: BarChart2 },
 ];
 
