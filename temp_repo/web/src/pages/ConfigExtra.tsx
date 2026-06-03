@@ -230,11 +230,19 @@ export const ConfigExtra: React.FC = () => {
       mainNav.insertBefore(li, refLi);
     }
 
-    addMenuItem('hub-menu-kanban', 'Kanban', '📊', '/kanban');
-    addMenuItem('hub-menu-projetos', 'Projetos', '📁', '/projetos');
-    addMenuItem('hub-menu-chats', 'Chats Int.', '💬', '/chats');
-    addMenuItem('hub-menu-conexoes', 'Conexões', '🔗', '/conexoes');
-    addMenuItem('hub-menu-disparador', 'Disparador', '🚀', '/campaigns');
+    const ICONS = {
+      kanban: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/></svg>',
+      projetos: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+      chats: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+      conexoes: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+      disparador: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>'
+    };
+
+    addMenuItem('hub-menu-kanban', 'Kanban', ICONS.kanban, '/kanban');
+    addMenuItem('hub-menu-projetos', 'Projetos', ICONS.projetos, '/projetos');
+    addMenuItem('hub-menu-chats', 'Chats Int.', ICONS.chats, '/chats');
+    addMenuItem('hub-menu-conexoes', 'Conexões', ICONS.conexoes, '/conexoes');
+    addMenuItem('hub-menu-disparador', 'Disparador', ICONS.disparador, '/campaigns');
   }
 
   setInterval(injectMenu, 3000);

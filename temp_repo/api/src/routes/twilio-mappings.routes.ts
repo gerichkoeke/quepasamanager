@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { prisma } from '../db/client';
+import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-router.get('/twilio-mappings', async (req, res, next) => {
+router.get('/twilio-mappings', authMiddleware, async (req, res, next) => {
   try {
     const mappings = await prisma.twilioMapping.findMany();
     res.json(mappings);
@@ -12,7 +13,7 @@ router.get('/twilio-mappings', async (req, res, next) => {
   }
 });
 
-router.post('/twilio-mappings', async (req, res, next) => {
+router.post('/twilio-mappings', authMiddleware, async (req, res, next) => {
   try {
     const mapping = await prisma.twilioMapping.create({
       data: req.body,
@@ -23,7 +24,7 @@ router.post('/twilio-mappings', async (req, res, next) => {
   }
 });
 
-router.put('/twilio-mappings/:id', async (req, res, next) => {
+router.put('/twilio-mappings/:id', authMiddleware, async (req, res, next) => {
   try {
     const mapping = await prisma.twilioMapping.update({
       where: { id: req.params.id },
@@ -35,7 +36,7 @@ router.put('/twilio-mappings/:id', async (req, res, next) => {
   }
 });
 
-router.delete('/twilio-mappings/:id', async (req, res, next) => {
+router.delete('/twilio-mappings/:id', authMiddleware, async (req, res, next) => {
   try {
     await prisma.twilioMapping.delete({
       where: { id: req.params.id },

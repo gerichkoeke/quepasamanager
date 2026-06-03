@@ -49,22 +49,21 @@ app.use(
 );
 
 // Routes
-// Note: Traefik strips /api prefix, so routes are registered without it
-app.use('/', healthRoutes);
-app.use('/', authRoutes);
-app.use('/', usersRoutes);
-app.use('/', projectsRoutes); 
-app.use('/', atendimentosRoutes); 
-app.use('/', mediaRoutes); // Serve converted audio files (public)
-app.use('/', settingsRoutes);
-app.use('/', mappingsRoutes);
-app.use('/', quepasaRoutes); // Quepasa connection and QR code routes
-app.use('/', quepasaWebhookRoutes); // Quepasa-Chatwoot integration webhooks
-app.use('/', quepasaMappingsRoutes); // Quepasa mappings CRUD
-app.use('/', twilioMappingsRoutes); // Twilio mappings CRUD
-app.use('/', metricsRoutes);
-app.use('/', logsRoutes);
-app.use('/', typebotIntegrationRoutes);
+app.use('/api', healthRoutes);
+app.use('/api', authRoutes);
+app.use('/api', usersRoutes);
+app.use('/api', projectsRoutes); 
+app.use('/api', atendimentosRoutes); 
+app.use('/api', mediaRoutes);
+app.use('/api', settingsRoutes);
+app.use('/api', mappingsRoutes);
+app.use('/api', quepasaRoutes);
+app.use('/api', quepasaWebhookRoutes);
+app.use('/api', quepasaMappingsRoutes);
+app.use('/api', twilioMappingsRoutes);
+app.use('/api', metricsRoutes);
+app.use('/api', logsRoutes);
+app.use('/api', typebotIntegrationRoutes);
 
 // 404 handler
 app.use((req, res) => {
