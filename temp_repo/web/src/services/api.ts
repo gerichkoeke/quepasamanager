@@ -401,6 +401,11 @@ class ApiClient {
     const response = await this.client.post(`/quepasa/disconnect/${mappingId}`);
     return response.data;
   }
+
+  async sendCampaignMessage(data: { instanceId: string; phone: string; message: string }): Promise<any> {
+    const response = await this.client.post('/campaigns/send', data);
+    return response.data;
+  }
   // Twilio Mappings
   async getTwilioMappings(): Promise<TwilioMapping[]> {
     const response = await this.client.get('/twilio-mappings');

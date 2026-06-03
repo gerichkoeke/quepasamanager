@@ -24,6 +24,7 @@ import authRoutes from './routes/auth.routes';
 import usersRoutes from './routes/users.routes';
 import projectsRoutes from './routes/projects.routes';
 import atendimentosRoutes from './routes/atendimentos.routes';
+import campaignsRoutes from './routes/campaigns.routes';
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.use('/api', twilioMappingsRoutes);
 app.use('/api', metricsRoutes);
 app.use('/api', logsRoutes);
 app.use('/api', typebotIntegrationRoutes);
+app.use('/api', campaignsRoutes);
 
 // Mount on / (to support Proxies that strip /api)
 app.use('/', authRoutes);
@@ -83,6 +85,7 @@ app.use('/', twilioMappingsRoutes);
 app.use('/', metricsRoutes);
 app.use('/', logsRoutes);
 app.use('/', typebotIntegrationRoutes);
+app.use('/', campaignsRoutes);
 
 // 404 handler
 app.use((req, res) => {

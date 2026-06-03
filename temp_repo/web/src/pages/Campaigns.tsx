@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from '../components/Layout';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -23,6 +23,8 @@ export const Campaigns: React.FC = () => {
   const [wizardStep, setWizardStep] = useState(1);
   const [instances, setInstances] = useState<any[]>([]);
   const [, setIsLoadingInstances] = useState(false);
+  const [stats, setStats] = useState({ sent: 0, failed: 0, pending: 0, sending: false });
+  const stopRef = useRef<boolean>(false);
 
   // Form Data
   const [formData, setFormData] = useState({
@@ -153,13 +155,74 @@ export const Campaigns: React.FC = () => {
       return;
     }
 
-    try {
-      toast.success(`Iniciando disparo para ${selectedContacts.length} contatos...`);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setPhase('running');
-    } catch (err) {
-      toast.error('Erro ao iniciar campanha');
+    setPhase('running');
+    setStats({ sent: 0, failed: 0, pending: selectedContacts.length, sending: true });
+    stopRef.current = false;
+    runCampaign(selectedContacts);
+  };
+
+  const runCampaign = async (contactsToRun: any[]) => {
+    let sentCount = 0;
+    let failedCount = 0;
+    let instances = formData.selectedInstances;
+    let instanceIndex = 0;
+
+    setFormData(prev => ({
+      ...prev,
+      contacts: prev.contacts.map(c => c.selected ? { ...c, runStatus: 'Aguardando', error: '' } : c)
+    }));
+
+    for (let c of contactsToRun) {
+      if (stopRef.current) break;
+      
+      const instanceId = instances[instanceIndex % instances.length];
+      instanceIndex++;
+
+      setFormData(prev => ({
+        ...prev,
+        contacts: prev.contacts.map(item => item.id === c.id ? { ...item, runStatus: 'Enviando...' } : item)
+      }));
+
+      try {
+        let text = formData.messageContent
+          .replace('{{nome}}', c.name || '')
+          .replace('{{telefone}}', c.phone || '');
+
+        await api.sendCampaignMessage({
+          instanceId,
+          phone: c.phone,
+          message: text
+        });
+        
+        sentCount++;
+        setFormData(prev => ({
+          ...prev,
+          contacts: prev.contacts.map(item => item.id === c.id ? { ...item, runStatus: 'Enviado', sentAt: new Date().toISOString() } : item)
+        }));
+      } catch (err: any) {
+        failedCount++;
+        setFormData(prev => ({
+          ...prev,
+          contacts: prev.contacts.map(item => item.id === c.id ? { ...item, runStatus: 'Falho', error: err.response?.data?.error || err.message } : item)
+        }));
+      }
+
+      setStats({
+        sent: sentCount,
+        failed: failedCount,
+        pending: contactsToRun.length - sentCount - failedCount,
+        sending: true
+      });
+
+      if (!stopRef.current && contactsToRun.length > (sentCount + failedCount)) {
+        let delayMs = Math.floor(Math.random() * (formData.maxDelay - formData.minDelay + 1) + formData.minDelay) * 1000;
+        if (delayMs < 1000) delayMs = 1000;
+        await new Promise(r => setTimeout(r, delayMs));
+      }
     }
+    
+    setStats(prev => ({ ...prev, sending: false }));
+    if (!stopRef.current) toast.success('Disparo concluído!');
   };
 
   return (
@@ -634,8 +697,11 @@ export const Campaigns: React.FC = () => {
                  </div>
                </div>
                <div className="flex items-center gap-3">
-                 <Button variant="secondary" className="bg-transparent border-gray-700 text-gray-300">
-                   <Pause className="w-4 h-4 mr-2" /> Pausar
+                 <Button variant="secondary" className="bg-transparent border-gray-700 text-gray-300" onClick={() => {
+                   stopRef.current = !stopRef.current;
+                   toast(stopRef.current ? 'Campanha pausada' : 'Campanha continuada');
+                 }}>
+                   <Pause className="w-4 h-4 mr-2" /> {stopRef.current ? 'Continuar' : 'Pausar'}
                  </Button>
                  <Button variant="ghost" className="text-gray-400 w-10 h-10 p-0 flex items-center justify-center">
                    <RotateCw className="w-4 h-4" />
@@ -653,19 +719,19 @@ export const Campaigns: React.FC = () => {
                </div>
                <div className="bg-cw-surface-light dark:bg-cw-surface-dark p-4 rounded-xl border border-gray-800">
                  <p className="text-xs text-gray-500 font-semibold mb-1">Enviados</p>
-                 <p className="text-2xl font-bold text-emerald-500">0</p>
+                 <p className="text-2xl font-bold text-emerald-500">{stats.sent}</p>
                </div>
                <div className="bg-cw-surface-light dark:bg-cw-surface-dark p-4 rounded-xl border border-gray-800">
                  <p className="text-xs text-gray-500 font-semibold mb-1">Falhos</p>
-                 <p className="text-2xl font-bold text-red-500">0</p>
+                 <p className="text-2xl font-bold text-red-500">{stats.failed}</p>
                </div>
                <div className="bg-cw-surface-light dark:bg-cw-surface-dark p-4 rounded-xl border border-gray-800">
                  <p className="text-xs text-gray-500 font-semibold mb-1">Tx. Entrega</p>
-                 <p className="text-2xl font-bold text-amber-500">0%</p>
+                 <p className="text-2xl font-bold text-amber-500">{formData.contacts.length ? Math.round((stats.sent / formData.contacts.length) * 100) : 0}%</p>
                </div>
                <div className="bg-cw-surface-light dark:bg-cw-surface-dark p-4 rounded-xl border border-gray-800">
                  <p className="text-xs text-gray-500 font-semibold mb-1">Entregues</p>
-                 <p className="text-2xl font-bold text-blue-500">0</p>
+                 <p className="text-2xl font-bold text-blue-500">{stats.sent}</p>
                </div>
                <div className="bg-cw-surface-light dark:bg-cw-surface-dark p-4 rounded-xl border border-gray-800">
                  <p className="text-xs text-gray-500 font-semibold mb-1">Respostas</p>
@@ -698,12 +764,12 @@ export const Campaigns: React.FC = () => {
                <div className="mb-4">
                   <h3 className="text-sm font-bold text-white mb-2">Progresso do disparo</h3>
                   <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
-                     <div className="h-full bg-emerald-500 w-[0%]"></div>
+                     <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${formData.contacts.length ? ((stats.sent + stats.failed) / formData.contacts.length) * 100 : 0}%` }}></div>
                   </div>
                   <div className="flex items-center gap-4 mt-2 text-[10px] uppercase font-bold tracking-wider text-gray-500">
-                     <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> 0 enviados</span>
-                     <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div> 0 falhos</span>
-                     <span className="flex items-center gap-1.5 text-gray-400">{formData.contacts.length} pendentes</span>
+                     <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> {stats.sent} enviados</span>
+                     <span className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-red-500"></div> {stats.failed} falhos</span>
+                     <span className="flex items-center gap-1.5 text-gray-400">{stats.pending} pendentes</span>
                   </div>
                </div>
                
@@ -719,15 +785,22 @@ export const Campaigns: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800 text-gray-300">
-                      {formData.contacts.slice(0, 10).map((c, i) => (
+                      {formData.contacts.slice(0, 50).map((c, i) => (
                         <tr key={i} className="hover:bg-white/5 transition-colors">
                           <td className="px-4 py-3 font-mono text-xs">{c.phone}</td>
                           <td className="px-4 py-3">{c.name}</td>
                           <td className="px-4 py-3">
-                            <span className="px-2 py-0.5 rounded-full border border-gray-600 bg-gray-800/50 text-gray-400 text-[10px] font-bold uppercase tracking-wider">Aguardando</span>
+                            <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${
+                              c.runStatus === 'Aguardando' ? 'border-gray-600 bg-gray-800/50 text-gray-400' :
+                              c.runStatus === 'Enviando...' ? 'border-blue-600 bg-blue-900/50 text-blue-400 animate-pulse' :
+                              c.runStatus === 'Enviado' ? 'border-emerald-600 bg-emerald-900/50 text-emerald-400' :
+                              'border-red-600 bg-red-900/50 text-red-400'
+                            }`}>
+                              {c.runStatus || 'Aguardando'}
+                            </span>
                           </td>
-                          <td className="px-4 py-3 text-gray-500">—</td>
-                          <td className="px-4 py-3 text-gray-500">—</td>
+                          <td className="px-4 py-3 text-gray-500">{c.sentAt || '—'}</td>
+                          <td className="px-4 py-3 text-red-400 text-xs">{c.error || '—'}</td>
                         </tr>
                       ))}
                     </tbody>
