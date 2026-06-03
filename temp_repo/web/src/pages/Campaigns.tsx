@@ -4,7 +4,7 @@ import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { 
   Send, MessageSquare, Play, Plus, Ban, CheckCircle2, 
-  ChevronRight, ArrowLeft, UploadCloud, LayoutTemplate, 
+  ChevronRight, ArrowLeft, LayoutTemplate, 
   Settings2, Pause, RotateCw, FileSpreadsheet, Tag, Trello
 } from 'lucide-react';
 import { api } from '../services/api';
