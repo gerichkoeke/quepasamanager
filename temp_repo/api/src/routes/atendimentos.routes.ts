@@ -245,11 +245,11 @@ router.get('/v1/appointments/reports/overview', authMiddleware, async (req, res,
     const all = await prisma.appointment.findMany();
     const totals = {
       total: all.length,
-      confirmados: all.filter(a => a.status === 'confirmado').length,
-      pendentes: all.filter(a => a.status === 'pendente').length,
-      faltas: all.filter(a => a.status === 'falta').length,
-      em_andamento: all.filter(a => a.status === 'em_andamento').length,
-      realizados: all.filter(a => a.status === 'realizado').length,
+      confirmados: all.filter((a: any) => a.status === 'confirmado').length,
+      pendentes: all.filter((a: any) => a.status === 'pendente').length,
+      faltas: all.filter((a: any) => a.status === 'falta').length,
+      em_andamento: all.filter((a: any) => a.status === 'em_andamento').length,
+      realizados: all.filter((a: any) => a.status === 'realizado').length,
       taxa_comparecimento: 0
     };
     if (totals.total > 0) {

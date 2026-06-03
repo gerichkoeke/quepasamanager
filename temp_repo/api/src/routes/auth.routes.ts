@@ -53,15 +53,15 @@ router.post('/auth/local', async (req, res, next) => {
         } else {
            return res.status(401).json({ error: 'Nenhum usuário configurado. Use admin/admin para o primeiro acesso.' });
         }
-      }
-
-      if (username === userSetting.value) {
-        isMatch = await bcrypt.compare(password, passSetting.value);
-        if (isMatch) {
-          const mfaEnabledSetting = await prisma.appSetting.findUnique({ where: { key: 'admin_mfa_enabled' } });
-          requireMfa = mfaEnabledSetting?.value === 'true';
-          const mfaSecretSetting = await prisma.appSetting.findUnique({ where: { key: 'admin_mfa_secret' } });
-          mfaSecret = mfaSecretSetting?.value || null;
+      } else {
+        if (username === userSetting.value) {
+          isMatch = await bcrypt.compare(password, passSetting.value);
+          if (isMatch) {
+            const mfaEnabledSetting = await prisma.appSetting.findUnique({ where: { key: 'admin_mfa_enabled' } });
+            requireMfa = mfaEnabledSetting?.value === 'true';
+            const mfaSecretSetting = await prisma.appSetting.findUnique({ where: { key: 'admin_mfa_secret' } });
+            mfaSecret = mfaSecretSetting?.value || null;
+          }
         }
       }
     }
