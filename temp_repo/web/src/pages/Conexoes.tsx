@@ -9,13 +9,13 @@ export const Conexoes: React.FC = () => {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto mb-6">
-        <div className="flex border-b border-cw-border-light">
+        <div className="flex border-b border-cw-border-light dark:border-cw-border-dark">
           <button
             onClick={() => setActiveTab('quepasa')}
             className={`px-4 py-2 font-medium text-sm transition-colors border-b-2 ${
               activeTab === 'quepasa'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-primary text-primary dark:text-primary dark:border-primary'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:hover:text-gray-300 dark:hover:border-gray-600'
             }`}
           >
             WhatsApp (Quepasa)
@@ -24,8 +24,8 @@ export const Conexoes: React.FC = () => {
             onClick={() => setActiveTab('twilio')}
             className={`px-4 py-2 font-medium text-sm transition-colors border-b-2 ${
               activeTab === 'twilio'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-primary text-primary dark:text-primary dark:border-primary'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:hover:text-gray-300 dark:hover:border-gray-600'
             }`}
           >
             SMS / WhatsApp (Twilio)

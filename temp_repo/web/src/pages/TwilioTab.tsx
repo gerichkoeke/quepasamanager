@@ -161,8 +161,8 @@ export const TwilioTab: React.FC = () => {
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Twilio → Chatwoot</h1>
-          <p className="text-gray-600 mt-1">Gerencie integrações Twilio-Chatwoot</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Twilio → Chatwoot</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Gerencie integrações Twilio-Chatwoot</p>
         </div>
         <Button onClick={() => handleOpenModal()}>
           <Plus className="w-4 h-4 mr-2" />
@@ -173,38 +173,38 @@ export const TwilioTab: React.FC = () => {
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-cw-bg-light">
+            <thead className="bg-cw-bg-light dark:bg-cw-surface-dark">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Número</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Chatwoot URL</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inbox ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Nome</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Número</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Chatwoot URL</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Inbox ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-cw-border-dark/60">
               {mappings.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     Nenhum canal Twilio configurado
                   </td>
                 </tr>
               ) : (
                 mappings.map((mapping) => (
-                  <tr key={mapping.id} className="hover:bg-cw-bg-light">
-                    <td className="px-6 py-4 text-sm text-gray-900">{mapping.name || '-'}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{mapping.phoneNumber}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{mapping.chatwootBaseUrl}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{mapping.chatwootInboxId || '-'}</td>
+                  <tr key={mapping.id} className="hover:bg-cw-bg-light dark:hover:bg-cw-bg-dark/30 transition-colors">
+                    <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{mapping.name || '-'}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{mapping.phoneNumber}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{mapping.chatwootBaseUrl}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">{mapping.chatwootInboxId || '-'}</td>
                     <td className="px-6 py-4">
                       {mapping.active ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                           <Check className="w-3 h-3 mr-1" />
                           Ativo
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
                           <X className="w-3 h-3 mr-1" />
                           Inativo
                         </span>

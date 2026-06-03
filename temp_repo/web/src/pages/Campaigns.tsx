@@ -77,14 +77,55 @@ export const Campaigns: React.FC = () => {
   };
 
   const parseCsvContacts = (text: string) => {
-    const lines = text.split(/[\n,;]+/).map(l => l.trim()).filter(l => l.length > 5);
-    const mockContacts = lines.map((l, i) => ({
-      id: `c_${i}`,
-      phone: l.replace(/\D/g, ''),
-      name: `Contato ${i+1}`
+    // When pasting from Excel, columns are tab-separated (\t), rows are newline separated
+    const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+    const mockContacts = lines.map((l, i) => {
+      // Split by tab or comma
+      const cols = l.split(/[\t,;]/).map(c => c.trim());
+      // Naive approach: assume first is Name, second is Phone, or vice-versa
+      // Let's look for a phone number format
+      let phone = '';
+      let name = '';
+      
+      if (cols.length === 1) {
+        // Just one column, assume it's phone
+        phone = cols[0].replace(/\D/g, '');
+      } else {
+        // Find which column has more digits
+        const digits0 = (cols[0].match(/\d/g) || []).length;
+        const digits1 = (cols[1].match(/\d/g) || []).length;
+        
+        if (digits1 > digits0) {
+          name = cols[0];
+          phone = cols[1].replace(/\D/g, '');
+        } else {
+          phone = cols[0].replace(/\D/g, '');
+          name = cols[1];
+        }
+      }
+      
+      return {
+        id: `c_${i}`,
+        phone: phone,
+        name: name || `Contato ${i+1}`,
+        selected: true,
+        status: phone.length >= 10 ? 'Válido' : 'Inválido'
+      };
+    }).filter(c => c.phone.length > 5); // Basic validation
+
+    if (mockContacts.length > 0) {
+      setFormData($ => ({ ...$, contacts: mockContacts }));
+      toast.success(`${mockContacts.length} contatos carregados`);
+    } else {
+      toast.error('Nenhum contato válido encontrado. Tente copiar e colar novamente.');
+    }
+  };
+
+  const handleToggleContact = (id: string) => {
+    setFormData(prev => ({
+      ...prev,
+      contacts: prev.contacts.map(c => c.id === id ? { ...c, selected: !c.selected } : c)
     }));
-    setFormData($ => ({ ...$, contacts: mockContacts }));
-    toast.success(`${mockContacts.length} contatos carregados`);
   };
 
   const handleLaunchCampaign = async () => {
@@ -96,13 +137,14 @@ export const Campaigns: React.FC = () => {
       toast.error('Selecione pelo menos uma caixa de envio');
       return;
     }
-    if (formData.contacts.length === 0) {
-      toast.error('Nenhum contato adicionado');
+    const selectedContacts = formData.contacts.filter(c => c.selected);
+    if (selectedContacts.length === 0) {
+      toast.error('Nenhum contato selecionado');
       return;
     }
 
     try {
-      toast.success('Iniciando disparo...');
+      toast.success(`Iniciando disparo para ${selectedContacts.length} contatos...`);
       await new Promise(resolve => setTimeout(resolve, 1000));
       setPhase('running');
     } catch (err) {
@@ -311,37 +353,77 @@ export const Campaigns: React.FC = () => {
                     </div>
                   </div>
 
-                  {formData.source === 'csv' && (
+                  {formData.source === 'csv' && formData.contacts.length === 0 && (
                     <div className="p-6 border-2 border-dashed border-cw-border-light dark:border-cw-border-dark rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:bg-cw-bg-light dark:hover:bg-gray-800/50 transition-colors">
                        <UploadCloud className="w-8 h-8 text-gray-400 mb-3" />
-                       <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Arraste o CSV ou clique para selecionar</p>
-                       <p className="text-xs text-gray-500 mt-2">Você também pode colar números diretamente</p>
+                       <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Cole as colunas do Excel / CSV</p>
+                       <p className="text-xs text-gray-500 mt-2">Copie e cole as colunas (Nome e Telefone) diretamente da sua planilha</p>
                        <textarea 
-                          placeholder="Ou cole os números aqui..."
-                          className="mt-4 w-full max-w-sm px-4 py-2 border border-cw-border-light dark:border-cw-border-dark rounded-lg outline-none bg-transparent text-xs"
-                          rows={3}
+                          placeholder={`Nome\tWhatsApp\nJoão da Silva\t5511999999999\nMaria Santos\t5511888888888`}
+                          className="mt-4 w-full max-w-lg px-4 py-3 border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none bg-transparent text-sm font-mono whitespace-pre resize-y"
+                          rows={4}
                           onBlur={(e) => {
-                             if(e.target.value.trim()) parseCsvContacts(e.target.value);
+                             if(e.target.value.trim()) {
+                               parseCsvContacts(e.target.value);
+                               e.target.value = ''; // clear after parsing
+                             }
                           }}
                        />
                     </div>
                   )}
 
-                  {formData.contacts.length > 0 && (
-                    <div className="bg-primary/5 border border-primary/20 p-4 rounded-xl text-center">
-                       <p className="text-primary font-bold">{formData.contacts.length} contatos carregados</p>
-                       <button className="text-xs text-primary/70 mt-1 hover:underline" onClick={() => setFormData({ ...formData, contacts: [] })}>Clique para substituir</button>
+                  {formData.source === 'csv' && formData.contacts.length > 0 && (
+                    <div className="bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl overflow-hidden flex flex-col">
+                       <div className="p-4 border-b border-cw-border-light dark:border-cw-border-dark flex justify-between items-center bg-gray-50 dark:bg-cw-bg-dark">
+                          <div>
+                            <p className="text-sm font-bold text-gray-900 dark:text-white">{formData.contacts.filter(c => c.selected).length} de {formData.contacts.length} contatos selecionados</p>
+                            <p className="text-xs text-gray-500">Revise os números antes de prosseguir</p>
+                          </div>
+                          <Button variant="ghost" onClick={() => setFormData({ ...formData, contacts: [] })}>Limpar / Colar novamente</Button>
+                       </div>
+                       <div className="max-h-[300px] overflow-y-auto">
+                         <table className="w-full text-left text-sm">
+                            <thead className="bg-cw-bg-light dark:bg-cw-surface-dark text-gray-500 sticky top-0 border-b border-cw-border-light dark:border-cw-border-dark">
+                              <tr>
+                                <th className="p-3 w-10 text-center">
+                                  <input type="checkbox" className="rounded" 
+                                    checked={formData.contacts.every(c => c.selected)}
+                                    onChange={(e) => {
+                                      const val = e.target.checked;
+                                      setFormData(prev => ({...prev, contacts: prev.contacts.map(c => ({...c, selected: val}))}));
+                                    }}
+                                  />
+                                </th>
+                                <th className="p-3 font-semibold">Nome</th>
+                                <th className="p-3 font-semibold">WhatsApp</th>
+                                <th className="p-3 font-semibold">Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                              {formData.contacts.map((c) => (
+                                <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                  <td className="p-3 text-center">
+                                    <input type="checkbox" className="rounded" checked={c.selected} onChange={() => handleToggleContact(c.id)} />
+                                  </td>
+                                  <td className="p-3 text-gray-900 dark:text-gray-300 truncate max-w-[150px]">{c.name}</td>
+                                  <td className="p-3 font-mono text-gray-600 dark:text-gray-400">{c.phone}</td>
+                                  <td className="p-3">
+                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${c.status === 'Válido' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+                                      {c.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                         </table>
+                       </div>
                     </div>
                   )}
 
-                  {formData.contacts.length > 0 && (
-                    <div className="bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl p-4 overflow-hidden">
-                       <p className="text-xs text-gray-500 font-semibold mb-3">Prévia (5 primeiros):</p>
-                       <ul className="text-xs text-gray-400 font-mono space-y-1">
-                          {formData.contacts.slice(0, 5).map(c => (
-                            <li key={c.id}>{c.phone} — {c.name}</li>
-                          ))}
-                       </ul>
+                  {formData.source !== 'csv' && formData.contacts.length > 0 && (
+                    <div className="bg-primary/5 border border-primary/20 p-4 rounded-xl text-center">
+                       <p className="text-primary font-bold">{formData.contacts.length} contatos carregados</p>
+                       <button className="text-xs text-primary/70 mt-1 hover:underline" onClick={() => setFormData({ ...formData, contacts: [] })}>Clique para substituir</button>
                     </div>
                   )}
 

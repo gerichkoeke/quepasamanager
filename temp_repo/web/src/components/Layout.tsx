@@ -52,8 +52,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const urlParams = new URLSearchParams(location.search);
   
-  // Detect if inside an iframe or explicitly passed as embedded
-  const isIframe = window !== window.parent;
+  // Detect if inside an iframe or explicitly passed as embedded safely
+  const checkIsIframe = () => {
+    try {
+      return window.self !== window.top;
+    } catch (e) {
+      return true; // Cross-origin throws error, meaning it's an iframe
+    }
+  };
+  
+  const isIframe = checkIsIframe();
   const isEmbedded = urlParams.get('embedded') === '1' || isIframe;
 
   const handleLogout = () => {
@@ -121,12 +129,12 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   to={item.href}
                   className={`flex items-center px-4 py-3 text-sm font-medium transition-all duration-300 ${
                     isActive
-                      ? 'bg-gradient-to-r from-primary to-indigo-600 text-white rounded-2xl shadow-md transform scale-[1.02]'
-                      : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 rounded-xl hover:text-gray-900 dark:hover:text-white'
+                      ? 'bg-primary/10 text-primary dark:bg-white/10 dark:text-white rounded-lg shadow-sm'
+                      : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 rounded-lg hover:text-gray-900 dark:hover:text-white'
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <Icon className={`w-5 h-5 mr-3 ${isActive ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`} />
+                  <Icon className={`w-5 h-5 mr-3 ${isActive ? 'text-primary dark:text-white' : 'text-gray-500 dark:text-gray-400'}`} />
                   {item.name}
                 </Link>
               );
