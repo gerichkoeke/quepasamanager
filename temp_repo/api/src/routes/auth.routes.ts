@@ -44,7 +44,15 @@ router.post('/auth/local', async (req, res, next) => {
 
       // If no admin user is configured at all
       if (!userSetting || !userSetting.value || !passSetting || !passSetting.value) {
-        return res.status(401).json({ error: 'Nenhum usuário configurado. Use o token.' });
+        const usersCount = await prisma.user.count();
+        if (usersCount === 0 && username === 'admin' && password === 'admin') {
+           isMatch = true;
+           requireMfa = false;
+           userId = 'admin';
+           userModules = ['all'];
+        } else {
+           return res.status(401).json({ error: 'Nenhum usuário configurado. Use admin/admin para o primeiro acesso.' });
+        }
       }
 
       if (username === userSetting.value) {
