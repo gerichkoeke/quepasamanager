@@ -83,11 +83,7 @@ export const Login: React.FC = () => {
          // Directing to backend for POST parsing
          const redirectUrl = (window.location.origin + '/api/saml/callback').trim();
 
-         const samlRequest = `<?xml version="1.0" encoding="UTF-8"?>
-<samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="${id}" Version="2.0" IssueInstant="${issueInstant}" Destination="${config.entryPoint}" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" AssertionConsumerServiceURL="${redirectUrl}">
-    <saml:Issuer>${issuer}</saml:Issuer>
-    <samlp:NameIDPolicy Format="urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified" AllowCreate="true"/>
-</samlp:AuthnRequest>`;
+         const samlRequest = `<?xml version="1.0" encoding="UTF-8"?><samlp:AuthnRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="${id}" Version="2.0" IssueInstant="${issueInstant}" Destination="${config.entryPoint}" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" AssertionConsumerServiceURL="${redirectUrl}"><saml:Issuer>${issuer}</saml:Issuer><samlp:NameIDPolicy Format="urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified" AllowCreate="true"/></samlp:AuthnRequest>`;
 
          // Base64 encode the XML
          const base64Request = btoa(unescape(encodeURIComponent(samlRequest)));

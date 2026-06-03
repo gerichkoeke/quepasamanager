@@ -51,6 +51,8 @@ app.use(
 // Routes
 app.use('/', healthRoutes); // for docker healthcheck
 app.use('/api', healthRoutes);
+
+// Mount on /api
 app.use('/api', authRoutes);
 app.use('/api', usersRoutes);
 app.use('/api', projectsRoutes); 
@@ -65,6 +67,22 @@ app.use('/api', twilioMappingsRoutes);
 app.use('/api', metricsRoutes);
 app.use('/api', logsRoutes);
 app.use('/api', typebotIntegrationRoutes);
+
+// Mount on / (to support Proxies that strip /api)
+app.use('/', authRoutes);
+app.use('/', usersRoutes);
+app.use('/', projectsRoutes); 
+app.use('/', atendimentosRoutes); 
+app.use('/', mediaRoutes);
+app.use('/', settingsRoutes);
+app.use('/', mappingsRoutes);
+app.use('/', quepasaRoutes);
+app.use('/', quepasaWebhookRoutes);
+app.use('/', quepasaMappingsRoutes);
+app.use('/', twilioMappingsRoutes);
+app.use('/', metricsRoutes);
+app.use('/', logsRoutes);
+app.use('/', typebotIntegrationRoutes);
 
 // 404 handler
 app.use((req, res) => {
