@@ -440,3 +440,55 @@ model Appointment {
 
   @@map("appointments")
 }
+
+// ==========================================
+// Módulo de Disparos em Massa (Campaigns)
+// ==========================================
+
+model Campaign {
+  id                String            @id @default(uuid())
+  name              String
+  description       String?
+  source            String?           // csv, sanitizacao, tags, kanban
+  rotationMode      String            @default("round_robin") @map("rotation_mode")
+  minDelay          Int               @default(5) @map("min_delay")
+  maxDelay          Int               @default(20) @map("max_delay")
+  pauseEvery        Int               @default(0) @map("pause_every")
+  pauseDuration     Int               @default(0) @map("pause_duration")
+  messageContent    String            @map("message_content")
+  status            String            @default("draft") // draft, running, paused, completed
+
+  instances         CampaignInstance[]
+  contacts          CampaignContact[]
+
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  @@map("campaigns")
+}
+
+model CampaignInstance {
+  id         String   @id @default(uuid())
+  campaignId String   @map("campaign_id")
+  instanceId String   @map("instance_id")
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("campaign_instances")
+}
+
+model CampaignContact {
+  id         String   @id @default(uuid())
+  campaignId String   @map("campaign_id")
+  phone      String
+  name       String?
+  selected   Boolean  @default(true)
+  runStatus  String?  @default("Aguardando") @map("run_status")
+  error      String?
+  sentAt     DateTime? @map("sent_at")
+
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+  @@map("campaign_contacts")
+}

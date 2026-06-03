@@ -406,6 +406,31 @@ class ApiClient {
     const response = await this.client.post('/campaigns/send', data);
     return response.data;
   }
+
+  async getCampaigns(): Promise<any[]> {
+    const response = await this.client.get('/campaigns');
+    return response.data;
+  }
+
+  async getCampaign(id: string): Promise<any> {
+    const response = await this.client.get(`/campaigns/${id}`);
+    return response.data;
+  }
+
+  async createCampaign(data: any): Promise<any> {
+    const response = await this.client.post('/campaigns', data);
+    return response.data;
+  }
+
+  async updateCampaign(id: string, data: any): Promise<any> {
+    const response = await this.client.put(`/campaigns/${id}`, data);
+    return response.data;
+  }
+
+  async deleteCampaign(id: string): Promise<any> {
+    const response = await this.client.delete(`/campaigns/${id}`);
+    return response.data;
+  }
   // Twilio Mappings
   async getTwilioMappings(): Promise<TwilioMapping[]> {
     const response = await this.client.get('/twilio-mappings');

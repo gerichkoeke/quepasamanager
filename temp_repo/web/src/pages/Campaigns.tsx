@@ -5,7 +5,7 @@ import { Button } from '../components/Button';
 import { 
   Send, MessageSquare, Play, Plus, Ban, CheckCircle2, 
   ChevronRight, ArrowLeft, LayoutTemplate, 
-  Settings2, Pause, RotateCw, FileSpreadsheet, Tag, Trello
+  Settings2, Pause, RotateCw, FileSpreadsheet, Tag, Trello, Trash2
 } from 'lucide-react';
 import { api } from '../services/api';
 import toast from 'react-hot-toast';
@@ -23,14 +23,19 @@ export const Campaigns: React.FC = () => {
   const [wizardStep, setWizardStep] = useState(1);
   const [instances, setInstances] = useState<any[]>([]);
   const [, setIsLoadingInstances] = useState(false);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [isLoadingCampaigns, setIsLoadingCampaigns] = useState(true);
   const [stats, setStats] = useState({ sent: 0, failed: 0, pending: 0, sending: false });
   const stopRef = useRef<boolean>(false);
+  const [editingCampaignId, setEditingCampaignId] = useState<string | null>(null);
+
+  const [manualContact, setManualContact] = useState({ name: '', phone: '' });
 
   // Form Data
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    source: 'csv', // csv, sanitizacao, tags, kanban
+    source: 'csv', // csv, manual, sanitizacao, tags, kanban
     contacts: [] as any[],
     selectedInstances: [] as string[],
     rotationMode: 'round_robin',
@@ -50,7 +55,20 @@ export const Campaigns: React.FC = () => {
 
   useEffect(() => {
     loadInstances();
+    loadCampaigns();
   }, []);
+
+  const loadCampaigns = async () => {
+    try {
+      setIsLoadingCampaigns(true);
+      const data = await api.getCampaigns();
+      setCampaigns(data);
+    } catch {
+      toast.error('Erro ao carregar campanhas');
+    } finally {
+      setIsLoadingCampaigns(false);
+    }
+  };
 
   const loadInstances = async () => {
     try {
@@ -74,8 +92,66 @@ export const Campaigns: React.FC = () => {
   };
 
   const handleCreateDisparo = () => {
+    setEditingCampaignId(null);
+    setFormData({
+      name: '',
+      description: '',
+      source: 'csv',
+      contacts: [] as any[],
+      selectedInstances: [] as string[],
+      rotationMode: 'round_robin',
+      minDelay: 5,
+      maxDelay: 20,
+      pauseEvery: 0,
+      pauseDuration: 0,
+      timeStart: '',
+      timeEnd: '',
+      daysAllowed: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+      spintax: false,
+      followUp: false,
+      startMode: 'imediato',
+      messageType: 'text',
+      messageContent: '',
+    });
     setWizardStep(1);
     setPhase('wizard');
+  };
+
+  const handleEditCampaign = (c: any) => {
+    setEditingCampaignId(c.id);
+    setFormData({
+      name: c.name,
+      description: c.description || '',
+      source: c.source || 'csv',
+      contacts: c.contacts || [],
+      selectedInstances: c.instances ? c.instances.map((i: any) => i.instanceId) : [],
+      rotationMode: c.rotationMode || 'round_robin',
+      minDelay: c.minDelay || 5,
+      maxDelay: c.maxDelay || 20,
+      pauseEvery: c.pauseEvery || 0,
+      pauseDuration: c.pauseDuration || 0,
+      timeStart: '',
+      timeEnd: '',
+      daysAllowed: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+      spintax: false,
+      followUp: false,
+      startMode: 'imediato',
+      messageType: 'text',
+      messageContent: c.messageContent || '',
+    });
+    setWizardStep(1);
+    setPhase('wizard');
+  };
+
+  const handleDeleteCampaign = async (id: string) => {
+    if(!window.confirm('Tem certeza?')) return;
+    try {
+      await api.deleteCampaign(id);
+      toast.success('Campanha excluída');
+      loadCampaigns();
+    } catch {
+      toast.error('Erro ao excluir');
+    }
   };
 
   const parseCsvContacts = (text: string) => {
@@ -140,6 +216,52 @@ export const Campaigns: React.FC = () => {
     }));
   };
 
+  const handleAddManualContact = () => {
+    if (!manualContact.phone) {
+      toast.error('Informe ao menos o telefone');
+      return;
+    }
+    const cleanPhone = manualContact.phone.replace(/\D/g, '');
+    const newContact = {
+        id: `c_${Date.now()}_${Math.random().toString(36).substring(2,5)}`,
+        phone: cleanPhone,
+        name: manualContact.name || 'Contato S/N',
+        selected: true,
+        status: cleanPhone.length >= 10 ? 'Válido' : 'Inválido'
+    };
+    setFormData($ => ({ ...$, contacts: [...$.contacts, newContact] }));
+    setManualContact({ name: '', phone: '' });
+  };
+
+  const saveCampaignData = async (status: string) => {
+    const payload = {
+      ...formData,
+      status
+    };
+    if (editingCampaignId) {
+      return await api.updateCampaign(editingCampaignId, payload);
+    } else {
+      const created = await api.createCampaign(payload);
+      setEditingCampaignId(created.id);
+      return created;
+    }
+  };
+
+  const handleSaveOnly = async () => {
+    if (!formData.name) {
+      toast.error('Informe um nome para a campanha');
+      return;
+    }
+    try {
+      await saveCampaignData('draft');
+      toast.success('Campanha salva com sucesso!');
+      loadCampaigns();
+      setPhase('list');
+    } catch {
+      toast.error('Erro ao salvar campanha');
+    }
+  };
+
   const handleLaunchCampaign = async () => {
     if (!formData.name) {
       toast.error('Informe um nome para a campanha');
@@ -155,10 +277,15 @@ export const Campaigns: React.FC = () => {
       return;
     }
 
-    setPhase('running');
-    setStats({ sent: 0, failed: 0, pending: selectedContacts.length, sending: true });
-    stopRef.current = false;
-    runCampaign(selectedContacts);
+    try {
+      await saveCampaignData('running');
+      setPhase('running');
+      setStats({ sent: 0, failed: 0, pending: selectedContacts.length, sending: true });
+      stopRef.current = false;
+      runCampaign(selectedContacts);
+    } catch (e) {
+      toast.error('Erro ao salvar antes de iniciar');
+    }
   };
 
   const runCampaign = async (contactsToRun: any[]) => {
@@ -172,7 +299,8 @@ export const Campaigns: React.FC = () => {
       contacts: prev.contacts.map(c => c.selected ? { ...c, runStatus: 'Aguardando', error: '' } : c)
     }));
 
-    for (let c of contactsToRun) {
+    for (let i = 0; i < contactsToRun.length; i++) {
+      let c = contactsToRun[i];
       if (stopRef.current) break;
       
       const instanceId = instances[instanceIndex % instances.length];
@@ -214,7 +342,7 @@ export const Campaigns: React.FC = () => {
         sending: true
       });
 
-      if (!stopRef.current && contactsToRun.length > (sentCount + failedCount)) {
+      if (!stopRef.current && i < contactsToRun.length - 1) {
         let delayMs = Math.floor(Math.random() * (formData.maxDelay - formData.minDelay + 1) + formData.minDelay) * 1000;
         if (delayMs < 1000) delayMs = 1000;
         await new Promise(r => setTimeout(r, delayMs));
@@ -222,6 +350,19 @@ export const Campaigns: React.FC = () => {
     }
     
     setStats(prev => ({ ...prev, sending: false }));
+    const finalStatus = stopRef.current ? 'paused' : 'completed';
+    // Small timeout to allow state to flush then sync with API
+    setTimeout(async () => {
+       try {
+          if (editingCampaignId) {
+             setFormData(current => {
+                 api.updateCampaign(editingCampaignId, { ...current, status: finalStatus });
+                 return current;
+             });
+          }
+       } catch (e) {}
+    }, 500);
+
     if (!stopRef.current) toast.success('Disparo concluído!');
   };
 
@@ -284,11 +425,51 @@ export const Campaigns: React.FC = () => {
                     </select>
                  </div>
 
-                 <div className="flex flex-col items-center justify-center py-24 text-gray-500 dark:text-gray-400">
-                    <Send className="w-12 h-12 mb-4 opacity-20" />
-                    <p className="text-sm font-medium">Nenhum disparo encontrado</p>
-                    <p className="text-xs mt-1">Clique em "Novo Disparo" para começar</p>
-                 </div>
+                 {campaigns.length === 0 ? (
+                   <div className="flex flex-col items-center justify-center py-24 text-gray-500 dark:text-gray-400">
+                      <Send className="w-12 h-12 mb-4 opacity-20" />
+                      <p className="text-sm font-medium">Nenhum disparo encontrado</p>
+                      <p className="text-xs mt-1">Clique em "Novo Disparo" para começar</p>
+                   </div>
+                 ) : (
+                   <div className="overflow-hidden mt-4">
+                     <table className="w-full text-left text-sm">
+                       <thead>
+                         <tr className="border-b border-gray-800 text-gray-400 text-xs uppercase">
+                           <th className="py-3 px-4 font-semibold">Nome</th>
+                           <th className="py-3 px-4 font-semibold">Mensagem</th>
+                           <th className="py-3 px-4 font-semibold">Contatos</th>
+                           <th className="py-3 px-4 font-semibold">Status</th>
+                           <th className="py-3 px-4 font-semibold text-right">Ações</th>
+                         </tr>
+                       </thead>
+                       <tbody className="divide-y divide-gray-800 text-gray-300">
+                         {campaigns.map(c => (
+                           <tr key={c.id} className="hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => handleEditCampaign(c)}>
+                             <td className="py-3 px-4 font-medium text-white">{c.name}</td>
+                             <td className="py-3 px-4 truncate max-w-[200px] text-xs text-gray-500">{c.messageContent || '—'}</td>
+                             <td className="py-3 px-4">{c._count?.contacts || 0}</td>
+                             <td className="py-3 px-4">
+                               <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-widest ${
+                                 c.status === 'draft' ? 'border border-gray-700 text-gray-400' :
+                                 c.status === 'completed' ? 'border border-emerald-700 text-emerald-500' :
+                                 'border border-blue-700 text-blue-500'
+                               }`}>{c.status}</span>
+                             </td>
+                             <td className="py-3 px-4 text-right">
+                                <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 mr-2" onClick={(e) => { e.stopPropagation(); setEditingCampaignId(c.id); setPhase('wizard'); }}>
+                                  Editar
+                                </Button>
+                                <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 text-red-400 hover:bg-red-400/10 hover:text-red-300" onClick={(e) => { e.stopPropagation(); handleDeleteCampaign(c.id); }}>
+                                  Excluir
+                                </Button>
+                             </td>
+                           </tr>
+                         ))}
+                       </tbody>
+                     </table>
+                   </div>
+                 )}
               </div>
             )}
             
@@ -441,7 +622,29 @@ export const Campaigns: React.FC = () => {
                                }
                             }}
                          />
-                         <p className="text-xs text-gray-500 mt-2">Clique fora do campo após colar para processar os contatos.</p>
+                         <p className="text-xs text-gray-500 mt-2 mb-4">Clique fora do campo após colar para processar os contatos.</p>
+
+                         <div className="pt-4 border-t border-cw-border-light dark:border-cw-border-dark mt-4">
+                           <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Inserção Manual</p>
+                           <div className="flex gap-2">
+                             <input 
+                               type="text" 
+                               placeholder="Nome do Contato" 
+                               className="flex-1 px-4 py-3 border border-cw-border-light dark:border-cw-border-dark rounded-lg outline-none bg-transparent text-sm"
+                               value={manualContact.name}
+                               onChange={(e) => setManualContact({ ...manualContact, name: e.target.value })}
+                             />
+                             <input 
+                               type="text" 
+                               placeholder="Telefone (ex: 5511999999999)" 
+                               className="flex-1 px-4 py-3 border border-cw-border-light dark:border-cw-border-dark rounded-lg outline-none bg-transparent text-sm"
+                               value={manualContact.phone}
+                               onChange={(e) => setManualContact({ ...manualContact, phone: e.target.value })}
+                               onKeyDown={(e) => { if(e.key === 'Enter') handleAddManualContact(); }}
+                             />
+                             <Button variant="secondary" onClick={handleAddManualContact}><Plus className="w-4 h-4 mr-1" /> Add</Button>
+                           </div>
+                         </div>
                       </div>
 
                       {formData.contacts.length > 0 && (
@@ -469,6 +672,7 @@ export const Campaigns: React.FC = () => {
                                     <th className="p-3 font-semibold">Nome</th>
                                     <th className="p-3 font-semibold">WhatsApp</th>
                                     <th className="p-3 font-semibold">Status</th>
+                                    <th className="p-3"></th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -483,6 +687,13 @@ export const Campaigns: React.FC = () => {
                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${c.status === 'Válido' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
                                           {c.status}
                                         </span>
+                                      </td>
+                                      <td className="p-3 text-right">
+                                        <button className="text-gray-400 hover:text-red-500" onClick={() => {
+                                           setFormData(prev => ({ ...prev, contacts: prev.contacts.filter(item => item.id !== c.id) }));
+                                        }}>
+                                           <Trash2 className="w-4 h-4" />
+                                        </button>
                                       </td>
                                     </tr>
                                   ))}
@@ -672,7 +883,10 @@ export const Campaigns: React.FC = () => {
 
                   <div className="flex justify-between pt-4 mt-8 lg:mt-16">
                      <Button variant="ghost" onClick={() => setWizardStep(3)}>Voltar</Button>
-                     <Button variant="primary" onClick={handleLaunchCampaign} size="lg">Criar Disparo</Button>
+                     <div className="flex gap-3">
+                       <Button variant="secondary" onClick={handleSaveOnly} size="lg">Salvar Rascunho</Button>
+                       <Button variant="primary" onClick={handleLaunchCampaign} size="lg">Salvar e Iniciar</Button>
+                     </div>
                   </div>
                 </div>
               )}
