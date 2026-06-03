@@ -43,12 +43,13 @@ app.use(
   pinoHttp({
     logger,
     autoLogging: {
-      ignore: (req) => req.url === '/health',
+      ignore: (req) => req.url === '/health' || req.url === '/api/health',
     },
   })
 );
 
 // Routes
+app.use('/', healthRoutes); // for docker healthcheck
 app.use('/api', healthRoutes);
 app.use('/api', authRoutes);
 app.use('/api', usersRoutes);
