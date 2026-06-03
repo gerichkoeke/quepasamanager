@@ -52,11 +52,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const urlParams = new URLSearchParams(location.search);
   
-  // Persist embedded state
-  if (urlParams.get('embedded') === '1') {
-    localStorage.setItem('quepasa_embedded', '1');
-  }
-  const isEmbedded = urlParams.get('embedded') === '1' || localStorage.getItem('quepasa_embedded') === '1';
+  // Detect if inside an iframe or explicitly passed as embedded
+  const isIframe = window !== window.parent;
+  const isEmbedded = urlParams.get('embedded') === '1' || isIframe;
 
   const handleLogout = () => {
     logout();
