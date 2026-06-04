@@ -425,7 +425,11 @@ export const Campaigns: React.FC = () => {
                     </select>
                  </div>
 
-                 {campaigns.length === 0 ? (
+                 {isLoadingCampaigns ? (
+                   <div className="flex justify-center py-24">
+                     <RotateCw className="w-8 h-8 animate-spin text-gray-500" />
+                   </div>
+                 ) : campaigns.length === 0 ? (
                    <div className="flex flex-col items-center justify-center py-24 text-gray-500 dark:text-gray-400">
                       <Send className="w-12 h-12 mb-4 opacity-20" />
                       <p className="text-sm font-medium">Nenhum disparo encontrado</p>

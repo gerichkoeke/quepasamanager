@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Layout } from '../components/Layout';
 import { Button } from '../components/Button';
-import { Plus, Volume2, Video, Search, MessageSquare, Phone, MoreVertical, X } from 'lucide-react';
+import { Plus, Send, Paperclip, Circle, Video, Search, MessageSquare, Phone, MoreVertical, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ChatMessage {
@@ -13,31 +13,60 @@ interface ChatMessage {
 }
 
 export const ChatsInternos: React.FC = () => {
-  const [chats, setChats] = useState<{id: string, name: string}[]>([]);
+  const [chats, setChats] = useState<{id: string, name: string, members: string[]}[]>([]);
   const [activeChat, setActiveChat] = useState<string | null>(null);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [newChatName, setNewChatName] = useState('');
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [inputText, setInputText] = useState('');
+  
+  const [myStatus, setMyStatus] = useState<'online' | 'busy' | 'offline'>('online');
+  const [showStatusMenu, setShowStatusMenu] = useState(false);
+  const [jitsiRoom, setJitsiRoom] = useState<string | null>(null);
   
   // Fake messages
-  const messages: ChatMessage[] = [
-    { id: '1', sender: 'ACloud', content: 'Olá, pessoal. Vamos iniciar o projeto', time: '14:30', isMe: false },
-    { id: '2', sender: 'Você', content: 'Podemos fazer uma call para alinhar?', time: '14:35', isMe: true }
-  ];
+  const [chatMessages, setChatMessages] = useState<Record<string, ChatMessage[]>>({
+    'mock': [
+      { id: '1', sender: 'ACloud', content: 'Olá, pessoal. Vamos iniciar o projeto', time: '14:30', isMe: false },
+      { id: '2', sender: 'Você', content: 'Podemos fazer uma call para alinhar?', time: '14:35', isMe: true }
+    ]
+  });
 
   const handleCreateChat = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newChatName) return;
-    const newChat = { id: Math.random().toString(), name: newChatName };
+    const newChat = { id: Math.random().toString(), name: newChatName, members: selectedMembers };
     setChats([...chats, newChat]);
     setNewChatName('');
+    setSelectedMembers([]);
     setShowNewChatModal(false);
     setActiveChat(newChat.id);
     toast.success('Chat criado com sucesso!');
   };
 
   const startVideoCall = () => {
-    // Jitsi Meet mockup logic or placeholder
-    toast.success('Iniciando sala de vídeo (Integração Jitsi/WebRTC)');
+    if (!activeChat) return;
+    setJitsiRoom(`armazem-cloud-interno-${activeChat}`);
+  };
+
+  const handleSendMessage = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!inputText.trim() || !activeChat) return;
+    
+    const newMsg: ChatMessage = {
+      id: Math.random().toString(),
+      sender: 'Você',
+      content: inputText,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isMe: true
+    };
+    
+    setChatMessages(prev => ({
+      ...prev,
+      [activeChat]: [...(prev[activeChat] || []), newMsg]
+    }));
+    
+    setInputText('');
   };
 
   const isEmbedded = new URLSearchParams(window.location.search).get('embedded') === '1';
@@ -53,10 +82,27 @@ export const ChatsInternos: React.FC = () => {
               <h2 className="font-bold text-gray-900 dark:text-white">Chats Internos</h2>
               <p className="text-xs text-gray-500">{chats.length} chat{chats.length !== 1 && 's'}</p>
             </div>
-            <div className="flex gap-1">
-              <button className="p-2 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors">
-                <Volume2 className="w-4 h-4" />
+            <div className="flex gap-1 relative">
+              <button 
+                onClick={() => setShowStatusMenu(!showStatusMenu)}
+                className="p-2 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors flex items-center"
+                title="Meu Status"
+              >
+                <Circle className={`w-4 h-4 ${myStatus === 'online' ? 'text-emerald-500 fill-emerald-500' : myStatus === 'busy' ? 'text-red-500 fill-red-500' : 'text-gray-500 fill-gray-500'}`} />
               </button>
+              {showStatusMenu && (
+                <div className="absolute top-10 right-10 w-32 bg-white dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl shadow-lg overflow-hidden py-1 z-50">
+                   <button onClick={() => {setMyStatus('online'); setShowStatusMenu(false)}} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-2">
+                     <Circle className="w-3 h-3 text-emerald-500 fill-emerald-500" /> Online
+                   </button>
+                   <button onClick={() => {setMyStatus('busy'); setShowStatusMenu(false)}} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-2">
+                     <Circle className="w-3 h-3 text-red-500 fill-red-500" /> Ocupado
+                   </button>
+                   <button onClick={() => {setMyStatus('offline'); setShowStatusMenu(false)}} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-2">
+                     <Circle className="w-3 h-3 text-gray-500 fill-gray-500" /> Invisível
+                   </button>
+                </div>
+              )}
               <button 
                 onClick={() => setShowNewChatModal(true)}
                 className="p-2 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-lg transition-colors"
@@ -101,7 +147,9 @@ export const ChatsInternos: React.FC = () => {
                   </div>
                   <div>
                     <div className="font-semibold text-sm line-clamp-1">{chat.name}</div>
-                    <div className="text-xs opacity-70">Canal de equipe</div>
+                    <div className="text-xs opacity-70 leading-tight line-clamp-1">
+                      {chat.members && chat.members.length > 0 ? chat.members.join(', ') : 'Canal de equipe'}
+                    </div>
                   </div>
                 </button>
               ))
@@ -152,40 +200,61 @@ export const ChatsInternos: React.FC = () => {
               </div>
 
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                 {messages.map(msg => (
-                   <div key={msg.id} className={`flex flex-col ${msg.isMe ? 'items-end' : 'items-start'}`}>
-                     <div className="flex items-baseline gap-2 mb-1 px-1">
-                        {!msg.isMe && <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{msg.sender}</span>}
-                        <span className="text-[10px] text-gray-400">{msg.time}</span>
-                     </div>
-                     <div className={`px-4 py-2.5 rounded-2xl max-w-[75%] text-sm ${
-                        msg.isMe 
-                          ? 'bg-primary text-white rounded-tr-sm' 
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-sm'
-                     }`}>
-                        {msg.content}
-                     </div>
-                   </div>
-                 ))}
-              </div>
+              {jitsiRoom ? (
+                <div className="flex-1 w-full bg-black relative">
+                  <button 
+                    onClick={() => setJitsiRoom(null)}
+                    className="absolute top-4 right-4 z-50 bg-red-600 text-white px-4 py-2 rounded-lg font-bold shadow-lg hover:bg-red-700"
+                  >
+                    Sair da Chamada
+                  </button>
+                  <iframe 
+                     src={`https://meet.jit.si/${jitsiRoom}`}
+                     className="w-full h-full border-none"
+                     allow="camera; microphone; fullscreen; display-capture"
+                  />
+                </div>
+              ) : (
+                <>
+                  <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                     {(chatMessages[activeChat] || []).map(msg => (
+                       <div key={msg.id} className={`flex flex-col ${msg.isMe ? 'items-end' : 'items-start'}`}>
+                         <div className="flex items-baseline gap-2 mb-1 px-1">
+                            {!msg.isMe && <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{msg.sender}</span>}
+                            <span className="text-[10px] text-gray-400">{msg.time}</span>
+                         </div>
+                         <div className={`px-4 py-2.5 rounded-2xl max-w-[75%] text-sm ${
+                            msg.isMe 
+                              ? 'bg-primary text-white rounded-tr-sm' 
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-tl-sm'
+                         }`}>
+                            {msg.content}
+                         </div>
+                       </div>
+                     ))}
+                  </div>
 
-              {/* Message Input */}
-              <div className="p-4 bg-white dark:bg-cw-surface-dark">
-                 <div className="flex items-center gap-2 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl p-2 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
-                    <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
-                       <Plus className="w-5 h-5" />
-                    </button>
-                    <input 
-                      type="text" 
-                      placeholder="Enviar mensagem..." 
-                      className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 dark:text-white placeholder:text-gray-400"
-                    />
-                    <Button variant="primary" className="!p-2 rounded-lg aspect-square flex items-center justify-center h-auto">
-                       <Volume2 className="w-4 h-4" /> {/* Botão de enviar em formato diferente */}
-                    </Button>
-                 </div>
-              </div>
+                  {/* Message Input */}
+                  <div className="p-4 bg-white dark:bg-cw-surface-dark border-t border-cw-border-light dark:border-cw-border-dark">
+                     <form onSubmit={handleSendMessage} className="flex items-center gap-2 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl p-2 focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                        <label className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors cursor-pointer" title="Anexar Arquivo">
+                           <Paperclip className="w-5 h-5" />
+                           <input type="file" className="hidden" />
+                        </label>
+                        <input 
+                          type="text"
+                          value={inputText}
+                          onChange={(e) => setInputText(e.target.value)}
+                          placeholder="Enviar mensagem..." 
+                          className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 dark:text-white placeholder:text-gray-400"
+                        />
+                        <Button type="submit" variant="primary" className="!p-2 rounded-lg aspect-square flex items-center justify-center h-auto">
+                           <Send className="w-4 h-4 ml-0.5" />
+                        </Button>
+                     </form>
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>
@@ -219,7 +288,18 @@ export const ChatsInternos: React.FC = () => {
                   <div className="border border-cw-border-light dark:border-cw-border-dark rounded-xl overflow-hidden bg-cw-bg-light dark:bg-cw-surface-dark">
                     {['ACloud', 'Alan Silva', 'Gabriel Erich Koeke', 'Leonardo Rosa'].map(member => (
                        <label key={member} className="flex items-center gap-3 p-3 border-b border-cw-border-light dark:border-cw-border-dark last:border-0 hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors">
-                          <input type="checkbox" className="w-4 h-4 rounded text-primary border-cw-border-light dark:border-gray-600 bg-transparent focus:ring-0" />
+                          <input 
+                            type="checkbox" 
+                            className="w-4 h-4 rounded text-primary border-cw-border-light dark:border-gray-600 bg-transparent focus:ring-0" 
+                            checked={selectedMembers.includes(member)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedMembers([...selectedMembers, member]);
+                              } else {
+                                setSelectedMembers(selectedMembers.filter(m => m !== member));
+                              }
+                            }}
+                          />
                           <span className="text-sm text-gray-700 dark:text-gray-300">{member}</span>
                        </label>
                     ))}
