@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Layout } from '../components/Layout';
 import { Button } from '../components/Button';
-import { Plus, Send, Paperclip, Circle, Video, Search, MessageSquare, Phone, MoreVertical, X } from 'lucide-react';
+import { Plus, Send, Paperclip, Circle, Video, Search, MessageSquare, Phone, MoreVertical, X, Users, User, Briefcase } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { api } from '../services/api';
+import { useEffect } from 'react';
 
 interface ChatMessage {
   id: string;
@@ -13,7 +15,7 @@ interface ChatMessage {
 }
 
 export const ChatsInternos: React.FC = () => {
-  const [chats, setChats] = useState<{id: string, name: string, members: string[]}[]>([]);
+  const [chats, setChats] = useState<{id: string, name: string, members: string[], type: string}[]>([]);
   const [activeChat, setActiveChat] = useState<string | null>(null);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [newChatName, setNewChatName] = useState('');
@@ -23,6 +25,20 @@ export const ChatsInternos: React.FC = () => {
   const [myStatus, setMyStatus] = useState<'online' | 'busy' | 'offline'>('online');
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [jitsiRoom, setJitsiRoom] = useState<string | null>(null);
+  const [settings, setSettings] = useState<any>(null);
+  
+  const [chatType, setChatType] = useState<'agent' | 'group' | 'project'>('group');
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const data = await api.getSettings();
+      setSettings(data);
+    } catch {}
+  };
   
   // Fake messages
   const [chatMessages, setChatMessages] = useState<Record<string, ChatMessage[]>>({
@@ -34,8 +50,9 @@ export const ChatsInternos: React.FC = () => {
 
   const handleCreateChat = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newChatName) return;
-    const newChat = { id: Math.random().toString(), name: newChatName, members: selectedMembers };
+    if (!newChatName && chatType !== 'agent') return;
+    const finalName = chatType === 'agent' && selectedMembers.length > 0 ? selectedMembers[0] : newChatName;
+    const newChat = { id: Math.random().toString(), name: finalName, members: selectedMembers, type: chatType };
     setChats([...chats, newChat]);
     setNewChatName('');
     setSelectedMembers([]);
@@ -46,7 +63,8 @@ export const ChatsInternos: React.FC = () => {
 
   const startVideoCall = () => {
     if (!activeChat) return;
-    setJitsiRoom(`armazem-cloud-interno-${activeChat}`);
+    const baseUrl = settings?.jitsi_server ? settings.jitsi_server.replace(/\/$/, '') : 'https://meet.jit.si';
+    setJitsiRoom(`${baseUrl}/armazem-cloud-interno-${activeChat}`);
   };
 
   const handleSendMessage = (e?: React.FormEvent) => {
@@ -148,7 +166,7 @@ export const ChatsInternos: React.FC = () => {
                   <div>
                     <div className="font-semibold text-sm line-clamp-1">{chat.name}</div>
                     <div className="text-xs opacity-70 leading-tight line-clamp-1">
-                      {chat.members && chat.members.length > 0 ? chat.members.join(', ') : 'Canal de equipe'}
+                      {chat.type === 'agent' ? 'Chat direto' : chat.type === 'project' ? 'Discussão de Projeto' : chat.members && chat.members.length > 0 ? chat.members.join(', ') : 'Canal de equipe'}
                     </div>
                   </div>
                 </button>
@@ -209,7 +227,7 @@ export const ChatsInternos: React.FC = () => {
                     Sair da Chamada
                   </button>
                   <iframe 
-                     src={`https://meet.jit.si/${jitsiRoom}`}
+                     src={jitsiRoom}
                      className="w-full h-full border-none"
                      allow="camera; microphone; fullscreen; display-capture"
                   />
@@ -272,16 +290,36 @@ export const ChatsInternos: React.FC = () => {
               
               <form onSubmit={handleCreateChat} className="p-5 space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Nome do Chat</label>
-                  <input
-                    type="text"
-                    value={newChatName}
-                    onChange={e => setNewChatName(e.target.value)}
-                    placeholder="Ex: Equipe de Vendas"
-                    className="w-full px-4 py-2.5 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"
-                    autoFocus
-                  />
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tipo de Chat</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button type="button" onClick={() => setChatType('agent')} className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-colors ${chatType === 'agent' ? 'border-primary bg-primary/5 text-primary' : 'border-cw-border-light dark:border-cw-border-dark hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500'}`}>
+                       <User className="w-5 h-5 mb-1" />
+                       <span className="text-[10px] font-bold uppercase tracking-wider">Agente</span>
+                    </button>
+                    <button type="button" onClick={() => setChatType('group')} className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-colors ${chatType === 'group' ? 'border-primary bg-primary/5 text-primary' : 'border-cw-border-light dark:border-cw-border-dark hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500'}`}>
+                       <Users className="w-5 h-5 mb-1" />
+                       <span className="text-[10px] font-bold uppercase tracking-wider">Grupo</span>
+                    </button>
+                    <button type="button" onClick={() => setChatType('project')} className={`p-3 border rounded-xl flex flex-col items-center justify-center gap-1 transition-colors ${chatType === 'project' ? 'border-primary bg-primary/5 text-primary' : 'border-cw-border-light dark:border-cw-border-dark hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500'}`}>
+                       <Briefcase className="w-5 h-5 mb-1" />
+                       <span className="text-[10px] font-bold uppercase tracking-wider">Projeto</span>
+                    </button>
+                  </div>
                 </div>
+
+                {chatType !== 'agent' && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">{chatType === 'project' ? 'Nome do Projeto' : 'Nome do Chat'}</label>
+                    <input
+                      type="text"
+                      value={newChatName}
+                      onChange={e => setNewChatName(e.target.value)}
+                      placeholder={chatType === 'project' ? "Ex: Website Redesign" : "Ex: Equipe de Vendas"}
+                      className="w-full px-4 py-2.5 bg-cw-bg-light dark:bg-cw-surface-dark border border-cw-border-light dark:border-cw-border-dark rounded-xl outline-none focus:ring-2 focus:ring-primary focus:border-transparent dark:text-white text-sm"
+                      autoFocus
+                    />
+                  </div>
+                )}
                 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Membros</label>

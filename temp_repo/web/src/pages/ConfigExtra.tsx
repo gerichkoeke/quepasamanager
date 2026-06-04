@@ -272,6 +272,7 @@ export const ConfigExtra: React.FC = () => {
           <button onClick={() => setActiveTab('setup')} className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === 'setup' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Setup</button>
           <button onClick={() => setActiveTab('pwa')} className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === 'pwa' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>PWA</button>
           <button onClick={() => setActiveTab('script')} className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === 'script' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Script Chatwoot</button>
+          <button onClick={() => setActiveTab('integracoes')} className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === 'integracoes' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Integrações</button>
         </div>
 
         {activeTab === 'permissoes' && (
@@ -507,6 +508,35 @@ export const ConfigExtra: React.FC = () => {
                      <FileCode2 className="w-4 h-4" />
                      <span>Copiar Script</span>
                    </button>
+                </div>
+             </Card>
+          </div>
+        )}
+
+        {/* Integracoes Tab */}
+        {activeTab === 'integracoes' && (
+          <div className="space-y-4 pt-4 max-w-xl">
+             <Card title="Integrações Externas">
+                <div className="space-y-6">
+                  <div>
+                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Servidor Jitsi (Customizado)</label>
+                     <p className="text-sm text-gray-500 mb-2">Deixe em branco para usar o servidor público do Jitsi (meet.jit.si). Se possuir servidor próprio, informe a URL aqui.</p>
+                     <input type="text" className="w-full px-4 py-3 border border-cw-border-light dark:border-cw-border-dark bg-white dark:bg-cw-bg-dark rounded-xl outline-none dark:text-white focus:border-primary text-sm shadow-sm" 
+                       placeholder="Ex: https://meet.minhaempresa.com"
+                       value={settings?.jitsi_server || ''}
+                       onChange={e => setSettings({...settings, jitsi_server: e.target.value})}
+                     />
+                  </div>
+                  <div>
+                     <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Chatwoot API (Sincronização de Status)</label>
+                     <p className="text-sm text-gray-500 mb-2">Para sincronizar seu status de online/ocupado nos Chats Internos com o status do Chatwoot.</p>
+                     <input type="text" className="w-full px-4 py-3 border border-cw-border-light dark:border-cw-border-dark bg-white dark:bg-cw-bg-dark rounded-xl outline-none dark:text-white focus:border-primary text-sm shadow-sm" 
+                       placeholder="URL da API (Ex: https://chatwoot.minhaempresa.com)"
+                       value={settings?.chatwoot_url || ''}
+                       onChange={e => setSettings({...settings, chatwoot_url: e.target.value})}
+                     />
+                  </div>
+                  <Button variant="primary" className="w-full py-3" onClick={saveSettings}>Salvar Integrações</Button>
                 </div>
              </Card>
           </div>
