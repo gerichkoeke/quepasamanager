@@ -10,11 +10,12 @@ import {
 import { api } from '../services/api';
 import toast from 'react-hot-toast';
 
-type CampaignPhase = 'list' | 'wizard' | 'running';
+type CampaignPhase = 'list' | 'wizard' | 'running' | 'report';
 
 export const Campaigns: React.FC = () => {
   const [phase, setPhase] = useState<CampaignPhase>('list');
   const [activeTab, setActiveTab] = useState<'disparos' | 'sanitizar'>('disparos');
+  const [reportCampaign, setReportCampaign] = useState<any>(null);
   
   // Lista Options
   const [searchTerm, setSearchTerm] = useState('');
@@ -138,6 +139,38 @@ export const Campaigns: React.FC = () => {
       startMode: 'imediato',
       messageType: 'text',
       messageContent: c.messageContent || '',
+    });
+    setWizardStep(1);
+    setPhase('wizard');
+  };
+
+  const handleViewReport = async (c: any) => {
+    try {
+      const fullCampaign = await api.getCampaign(c.id);
+      setReportCampaign(fullCampaign);
+      setPhase('report');
+    } catch (error) {
+      toast.error('Erro ao carregar relatório');
+    }
+  };
+
+  const handleResendFailed = () => {
+    if(!reportCampaign) return;
+    const failedContacts = reportCampaign.contacts?.filter((c: any) => c.runStatus === 'Falha' || c.error) || [];
+    if(failedContacts.length === 0) {
+      toast.error('Nenhuma falha encontrada para reenviar.');
+      return;
+    }
+    
+    setEditingCampaignId(null);
+    setFormData({
+      ...formData,
+      name: `Reenvio: ${reportCampaign.name}`,
+      description: 'Reenvio de contatos que falharam',
+      source: 'manual',
+      contacts: failedContacts.map((c: any) => ({ name: c.name, phone: c.phone, selected: true })),
+      messageContent: reportCampaign.messageContent,
+      selectedInstances: reportCampaign.instances.map((i: any) => i.instanceId)
     });
     setWizardStep(1);
     setPhase('wizard');
@@ -448,8 +481,8 @@ export const Campaigns: React.FC = () => {
                          </tr>
                        </thead>
                        <tbody className="divide-y divide-gray-800 text-gray-300">
-                         {campaigns.map(c => (
-                           <tr key={c.id} className="hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => handleEditCampaign(c)}>
+                         {campaigns.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())).map(c => (
+                           <tr key={c.id} className="hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => c.status === 'draft' ? handleEditCampaign(c) : handleViewReport(c)}>
                              <td className="py-3 px-4 font-medium text-white">{c.name}</td>
                              <td className="py-3 px-4 truncate max-w-[200px] text-xs text-gray-500">{c.messageContent || '—'}</td>
                              <td className="py-3 px-4">{c._count?.contacts || 0}</td>
@@ -457,13 +490,20 @@ export const Campaigns: React.FC = () => {
                                <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-widest ${
                                  c.status === 'draft' ? 'border border-gray-700 text-gray-400' :
                                  c.status === 'completed' ? 'border border-emerald-700 text-emerald-500' :
+                                 c.status === 'running' ? 'border border-blue-700 text-blue-500 bg-blue-500/10' :
                                  'border border-blue-700 text-blue-500'
                                }`}>{c.status}</span>
                              </td>
                              <td className="py-3 px-4 text-right">
-                                <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 mr-2" onClick={(e) => { e.stopPropagation(); setEditingCampaignId(c.id); setPhase('wizard'); }}>
-                                  Editar
-                                </Button>
+                                {c.status === 'draft' ? (
+                                  <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 mr-2" onClick={(e) => { e.stopPropagation(); handleEditCampaign(c); }}>
+                                    Editar
+                                  </Button>
+                                ) : (
+                                  <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 mr-2" onClick={(e) => { e.stopPropagation(); handleViewReport(c); }}>
+                                    Relatório
+                                  </Button>
+                                )}
                                 <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 text-red-400 hover:bg-red-400/10 hover:text-red-300" onClick={(e) => { e.stopPropagation(); handleDeleteCampaign(c.id); }}>
                                   Excluir
                                 </Button>
@@ -1025,6 +1065,60 @@ export const Campaigns: React.FC = () => {
                   </table>
                </div>
             </div>
+          </div>
+        )}
+
+        {phase === 'report' && reportCampaign && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between bg-white dark:bg-cw-surface-dark p-4 rounded-2xl shadow-sm border border-cw-border-light dark:border-cw-border-dark/60">
+               <div className="flex items-center gap-4 text-sm font-semibold">
+                 <button onClick={() => setPhase('list')} className="text-gray-400 hover:text-white flex items-center pr-4 border-r border-gray-700">
+                   <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+                 </button>
+                 <span className="font-bold text-gray-900 dark:text-white">Relatório: {reportCampaign.name}</span>
+               </div>
+               
+               <div className="flex items-center gap-2">
+                 <Button variant="secondary" onClick={() => loadCampaigns().then(() => setPhase('list'))}>Atualizar</Button>
+                 <Button variant="primary" onClick={handleResendFailed} className="bg-red-500 hover:bg-red-600 border-red-500 text-white">Reenviar Falhas</Button>
+               </div>
+            </div>
+
+            <Card title="Status dos Envios">
+               <div className="overflow-hidden bg-black/20 rounded-xl border border-gray-800">
+                 <table className="w-full text-left text-sm whitespace-nowrap">
+                   <thead>
+                     <tr className="border-b border-gray-800 text-gray-400 text-xs">
+                       <th className="px-4 py-3 font-semibold">Nome</th>
+                       <th className="px-4 py-3 font-semibold">WhatsApp</th>
+                       <th className="px-4 py-3 font-semibold">Status</th>
+                       <th className="px-4 py-3 font-semibold">Horário</th>
+                       <th className="px-4 py-3 font-semibold">Erro</th>
+                     </tr>
+                   </thead>
+                   <tbody className="divide-y divide-gray-800 text-gray-300">
+                     {reportCampaign.contacts?.map((c: any, i: number) => (
+                       <tr key={i} className="hover:bg-white/5 transition-colors">
+                         <td className="px-4 py-3">{c.name}</td>
+                         <td className="px-4 py-3 font-mono text-xs">{c.phone}</td>
+                         <td className="px-4 py-3">
+                           <span className={`px-2 py-1 rounded inline-block text-xs font-semibold border ${
+                             c.runStatus === 'Aguardando' ? 'border-gray-600 bg-gray-800/50 text-gray-400' :
+                             c.runStatus === 'Enviando...' ? 'border-blue-600 bg-blue-900/50 text-blue-400 animate-pulse' :
+                             (c.runStatus === 'Enviado' || c.runStatus === 'Sucesso') ? 'border-emerald-600 bg-emerald-900/50 text-emerald-400' :
+                             'border-red-600 bg-red-900/50 text-red-400'
+                           }`}>
+                             {c.runStatus || 'Aguardando'}
+                           </span>
+                         </td>
+                         <td className="px-4 py-3 text-gray-500">{c.sentAt ? new Date(c.sentAt).toLocaleTimeString() : '—'}</td>
+                         <td className="px-4 py-3 text-red-400 text-xs max-w-[200px] truncate">{c.error || '—'}</td>
+                       </tr>
+                     ))}
+                   </tbody>
+                 </table>
+               </div>
+            </Card>
           </div>
         )}
 

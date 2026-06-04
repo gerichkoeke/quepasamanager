@@ -536,7 +536,7 @@ export const ConfigExtra: React.FC = () => {
                        onChange={e => setSettings({...settings, chatwoot_url: e.target.value})}
                      />
                   </div>
-                  <Button variant="primary" className="w-full py-3" onClick={saveSettings}>Salvar Integrações</Button>
+                  <Button variant="primary" className="w-full py-3" onClick={handleSaveSettings}>Salvar Integrações</Button>
                 </div>
              </Card>
           </div>
