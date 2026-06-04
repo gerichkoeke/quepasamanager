@@ -190,7 +190,10 @@ export const Campaigns: React.FC = () => {
   const parseCsvContacts = (text: string) => {
     // When pasting from Excel, columns are tab-separated (\t), rows are newline separated
     const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-    const mockContacts = lines.map((l, i) => {
+    const mockContacts: any[] = [];
+    let duplicates = 0;
+    
+    lines.forEach((l, i) => {
       // Split by tab or comma
       let cols = l.split(/[\t,;]/).map(c => c.trim()).filter(Boolean);
       let phone = '';
@@ -225,20 +228,36 @@ export const Campaigns: React.FC = () => {
         }
       }
       
-      return {
+      if (phone.length <= 5) return; // Invalid phone
+
+      let isDuplicate = formData.contacts.some((c: any) => c.phone === phone) || mockContacts.some(c => c.phone === phone);
+      if (isDuplicate) {
+        duplicates++;
+        return;
+      }
+      
+      mockContacts.push({
         id: `c_${Date.now()}_${i}_${Math.random().toString(36).substring(2,5)}`,
         phone: phone,
         name: name || `Contato S/N`,
         selected: true,
         status: phone.length >= 10 ? 'Válido' : 'Inválido'
-      };
-    }).filter(c => c.phone.length > 5); // Basic validation
+      });
+    });
 
     if (mockContacts.length > 0) {
-      setFormData($ => ({ ...$, contacts: [...$.contacts, ...mockContacts] }));
-      toast.success(`${mockContacts.length} contatos adicionados`);
+      setFormData(prev => ({ ...prev, contacts: [...prev.contacts, ...mockContacts] }));
+      if (duplicates > 0) {
+        toast.success(`${mockContacts.length} contatos adicionados (${duplicates} duplicados ignorados)`);
+      } else {
+        toast.success(`${mockContacts.length} contatos adicionados`);
+      }
     } else {
-      toast.error('Nenhum contato válido encontrado. Tente copiar e colar novamente.');
+      if (duplicates > 0) {
+         toast.error(`Todos os ${duplicates} contatos já estavam na lista.`);
+      } else {
+         toast.error('Nenhum contato válido encontrado. Tente copiar e colar novamente.');
+      }
     }
   };
 
@@ -255,6 +274,14 @@ export const Campaigns: React.FC = () => {
       return;
     }
     const cleanPhone = manualContact.phone.replace(/\D/g, '');
+    
+    // Duplication Check
+    const isDuplicate = formData.contacts.some(c => c.phone === cleanPhone);
+    if (isDuplicate) {
+      toast.error('Este contato já foi adicionado na lista.');
+      return;
+    }
+    
     const newContact = {
         id: `c_${Date.now()}_${Math.random().toString(36).substring(2,5)}`,
         phone: cleanPhone,
