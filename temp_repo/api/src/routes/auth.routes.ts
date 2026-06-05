@@ -159,7 +159,7 @@ router.post('/auth/mfa/generate', authMiddleware, async (req, res, next) => {
       where: { key: 'admin_username' },
     });
     const username = userSetting?.value || 'admin';
-    const secretInfo = speakeasy.generateSecret({ name: `QuepasaManager (${username})` });
+    const secretInfo = speakeasy.generateSecret({ name: `API Manager (${username})` });
 
     res.json({
       secret: secretInfo.base32,

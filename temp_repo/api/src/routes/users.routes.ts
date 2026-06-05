@@ -117,7 +117,7 @@ router.post('/users/:id/mfa/generate', authMiddleware, async (req, res, next) =>
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const secretInfo = speakeasy.generateSecret({ name: `QuepasaManager (${user.username})` });
+    const secretInfo = speakeasy.generateSecret({ name: `API Manager (${user.username})` });
     
     // We can save the secret temporarily or require activation
     await prisma.user.update({

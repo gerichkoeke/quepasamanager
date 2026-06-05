@@ -113,7 +113,7 @@ export const Login: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-8 transition-colors">
         <div className="flex justify-center mb-8">
           {/* Using text for logo fallback if needed but we have the image */}
-          <img src="/logoastra.png" alt="QuepasaManager" className="h-12" />
+          <img src="/logoastra.png" alt="API Manager" className="h-12" />
         </div>
 
         <p className="text-center text-gray-600 dark:text-gray-400 mb-8">

@@ -33,7 +33,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const [companyName, setCompanyName] = useState(() => {
-    return localStorage.getItem('company_name') || 'QuepasaManager';
+    return localStorage.getItem('company_name') || 'API Manager';
   });
 
   const [logoUrl, setLogoUrl] = useState(() => {
