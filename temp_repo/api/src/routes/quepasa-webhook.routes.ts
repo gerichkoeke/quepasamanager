@@ -213,6 +213,7 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
         enableGroups: true,
         reopenClosedTickets: true,
         showAgentName: true,
+        syncBotMessagesToChatwoot: true,
         maxMessageAgeMinutes: true,
         active: true,
       },
@@ -1135,6 +1136,7 @@ router.post('/webhooks/quepasa', async (req, res, next) => {
         chatwootInboxId: true,
         reopenClosedTickets: true,
         showAgentName: true,
+        syncBotMessagesToChatwoot: true,
         active: true,
       },
     });
@@ -1443,6 +1445,7 @@ router.post('/webhooks/chatwoot/:token', async (req, res, next) => {
         chatwootAccountId: true,
         chatwootInboxId: true,
         showAgentName: true,
+        syncBotMessagesToChatwoot: true,
         active: true,
       },
     });
@@ -1861,6 +1864,7 @@ router.post('/webhooks/chatwoot', async (req, res, next) => {
         chatwootAccountId: true,
         chatwootInboxId: true,
         showAgentName: true,
+        syncBotMessagesToChatwoot: true,
         active: true,
       },
     });
