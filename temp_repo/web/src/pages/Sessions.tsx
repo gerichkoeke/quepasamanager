@@ -110,6 +110,7 @@ export const Sessions: React.FC = () => {
     rejectCalls: false,
     reopenClosedTickets: false,
     showAgentName: false,
+    syncBotMessagesToChatwoot: true,
   });
 
   const [testForm, setTestForm] = useState({
@@ -527,6 +528,7 @@ export const Sessions: React.FC = () => {
              await loadData();
           }
         }
+      }
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Falha ao criar conexão';
       toast.error(errorMessage);
@@ -677,6 +679,7 @@ export const Sessions: React.FC = () => {
         rejectCalls: chatwootForm.rejectCalls,
         reopenClosedTickets: chatwootForm.reopenClosedTickets || false,
         showAgentName: chatwootForm.showAgentName || false,
+        syncBotMessagesToChatwoot: chatwootForm.syncBotMessagesToChatwoot !== false,
       };
 
       if (chatwootForm.chatwootApiToken && chatwootForm.chatwootApiToken !== '••••••••••••••') {
@@ -719,6 +722,7 @@ export const Sessions: React.FC = () => {
       rejectCalls: mapping.rejectCalls || false,
       reopenClosedTickets: mapping.reopenClosedTickets || false,
       showAgentName: mapping.showAgentName || false,
+      syncBotMessagesToChatwoot: mapping.syncBotMessagesToChatwoot !== false,
     });
     setShowChatwootConfigModal(true);
   };
@@ -746,6 +750,7 @@ export const Sessions: React.FC = () => {
       rejectCalls: false,
       reopenClosedTickets: false,
       showAgentName: false,
+      syncBotMessagesToChatwoot: true,
     });
     setShowChatwootApiToken(false); // Reset visibility when closing modal
   };
@@ -1587,6 +1592,30 @@ export const Sessions: React.FC = () => {
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                     chatwootForm.showAgentName ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg">
+              <div className="flex-1 pr-4">
+                <label className="block text-sm font-medium text-gray-900 mb-1">
+                  Exibir Atuação do Robô no Chatwoot
+                </label>
+                <p className="text-xs text-gray-600">
+                  Transcreve as opções e mensagens enviadas pelos Robôs Nativos/Typebot diretamente na conversa como mensagens 🤖 Bot
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setChatwootForm({ ...chatwootForm, syncBotMessagesToChatwoot: !chatwootForm.syncBotMessagesToChatwoot })}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 ${
+                  chatwootForm.syncBotMessagesToChatwoot ? 'bg-pink-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    chatwootForm.syncBotMessagesToChatwoot ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
               </button>

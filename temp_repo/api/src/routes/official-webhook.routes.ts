@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { prisma } from '../lib/prisma';
+import { prismaClient as prisma } from '../db/client';
 import axios from 'axios';
 import { logger } from '../utils/logger';
 

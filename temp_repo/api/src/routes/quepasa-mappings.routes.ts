@@ -44,6 +44,7 @@ const quepasaMappingSchema = z.object({
   rejectCalls: z.boolean().optional(), // Reject incoming calls
   reopenClosedTickets: z.boolean().optional(), // Reopen closed tickets for returning customers
   showAgentName: z.boolean().optional(), // Show agent name in messages sent to WhatsApp
+  syncBotMessagesToChatwoot: z.boolean().optional(),
   active: z.boolean().optional(),
 });
 
@@ -75,7 +76,7 @@ router.get('/quepasa-mappings', authMiddleware, async (req, res, next) => {
         enableGroups: true,
         rejectCalls: true,
         reopenClosedTickets: true,
-        showAgentName: true,
+        showAgentName: true,syncBotMessagesToChatwoot: true,
         useTypebot: true,
         typebotFlowId: true,
         typebotHost: true,
@@ -231,7 +232,7 @@ router.get('/quepasa-mappings/:id', authMiddleware, async (req, res, next) => {
         enableGroups: true,
         rejectCalls: true,
         reopenClosedTickets: true,
-        showAgentName: true,
+        showAgentName: true,syncBotMessagesToChatwoot: true,
         useTypebot: true,
         typebotFlowId: true,
         typebotHost: true,
@@ -309,6 +310,7 @@ router.post('/quepasa-mappings', authMiddleware, async (req, res, next) => {
         rejectCalls: validated.rejectCalls ?? false,
         reopenClosedTickets: validated.reopenClosedTickets ?? false,
         showAgentName: validated.showAgentName ?? false,
+        syncBotMessagesToChatwoot: validated.syncBotMessagesToChatwoot ?? true,
         active: validated.active ?? false, // Default to inactive until Chatwoot is configured
       },
       select: {
@@ -322,7 +324,7 @@ router.post('/quepasa-mappings', authMiddleware, async (req, res, next) => {
         chatwootInboxName: true,
         enableGroups: true,
         reopenClosedTickets: true,
-        showAgentName: true,
+        showAgentName: true,syncBotMessagesToChatwoot: true,
         useTypebot: true,
         typebotFlowId: true,
         typebotHost: true,
@@ -392,7 +394,7 @@ router.put('/quepasa-mappings/:id', authMiddleware, async (req, res, next) => {
         chatwootInboxName: true,
         enableGroups: true,
         reopenClosedTickets: true,
-        showAgentName: true,
+        showAgentName: true,syncBotMessagesToChatwoot: true,
         useTypebot: true,
         typebotFlowId: true,
         typebotHost: true,
@@ -619,7 +621,7 @@ router.post('/quepasa-mappings/:id/setup-integration', authMiddleware, async (re
         chatwootInboxName: true,
         enableGroups: true,
         reopenClosedTickets: true,
-        showAgentName: true,
+        showAgentName: true,syncBotMessagesToChatwoot: true,
         useTypebot: true,
         typebotFlowId: true,
         typebotHost: true,
@@ -704,6 +706,7 @@ router.post('/quepasa-mappings/with-chatwoot', authMiddleware, async (req, res, 
         enableGroups: validated.enableGroups ?? false,
         rejectCalls: validated.rejectCalls ?? false,
         showAgentName: false, // Default to false
+        syncBotMessagesToChatwoot: true,
         active: false, // Will be activated after everything is set up
       },
     });
@@ -792,7 +795,7 @@ router.post('/quepasa-mappings/with-chatwoot', authMiddleware, async (req, res, 
           returnWebhookUrl: true,
           enableGroups: true,
           reopenClosedTickets: true,
-          showAgentName: true,
+          showAgentName: true,syncBotMessagesToChatwoot: true,
           useTypebot: true,
         typebotFlowId: true,
         typebotHost: true,

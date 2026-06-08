@@ -101,6 +101,7 @@ model QuepasaMapping {
   rejectCalls               Boolean  @default(false) @map("reject_calls") // Reject incoming WhatsApp calls
   reopenClosedTickets       Boolean  @default(false) @map("reopen_closed_tickets") // Reopen closed tickets for returning customers
   showAgentName             Boolean  @default(false) @map("show_agent_name") // Show agent name in messages sent to WhatsApp
+  syncBotMessagesToChatwoot Boolean  @default(true) @map("sync_bot_messages_to_chatwoot") // Sync bot interactions to Chatwoot
   maxMessageAgeMinutes      Int      @default(5) @map("max_message_age_minutes") // Ignore messages older than this
   active                    Boolean  @default(true)
   createdAt                 DateTime @default(now()) @map("created_at")

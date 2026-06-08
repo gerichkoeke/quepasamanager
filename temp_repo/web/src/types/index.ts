@@ -139,6 +139,7 @@ export interface QuepasaMapping {
   rejectCalls: boolean; // Reject incoming calls
   reopenClosedTickets: boolean; // Reopen closed tickets for returning customers
   showAgentName: boolean; // Show agent name in messages sent to WhatsApp
+  syncBotMessagesToChatwoot: boolean; // Sync bot messages to Chatwoot
   maxMessageAgeMinutes: number; // Ignore messages older than this
   active: boolean;
   createdAt: string;
@@ -172,6 +173,7 @@ export interface CreateQuepasaMappingRequest {
   rejectCalls?: boolean; // Reject incoming calls
   reopenClosedTickets?: boolean; // Reopen closed tickets for returning customers
   showAgentName?: boolean; // Show agent name in messages sent to WhatsApp
+  syncBotMessagesToChatwoot?: boolean; // Sync bot messages to Chatwoot
   maxMessageAgeMinutes?: number; // Ignore messages older than this
   active?: boolean;
 }

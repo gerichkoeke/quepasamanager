@@ -987,13 +987,15 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
 
       // FORWARD TYPEBOT MESSAGES TO CHATWOOT AND CREATE BOT PAUSE
       if (typebotHandled && typeof typebotMessagesToForward !== 'undefined' && typebotMessagesToForward.length > 0) {
-        for (const tMsg of typebotMessagesToForward) {
-          if (tMsg.type === 'text') {
-            await chatwootClient.sendMessage(chatwootConfig, result.conversationId, `🤖 Bot:\n${tMsg.content}`, 'outgoing');
-            await prisma.eventLog.create({ data: { direction: 'out', provider: 'typebot', sessionId: token, peer: fromNumber, payload: { text: tMsg.content } }});
-          } else {
-            await chatwootClient.sendMessage(chatwootConfig, result.conversationId, `🤖 Bot (Mídia):\n${tMsg.content}`, 'outgoing');
-            await prisma.eventLog.create({ data: { direction: 'out', provider: 'typebot', sessionId: token, peer: fromNumber, payload: { media: tMsg.content } }});
+        if (quepasaMapping.syncBotMessagesToChatwoot) {
+          for (const tMsg of typebotMessagesToForward) {
+            if (tMsg.type === 'text') {
+              await chatwootClient.sendMessage(chatwootConfig, result.conversationId, `🤖 Bot:\n${tMsg.content}`, 'outgoing');
+              await prisma.eventLog.create({ data: { direction: 'out', provider: 'typebot', sessionId: token, peer: fromNumber, payload: { text: tMsg.content } }});
+            } else {
+              await chatwootClient.sendMessage(chatwootConfig, result.conversationId, `🤖 Bot (Mídia):\n${tMsg.content}`, 'outgoing');
+              await prisma.eventLog.create({ data: { direction: 'out', provider: 'typebot', sessionId: token, peer: fromNumber, payload: { media: tMsg.content } }});
+            }
           }
         }
         return res.json({ success: true, processedByTypebot: true, conversationId: result.conversationId, messageId: result.messageId });

@@ -12,7 +12,7 @@ import { ChatsInternos } from './pages/ChatsInternos';
 import { Kanban } from './pages/Kanban';
 import { Integrations } from './pages/Integrations';
 import { Campaigns } from './pages/Campaigns';
-import { Conexoes } from './pages/Conexoes';
+import { Sessions } from './pages/Sessions';
 import { SSOIntegrations } from './pages/SSOIntegrations';
 import Connect from './pages/Connect';
 import { UsersPage } from './pages/Users';
@@ -103,7 +103,7 @@ const App: React.FC = () => {
         path="/conexoes"
         element={
           <ProtectedRoute>
-            <Conexoes />
+            <Sessions />
           </ProtectedRoute>
         }
       />
