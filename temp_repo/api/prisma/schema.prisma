@@ -156,24 +156,7 @@ model TypebotFlow {
   @@map("typebot_flows")
 }
 
-model TwilioMapping {
-  id                        String   @id @default(uuid())
-  name                      String // Friendly name for this mapping (required)
-  phoneNumber               String   @map("phone_number") // Twilio phone number
-  useMessagingService       Boolean  @default(false) @map("use_messaging_service")
-  accountSid                String   @map("account_sid")
-  authToken                 String   @map("auth_token")
-  chatwootBaseUrl           String   @map("chatwoot_base_url") // Chatwoot instance URL
-  chatwootApiToken          String?  @map("chatwoot_api_token") // Chatwoot API access token
-  chatwootAccountId         String   @map("chatwoot_account_id") // Chatwoot account ID
-  chatwootInboxId           String?  @map("chatwoot_inbox_id") // Chatwoot inbox ID
-  active                    Boolean  @default(true)
-  createdAt                 DateTime @default(now()) @map("created_at")
-  updatedAt                 DateTime @default(now()) @updatedAt @map("updated_at")
 
-  @@index([phoneNumber, active])
-  @@map("twilio_mappings")
-}
 
 // Chatwoot Contact Cache
 model ChatwootContact {

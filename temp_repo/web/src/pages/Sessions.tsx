@@ -474,25 +474,15 @@ export const Sessions: React.FC = () => {
             duration: 4000,
           });
         }
-      } else if (connectionType === 'official') {
-        const data: CreateQuepasaMappingRequest = {
-          name: quepasaForm.name,
-          active: false,
-          provider: 'official'
-        };
-        await api.createQuepasaMapping(data);
-        toast.success('Conexão Oficial criada! Configure a API clicando no ícone do bot.', { duration: 5000 });
-        setShowCreateConnectionModal(false);
-        resetQuepasaForm();
-        await loadData();
       } else {
-        // Check if user wants QR code sent to Chatwoot
+        // Quepasa or Official
         if (quepasaForm.sendQRToChatwoot) {
-          // Create Quepasa connection with Chatwoot integration and send QR to Chatwoot
+          // Create connection with Chatwoot
           toast.loading('Criando conexão e integrando com Chatwoot...', { id: 'create-qr-chatwoot' });
 
           const data = {
             name: quepasaForm.name,
+            provider: connectionType,
             chatwootBaseUrl: chatwootForm.chatwootBaseUrl,
             chatwootApiToken: chatwootForm.chatwootApiToken,
             chatwootAccountId: chatwootForm.chatwootAccountId,
@@ -501,12 +491,12 @@ export const Sessions: React.FC = () => {
             returnWebhookUrl: chatwootForm.returnWebhookUrl || undefined,
             enableGroups: chatwootForm.enableGroups,
             rejectCalls: chatwootForm.rejectCalls,
-            sendQRToChatwoot: true,
+            sendQRToChatwoot: connectionType === 'quepasa', // Send QR only if it's quepasa
           };
 
           await api.createQuepasaMappingWithChatwoot(data);
 
-          toast.success('Conexão criada! QR code enviado para o Chatwoot. Escaneie na conversa "Gerador de QR".', {
+          toast.success(connectionType === 'official' ? 'Conexão Híbrida Oficial Criada com Caixa no Chatwoot!' : 'Conexão criada! QR code enviado para o Chatwoot. Escaneie na conversa "Gerador de QR".', {
             id: 'create-qr-chatwoot',
             duration: 6000,
           });
@@ -514,23 +504,29 @@ export const Sessions: React.FC = () => {
           resetQuepasaForm();
           await loadData();
         } else {
-          // Create Quepasa connection without Chatwoot config
-          // Chatwoot fields are optional and will be configured later via the icon
+          // Create connection without Chatwoot config
           const data: CreateQuepasaMappingRequest = {
             name: quepasaForm.name,
-            active: false, // Inactive until Chatwoot is configured
+            provider: connectionType,
+            active: false,
           };
+          
           const newMapping = await api.createQuepasaMapping(data);
-          toast.success('Conexão Quepasa criada. Escaneie o QR code para conectar.');
-          setShowCreateConnectionModal(false);
-          resetQuepasaForm();
-          await loadData();
-
-          // Show QR code modal automatically with the mapping ID
-          setQuepasaQRMappingId(newMapping.id);
-          setShowQuepasaQRModal(true);
+          
+          if (connectionType === 'quepasa') {
+             toast.success('Conexão inicializada! Escaneie o QR Code e depois configure o Chatwoot.', { duration: 5000 });
+             setShowCreateConnectionModal(false);
+             resetQuepasaForm();
+             await loadData();
+             setQuepasaQRMappingId(newMapping.id);
+             setShowQuepasaQRModal(true);
+          } else {
+             toast.success('Conexão Oficial criada! Para concluir, verifique Tipo/API no icone do Robô e clique em Chatwoot para Configurar Caixa.', { duration: 6000 });
+             setShowCreateConnectionModal(false);
+             resetQuepasaForm();
+             await loadData();
+          }
         }
-      }
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Falha ao criar conexão';
       toast.error(errorMessage);
@@ -689,7 +685,13 @@ export const Sessions: React.FC = () => {
 
       await api.updateQuepasaMapping(editingQuepasa.id, updateData);
       
-      toast.success('Configuração Chatwoot salva com sucesso!');
+      try {
+         await api.setupQuepasaChatwootIntegration(editingQuepasa.id);
+      } catch (e: any) {
+         toast.error('Caixa do Chatwoot atualizada, porém houve erro ao re-sincronizar: ' + (e.response?.data?.error || e.message));
+      }
+      
+      toast.success('Configuração Chatwoot salva e sincronizada com sucesso!');
       setShowChatwootConfigModal(false);
       resetChatwootForm();
       loadData();
@@ -1217,16 +1219,16 @@ export const Sessions: React.FC = () => {
                   <p className="mt-1 text-xs text-gray-500">Nome para identificar esta conexão {connectionType === 'official' ? 'Oficial' : 'Quepasa'}</p>
                 </div>
 
-                {/* Toggle: Enviar QR para Chatwoot (only for quepasa) */}
-                {connectionType === 'quepasa' && (
-                <>
+                {/* Toggle: Criar Caixa no Chatwoot */}
                 <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-900 mb-1">
-                      Enviar QR Code para Chatwoot
+                      {connectionType === 'official' ? 'Integrar com Chatwoot Automaticamente' : 'Enviar QR Code para Chatwoot'}
                     </label>
                     <p className="text-xs text-gray-600">
-                      Ative para receber o QR code direto no Chatwoot ao invés do painel
+                      {connectionType === 'official'
+                        ? 'Ative para criar a caixa de entrada da API (API Inbox) automaticamente agora'
+                        : 'Ative para receber o QR code direto no Chatwoot ao invés do painel'}
                     </p>
                   </div>
                   <button
@@ -1359,9 +1361,7 @@ export const Sessions: React.FC = () => {
                     </div>
                   </div>
                 )}
-                {/* End of quepasa specific UI */}
-                </>
-                )}
+                {/* End of quepasa/official UI */}
               </>
             )}
           </form>
@@ -1448,12 +1448,12 @@ export const Sessions: React.FC = () => {
                 type="text"
                 value={chatwootForm.chatwootInboxName}
                 onChange={(e) => setChatwootForm({ ...chatwootForm, chatwootInboxName: e.target.value })}
-                placeholder={editingQuepasa ? `Quepasa - ${editingQuepasa.name}` : "Nome personalizado da caixa"}
+                placeholder={editingQuepasa ? `API Manager - ${editingQuepasa.name}` : "Nome personalizado da caixa"}
                 className="w-full px-3 py-2 border rounded-lg"
               />
               <p className="mt-1 text-xs text-gray-500">
                 Nome personalizado para a caixa de entrada no Chatwoot
-                {editingQuepasa && ` (padrão: Quepasa - ${editingQuepasa.name})`}
+                {editingQuepasa && ` (padrão: API Manager - ${editingQuepasa.name})`}
               </p>
             </div>
 

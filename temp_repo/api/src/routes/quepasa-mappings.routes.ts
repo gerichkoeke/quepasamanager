@@ -547,7 +547,7 @@ router.post('/quepasa-mappings/:id/setup-integration', authMiddleware, async (re
     let inboxId = mapping.chatwootInboxId;
     if (inboxId === 'pending' || !inboxId) {
       try {
-        const inboxName = mapping.chatwootInboxName || `Quepasa - ${mapping.name} ${mapping.phoneNumber ? `(${mapping.phoneNumber})` : ''}`;
+        const inboxName = mapping.chatwootInboxName || `API Manager - ${mapping.name} ${mapping.phoneNumber ? `(${mapping.phoneNumber})` : ''}`;
         const webhookUrl = `${systemBaseUrl}/api/webhooks/chatwoot/${mapping.quepasaToken}`;
 
         const inbox = await chatwootClient.createInbox(chatwootConfig, inboxName, webhookUrl);
@@ -718,7 +718,7 @@ router.post('/quepasa-mappings/with-chatwoot', authMiddleware, async (req, res, 
 
       // Step 4: Create Chatwoot inbox
       const systemBaseUrl = process.env.SYSTEM_BASE_URL || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.get('host')}`;
-      const inboxName = validated.chatwootInboxName || `Quepasa - ${validated.name}`;
+      const inboxName = validated.chatwootInboxName || `API Manager - ${validated.name}`;
       const webhookUrl = `${systemBaseUrl}/api/webhooks/chatwoot/${quepasaToken}`;
 
       const chatwootConfig = {

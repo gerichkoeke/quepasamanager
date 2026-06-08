@@ -176,33 +176,6 @@ export interface CreateQuepasaMappingRequest {
   active?: boolean;
 }
 
-export interface TwilioMapping {
-  id: string;
-  name: string;
-  phoneNumber: string;
-  useMessagingService: boolean;
-  accountSid: string;
-  authToken: string;
-  chatwootBaseUrl: string;
-  chatwootApiToken?: string;
-  chatwootAccountId: string;
-  chatwootInboxId?: string;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateTwilioMappingRequest {
-  name: string;
-  phoneNumber: string;
-  useMessagingService: boolean;
-  accountSid: string;
-  authToken: string;
-  chatwootBaseUrl: string;
-  chatwootApiToken?: string;
-  chatwootAccountId: string;
-  active?: boolean;
-}
 
 export interface QuepasaSyncResult {
   total: number;

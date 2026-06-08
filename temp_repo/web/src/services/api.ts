@@ -11,8 +11,7 @@ import {
   QuepasaMapping,
   CreateQuepasaMappingRequest,
   QuepasaSyncResult,
-  TwilioMapping,
-  CreateTwilioMappingRequest,
+
 } from '../types';
 
 class ApiClient {
@@ -431,35 +430,7 @@ class ApiClient {
     const response = await this.client.delete(`/campaigns/${id}`);
     return response.data;
   }
-  // Twilio Mappings
-  async getTwilioMappings(): Promise<TwilioMapping[]> {
-    const response = await this.client.get('/twilio-mappings');
-    return response.data;
-  }
 
-  async getTwilioMapping(id: string): Promise<TwilioMapping> {
-    const response = await this.client.get(`/twilio-mappings/${id}`);
-    return response.data;
-  }
-
-  async createTwilioMapping(data: CreateTwilioMappingRequest): Promise<TwilioMapping> {
-    const response = await this.client.post('/twilio-mappings', data);
-    return response.data;
-  }
-
-  async updateTwilioMapping(id: string, data: Partial<CreateTwilioMappingRequest>): Promise<TwilioMapping> {
-    const response = await this.client.put(`/twilio-mappings/${id}`, data);
-    return response.data;
-  }
-
-  async deleteTwilioMapping(id: string): Promise<void> {
-    await this.client.delete(`/twilio-mappings/${id}`);
-  }
-
-  async setupTwilioChatwootIntegration(mappingId: string): Promise<TwilioMapping> {
-    const response = await this.client.post(`/twilio-mappings/${mappingId}/setup-integration`);
-    return response.data;
-  }
   // API Projects endpoints
   async getProjects(): Promise<any[]> {
     const response = await this.client.get('/v1/projects');
