@@ -1027,7 +1027,7 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
         if (quepasaMapping.syncBotMessagesToChatwoot) {
           for (const msg of nativeBotMessagesToForward) {
             await chatwootClient.sendMessage(chatwootConfig, result.conversationId, `🤖 Bot:\n${msg}`, 'outgoing');
-            await prisma.eventLog.create({ data: { direction: 'out', provider: 'nativebot', sessionId: token, peer: fromNumber, payload: { text: msg } }});
+            await prisma.eventLog.create({ data: { direction: 'out', provider: 'quepasa', sessionId: token, peer: fromNumber, payload: { text: msg } }});
           }
         }
         return res.json({ success: true, processedByNativeBot: true, conversationId: result.conversationId, messageId: result.messageId });
