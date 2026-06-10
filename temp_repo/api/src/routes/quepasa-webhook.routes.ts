@@ -282,9 +282,22 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
     }
 
     // Typebot state tracking
+    // Native Bot state
+    let nativeBotMessagesToForward: string[] = [];
+    let nativeBotHandled = false;
+    const sendNativeText = async (token: string, phone: string, text: string) => {
+      nativeBotMessagesToForward.push(text);
+      return quepasaClient.sendTextMessage(token, phone, text);
+    };
+    const sendNativeBtn = async (token: string, phone: string, text: string, btns: string[], title: string) => {
+      nativeBotMessagesToForward.push(text + '\n\n' + btns.map(b=>'👉 ' + b).join('\n'));
+      return quepasaClient.sendButtonMessage(token, phone, text, btns, title);
+    };
+    
     let typebotSessionId: string | undefined;
     let typebotMessagesToForward: any[] = [];
     let typebotHandled = false;
+    let isHandoff = false;
 
     // Process Native Bot if enabled
     if (quepasaMapping.useNativeBot && !isGroup) {
@@ -341,7 +354,7 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
               if (rows.length <= 3 && rows.length > 0) {
                 // Use Buttons for up to 3 options
                 const buttons = rows.map(r => `${r.id} - ${r.title}`);
-                await quepasaClient.sendButtonMessage(
+                await sendNativeBtn(
                   quepasaMapping.quepasaToken,
                   fromNumber,
                   welcomeMsg,
@@ -354,21 +367,22 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
                 logger.warn({ phone: fromNumber }, 'More than 3 options for interactive menu, falling back to text to prevent missing list dropping.');
                 let menuText = welcomeMsg + '\n';
                 rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
-                await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+                await sendNativeText(quepasaMapping.quepasaToken, fromNumber, menuText);
               }
             } catch (listErr) {
               logger.warn({ phone: fromNumber, error: (listErr as Error).message }, 'Failed to send interactive menu, falling back to text');
               let menuText = welcomeMsg + '\n';
               rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
-              await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+              await sendNativeText(quepasaMapping.quepasaToken, fromNumber, menuText);
             }
           } else {
             let menuText = welcomeMsg + '\n';
             rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
-            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+            await sendNativeText(quepasaMapping.quepasaToken, fromNumber, menuText);
           }
           
-          return res.json({ success: true, message: 'Native bot menu sent' });
+          nativeBotHandled = true;
+          if (!quepasaMapping.syncBotMessagesToChatwoot) { return res.json({ success: true, message: 'Native bot menu sent' }); }
         } else if (botSession.state === 'menu') {
           // Process menu choice
           const options = (quepasaMapping.botOptions as any[]) || [];
@@ -388,8 +402,9 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
               where: { id: botSession.id }
             });
             await quepasaClient.initialize();
-            await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, quepasaMapping.closingMessage || 'Atendimento encerrado.');
-            return res.json({ success: true, message: 'Native bot session closed by user' });
+            await sendNativeText(quepasaMapping.quepasaToken, fromNumber, quepasaMapping.closingMessage || 'Atendimento encerrado.');
+            nativeBotHandled = true;
+            if (!quepasaMapping.syncBotMessagesToChatwoot) { return res.json({ success: true, message: 'Native bot session closed by user' }); }
           }
 
           const option = options.find((o: any) => 
@@ -415,7 +430,8 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
                 // Let's pause it since they might want to talk to human now, or it answers their question. 
                 // Let's just send the text, and pause the bot to let human take over, unless teamId is also set.
                 await quepasaClient.initialize();
-                await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, option.submenuText);
+                await sendNativeText(quepasaMapping.quepasaToken, fromNumber, option.submenuText);
+                nativeBotHandled = true;
                 
                 (req as any).nativeBotTeamId = option.teamId;
                 if (option.labels) {
@@ -432,7 +448,8 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
                 logger.info({ phone: fromNumber, teamId: option.teamId, protocol }, 'Native bot menu choice selected, routing to team');
                 
                 await quepasaClient.initialize();
-                await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, `Opção selecionada: *${option.text}*\nSeu protocolo de atendimento é: *${protocol}*.\n\nAguarde, em breve um de nossos atendentes falará com você.`);
+                await sendNativeText(quepasaMapping.quepasaToken, fromNumber, `Opção selecionada: *${option.text}*\nSeu protocolo de atendimento é: *${protocol}*.\n\nAguarde, em breve um de nossos atendentes falará com você.`);
+                nativeBotHandled = true;
                 
                 (req as any).nativeBotTeamId = option.teamId;
                 if (option.labels) {
@@ -473,7 +490,7 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
               try {
                 if (rows.length <= 3 && rows.length > 0) {
                   const buttons = rows.map(r => `${r.id} - ${r.title}`);
-                  await quepasaClient.sendButtonMessage(
+                  await sendNativeBtn(
                     quepasaMapping.quepasaToken,
                     fromNumber,
                     invalidMsg,
@@ -484,21 +501,22 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
                   logger.warn({ phone: fromNumber }, 'More than 3 options for interactive menu, falling back to text.');
                   let menuText = invalidMsg + '\n';
                   rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
-                  await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+                  await sendNativeText(quepasaMapping.quepasaToken, fromNumber, menuText);
                 }
               } catch (listErr) {
                 // Fallback to text
                 let menuText = invalidMsg + '\n';
                 rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
-                await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+                await sendNativeText(quepasaMapping.quepasaToken, fromNumber, menuText);
               }
             } else {
               let menuText = invalidMsg + '\n';
               rows.forEach((r) => { menuText += `\n${r.id} - ${r.title}`; });
-              await quepasaClient.sendTextMessage(quepasaMapping.quepasaToken, fromNumber, menuText);
+              await sendNativeText(quepasaMapping.quepasaToken, fromNumber, menuText);
             }
             
-            return res.json({ success: true, message: 'Native bot invalid option / resent menu' });
+            nativeBotHandled = true;
+            if (!quepasaMapping.syncBotMessagesToChatwoot) { return res.json({ success: true, message: 'Native bot invalid option / resent menu' }); }
           }
         }
       } catch (err: any) {
@@ -559,7 +577,7 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
            await quepasaClient.initialize();
            let chatId = fromNumber;
            
-           let isHandoff = false;
+           isHandoff = false;
            let extractedTeamId: string | undefined;
 
            // Filter and process Typebot responses
@@ -654,7 +672,7 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
            typebotMessagesToForward = processedMessages || [];
            typebotHandled = true;
            
-           if (!isHandoff) {
+           if (!isHandoff && !quepasaMapping.syncBotMessagesToChatwoot) {
              return res.json({ success: true, processedByTypebot: true, message: 'Message handled strictly by Typebot' });
            }
            // If it's a handoff, we continue so Chatwoot processes the incoming message that triggered it
@@ -999,7 +1017,20 @@ router.post('/webhooks/quepasa/:token', async (req, res, next) => {
             }
           }
         }
-        return res.json({ success: true, processedByTypebot: true, conversationId: result.conversationId, messageId: result.messageId });
+        if (!isHandoff) {
+          return res.json({ success: true, processedByTypebot: true, conversationId: result.conversationId, messageId: result.messageId });
+        }
+      }
+
+      // FORWARD NATIVE BOT MESSAGES TO CHATWOOT AND RETURN
+      if (nativeBotHandled && typeof nativeBotMessagesToForward !== 'undefined' && nativeBotMessagesToForward.length > 0) {
+        if (quepasaMapping.syncBotMessagesToChatwoot) {
+          for (const msg of nativeBotMessagesToForward) {
+            await chatwootClient.sendMessage(chatwootConfig, result.conversationId, `🤖 Bot:\n${msg}`, 'outgoing');
+            await prisma.eventLog.create({ data: { direction: 'out', provider: 'nativebot', sessionId: token, peer: fromNumber, payload: { text: msg } }});
+          }
+        }
+        return res.json({ success: true, processedByNativeBot: true, conversationId: result.conversationId, messageId: result.messageId });
       }
 
       res.json({
